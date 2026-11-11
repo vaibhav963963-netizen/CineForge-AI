@@ -85,3 +85,52 @@ shapes the script's wording plus speaking speed and pauses. Mumbai Conversationa
 | Inter, Caladea, FreeMono, Noto Sans Devanagari | SIL OFL 1.1 / GPL (FreeMono) |
 
 The local script model can state wrong facts: review every script before publishing.
+
+## How to run — command cheat sheet
+
+All commands run from the workspace folder (`Shorts Studio`). Windows; Node 22 required.
+
+**1. First-time setup (once)**
+```bat
+setup-workspace.bat
+```
+Installs the Python environment, checks FFmpeg, downloads the models (resumable, sha256-verified) and sets up ComfyUI.
+
+**2. Start the studio**
+```bat
+start-studio.bat
+```
+Opens the dashboard at http://127.0.0.1:3000/. Or start it by hand:
+```bat
+node dashboard\server.js
+```
+If port 3000 is busy (another app), use a different port:
+```bat
+set PORT=3200 && node dashboard\server.js
+```
+Git Bash: `PORT=3200 node dashboard/server.js`. Only one studio server can run per workspace (`logs/jobs/.server.lock`); close the window (or Ctrl+C) to stop it.
+
+**3. Make a video (dashboard)**
+1. **Create** → type a topic, pick language, personality, voice, style, character, duration, visual mode.
+2. **Generate script preview** → it opens in **Script Studio**.
+3. Review the **Fact check** panel: tick each flagged claim after checking it, or edit the line and save. Known errors can't be approved.
+4. **Approve & render** → watch live progress; the MP4 lands in `exports\<project-id>.mp4`.
+
+Optional: add verified facts for a topic in `facts\<topic>.json` (see `facts\roopkund.json`) or paste them under *Verified facts for this video* on the Create screen.
+
+**4. Tests** (start the server first for e2e; set `STUDIO_URL` if not on port 3000)
+```bash
+node --test tests/unit.test.mjs                                   # unit tests (27)
+STUDIO_URL=http://127.0.0.1:3200 node tests/e2e-run.mjs progress  # progress acceptance (24 checks)
+STUDIO_URL=http://127.0.0.1:3200 node tests/e2e-run.mjs cases A B C UNSUPPORTED --source llm   # procedural
+STUDIO_URL=http://127.0.0.1:3200 HYBRID=1 node tests/e2e-run.mjs cases A B C --source llm     # with AI images
+```
+(Git Bash syntax; in cmd use `set STUDIO_URL=...` then run the command.) Evidence is written to `logs\tests\`.
+
+**5. Dev tools**
+```bash
+node tools/rescene.mjs <project-id>     # re-plan storyboard + contact sheet for an existing project
+node tools/offline-audit.mjs all        # verify no external network connections
+```
+
+Full acceptance report: `logs/final-report.md`.
