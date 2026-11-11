@@ -1,0 +1,58 @@
+{
+  "title": "How India Reached Mars on a Budget",
+  "lines": [
+    {
+      "text": "In 2014, India reached Mars on its very first try.",
+      "visual": "the Mangalyaan orbiter satellite arriving at Mars in space",
+      "onScreen": "2014"
+    },
+    {
+      "text": "No country had ever done that before.",
+      "visual": "an Indian flag waving proudly, a scientist celebrating"
+    },
+    {
+      "text": "The whole mission cost about seventy four million dollars,",
+      "visual": "stacks of coins and money on a table",
+      "onScreen": "$74 million"
+    },
+    {
+      "text": "less than the Hollywood movie Gravity.",
+      "visual": "a film reel and movie camera in a studio",
+      "onScreen": "Gravity $100M vs Mangalyaan $74M"
+    },
+    {
+      "text": "So how did ISRO do it so cheaply?",
+      "visual": "a curious engineer thinking with a question mark"
+    },
+    {
+      "text": "First, the rocket was a proven workhorse, the PSLV.",
+      "visual": "a PSLV rocket launching from the launch pad at Sriharikota"
+    },
+    {
+      "text": "Instead of one powerful push, the spacecraft circled Earth for weeks,",
+      "visual": "a satellite circling Earth in orbit, transfer orbit diagram"
+    },
+    {
+      "text": "raising its orbit step by step before sailing to Mars.",
+      "visual": "orbit diagram showing the path from Earth to Mars"
+    },
+    {
+      "text": "Smart engineering, not big money, made history.",
+      "visual": "the engineer celebrating success with a trophy"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-10T12:52:11.835Z",
+    "source": "manual",
+    "baseVersion": null,
+    "fingerprint": "a47e0046a176",
+    "configHash": "b028eb01ca8bf4e9",
+    "wordCount": 77,
+    "estimatedSeconds": 33.5,
+    "language": "en",
+    "personality": "documentary",
+    "targetSeconds": 30
+  }
+}

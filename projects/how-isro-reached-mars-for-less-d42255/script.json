@@ -1,0 +1,38 @@
+{
+  "title": "How India Reached Mars on a Budget",
+  "language": "en",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "lead": 0.35,
+  "outro": 1.1,
+  "gap": 0.32,
+  "lines": [
+    {
+      "text": "In 2014, India reached Mars on its very first try."
+    },
+    {
+      "text": "No country had ever done that before."
+    },
+    {
+      "text": "The whole mission cost about seventy four million dollars,"
+    },
+    {
+      "text": "less than the Hollywood movie Gravity."
+    },
+    {
+      "text": "So how did ISRO do it so cheaply?"
+    },
+    {
+      "text": "First, the rocket was a proven workhorse, the PSLV."
+    },
+    {
+      "text": "Instead of one powerful push, the spacecraft circled Earth for weeks,"
+    },
+    {
+      "text": "raising its orbit step by step before sailing to Mars."
+    },
+    {
+      "text": "Smart engineering, not big money, made history."
+    }
+  ]
+}

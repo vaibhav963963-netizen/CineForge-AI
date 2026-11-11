@@ -1,0 +1,485 @@
+{
+  "schema": 1,
+  "title": "How India Reached Mars on a Budget",
+  "style": {
+    "id": "paper-atlas",
+    "name": "Paper Atlas",
+    "summary": "History in cut paper: aged parchment, maps with crimson routes, gold date ribbons, simple period figures, captions on torn paper strips.",
+    "dimension": "2d",
+    "renderer": "canvas2d",
+    "characterMode": "2d-figure",
+    "palette": {
+      "bg": "#E9DCBC",
+      "sky": "#CFDDE0",
+      "horizon": "#E3E6DA",
+      "ground": "#B9A27A",
+      "ink": "#3E2C1E",
+      "primary": "#A8322D",
+      "secondary": "#2F3550",
+      "accent": "#C9A03A",
+      "danger": "#A8322D",
+      "paper": "#F2E8CF",
+      "text": "#3E2C1E"
+    },
+    "grade": {
+      "flatten": 0.15,
+      "posterize": 0,
+      "outline": false,
+      "sat": 0.78,
+      "vignette": 0.25,
+      "paper": true,
+      "sepia": 0.35
+    },
+    "lighting": {
+      "mood": "soft paper shadows; night = parchment under a navy wash"
+    },
+    "captions": {
+      "font": "Caladea",
+      "weight": 700,
+      "y": 1640,
+      "size": 92,
+      "fill": "#3E2C1E",
+      "stroke": null,
+      "strokeW": 0,
+      "hi": "#A8322D",
+      "box": {
+        "color": "#F2E8CF",
+        "radius": 6,
+        "pad": 26,
+        "torn": true
+      },
+      "maxWords": 4,
+      "upper": false,
+      "typeOn": false,
+      "pop": true
+    },
+    "camera": {
+      "behavior": "pan",
+      "moves": [
+        "pan",
+        "push",
+        "slide"
+      ],
+      "intensity": 0.5
+    },
+    "transition": {
+      "type": "slide",
+      "duration": 0.3
+    },
+    "typography": {
+      "title": "Caladea",
+      "titleWeight": 700,
+      "label": "Caladea",
+      "labelWeight": 700
+    },
+    "image": {
+      "prompt": "layered cut paper collage illustration, aged parchment texture, storybook historical scene, muted earthy colors with crimson and gold accents, soft paper drop shadows, vertical composition",
+      "negative": "photo, realistic, 3d render, glossy, text, watermark, logo, gore, violence, nsfw"
+    },
+    "music": "tension",
+    "sfx": [
+      "whoosh",
+      "tock",
+      "pop",
+      "thud"
+    ],
+    "pacing": {
+      "minShot": 2.2,
+      "maxShot": 4.5
+    },
+    "available": true,
+    "reason": null
+  },
+  "fonts": [
+    {
+      "family": "Inter",
+      "weight": 900,
+      "sample": "A"
+    },
+    {
+      "family": "Inter",
+      "weight": 800,
+      "sample": "A"
+    },
+    {
+      "family": "Caladea",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "FreeMono",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "StudioDeva",
+      "weight": 800,
+      "sample": "अ"
+    }
+  ],
+  "music": "tension",
+  "language": {
+    "id": "en",
+    "code": "en",
+    "captionScript": "Latn"
+  },
+  "character": {
+    "id": "desi_hero",
+    "name": "Bunty",
+    "archetype": "desi_hero",
+    "mode": "2d-figure",
+    "colors": {
+      "skin": "#F2B98E",
+      "shirt": "#1E88E5",
+      "vest": "#0D47A1",
+      "pants": "#263238",
+      "hair": "#1E1E1E",
+      "accent": "#0D47A1",
+      "accent2": "#FFD54F"
+    },
+    "accessory": "cap",
+    "attire": "Royal Blue Jersey (#1E88E5) with Navy Vest"
+  },
+  "targetSeconds": 30,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 4.666,
+      "narration": "In 2014, India reached Mars on its very first try.",
+      "visualObjective": "the Mangalyaan orbiter satellite arriving at Mars in space",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "date",
+        "text": "2014"
+      },
+      "transition": "black",
+      "concepts": [
+        "space",
+        "satellite",
+        "win",
+        "india"
+      ]
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 4.666,
+      "end": 7.071,
+      "narration": "No country had ever done that before.",
+      "visualObjective": "an Indian flag waving proudly, a scientist celebrating",
+      "subject": "Bunty (celebrate)",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "trophy",
+        "flag"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "celebrate"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "Bunty: celebrate; camera: wide push",
+      "overlay": null,
+      "transition": "slide",
+      "concepts": [
+        "science",
+        "win",
+        "india"
+      ]
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 7.071,
+      "end": 10.661,
+      "narration": "The whole mission cost about seventy four million dollars,",
+      "visualObjective": "stacks of coins and money on a table",
+      "subject": "coins",
+      "environment": "office",
+      "objects": [
+        "coins"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "slide"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: close slide",
+      "overlay": {
+        "type": "number",
+        "value": "$74 million",
+        "label": null
+      },
+      "transition": "slide",
+      "concepts": [
+        "money"
+      ]
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3,
+        4
+      ],
+      "start": 10.661,
+      "end": 15.118,
+      "narration": "less than the Hollywood movie Gravity. So how did ISRO do it so cheaply?",
+      "visualObjective": "a film reel and movie camera in a studio a curious engineer thinking with a question mark",
+      "subject": "Bunty (think)",
+      "environment": "studio",
+      "objects": [
+        "film",
+        "camera",
+        "bulb"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "think"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "Bunty: think; camera: wide pan",
+      "overlay": {
+        "type": "comparison",
+        "items": [
+          {
+            "label": "Gravity",
+            "value": 100,
+            "display": "$100M"
+          },
+          {
+            "label": "Mangalyaan",
+            "value": 74,
+            "display": "$74M"
+          }
+        ]
+      },
+      "transition": "slide",
+      "concepts": [
+        "space",
+        "movie",
+        "idea",
+        "question"
+      ]
+    },
+    {
+      "id": "S05",
+      "lines": [
+        5
+      ],
+      "start": 15.118,
+      "end": 18.745,
+      "narration": "First, the rocket was a proven workhorse, the PSLV.",
+      "visualObjective": "a PSLV rocket launching from the launch pad at Sriharikota",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "scene: launch; camera: medium push",
+      "overlay": null,
+      "transition": "slide",
+      "concepts": [
+        "launch"
+      ]
+    },
+    {
+      "id": "S06",
+      "lines": [
+        6
+      ],
+      "start": 18.745,
+      "end": 22.815,
+      "narration": "Instead of one powerful push, the spacecraft circled Earth for weeks,",
+      "visualObjective": "a satellite circling Earth in orbit, transfer orbit diagram",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "slide"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "infographic",
+      "renderMethod": "Animated infographic over defocused environment",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: wide slide",
+      "overlay": {
+        "type": "orbit",
+        "labels": null
+      },
+      "transition": "slide",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ]
+    },
+    {
+      "id": "S07",
+      "lines": [
+        7
+      ],
+      "start": 22.815,
+      "end": 26.835,
+      "narration": "raising its orbit step by step before sailing to Mars.",
+      "visualObjective": "orbit diagram showing the path from Earth to Mars",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: wide pan",
+      "overlay": null,
+      "transition": "slide",
+      "concepts": [
+        "space",
+        "orbit"
+      ]
+    },
+    {
+      "id": "S08",
+      "lines": [
+        8
+      ],
+      "start": 26.835,
+      "end": 31.221,
+      "narration": "Smart engineering, not big money, made history.",
+      "visualObjective": "the engineer celebrating success with a trophy",
+      "subject": "Bunty (celebrate)",
+      "environment": "office",
+      "objects": [
+        "trophy",
+        "coins",
+        "bulb"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "celebrate"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "soft paper shadows; night = parchment under a navy wash",
+      "visualStyle": "Paper Atlas",
+      "method": "scene2d",
+      "renderMethod": "2D Paper Atlas drawing + animated figure/props",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": null,
+      "animation": "Bunty: celebrate; camera: wide pan",
+      "overlay": null,
+      "transition": "slide",
+      "concepts": [
+        "money",
+        "idea",
+        "win"
+      ]
+    }
+  ]
+}

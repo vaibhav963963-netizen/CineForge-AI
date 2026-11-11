@@ -1,0 +1,39 @@
+duration 40.92 s
+S01     0.00 →   5.68  (5.68 s)  night skyline, 1666 ribbon, bakery window glows
+S02     5.68 →  11.01  (5.33 s)  the bakery: oven embers, baker asleep, PUDDING LANE slip
+S03    11.01 →  15.59  (4.58 s)  a street of timber houses, wind gusts
+S04    15.59 →  18.17  (2.58 s)  fire leaps from house to house
+S05    18.17 →  21.39  (3.23 s)  the Lord Mayor in his nightcap waves it away
+S06    21.39 →  23.86  (2.46 s)  map: fire spreads over the city, timeline Sept 2-5
+S07    23.86 →  29.53  (5.67 s)  tallies pop in, St Pauls burns
+S08    29.53 →  33.02  (3.49 s)  houses vanish into smoke: a gap stops the fire
+S09    33.02 →  37.02  (4.00 s)  daylight: new brick and stone city rises
+S10    37.02 →  40.92  (3.91 s)  oven embers close-up, wax seal stamps
+captions:
+    0.35–2.33   In *1666,
+    2.33–3.67   a tiny *bakery fire
+    3.67–5.81   burned down *London.
+    5.81–7.41   Just after *midnight,
+    7.41–9.33   in Farriner's *bakery
+    9.33–11.35  on Pudding *Lane.
+   11.35–13.63  Packed with *wooden houses,
+   13.63–15.62  a strong *wind
+   15.62–16.97  Flames *jumped
+   16.97–18.20  roof to *roof.
+   18.20–20.35  The Lord *Mayor
+   20.35–21.43  shrugged it *off.
+   21.43–22.57  For four *days,
+   22.57–23.89  the city *burned.
+   23.89–24.81  *13,000 houses,
+   24.81–27.41  *87 churches,
+   27.41–28.43  and St Paul's
+   28.43–29.56  were *gone.
+   29.56–30.89  They *blew up
+   30.89–31.47  whole *streets
+   31.47–33.11  to *stop it.
+   33.11–35.37  London was *rebuilt
+   35.37–35.85  in *brick
+   35.85–37.05  and *stone.
+   37.05–38.15  All *because of
+   38.15–40.92  one small *bakery.
+CHECK OK

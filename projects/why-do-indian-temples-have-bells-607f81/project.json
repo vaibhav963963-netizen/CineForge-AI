@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "id": "why-do-indian-temples-have-bells-607f81",
+  "title": "Why Do Indian Temples Have Bells?",
+  "topic": "Why Do Indian Temples Have Bells?",
+  "status": "rendering",
+  "createdAt": "2026-11-10T16:46:03.367Z",
+  "updatedAt": "2026-11-10T16:46:03.496Z",
+  "config": {
+    "schema": 1,
+    "topic": "Why Do Indian Temples Have Bells?",
+    "language": {
+      "id": "hi-conversational",
+      "code": "hi",
+      "name": "Hindi — Conversational (Devanagari)",
+      "script": "Deva",
+      "dialect": "conversational",
+      "locale": "hi-IN",
+      "captionScript": "Deva",
+      "ttsScript": "Deva"
+    },
+    "narration": {
+      "personality": "educational",
+      "personalityName": "Friendly Educational Explainer",
+      "voice": "hf_alpha",
+      "voiceName": "Alpha (Hindi, Female)",
+      "voiceLanguage": "hi",
+      "ttsLang": "hi",
+      "speed": 1,
+      "delivery": {
+        "speed": 1,
+        "gap": 0.3,
+        "lead": 0.3,
+        "outro": 1
+      }
+    },
+    "visual": {
+      "style": "tall-tale",
+      "styleName": "Tall Tale 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "curious_student",
+      "characterName": "Aarav",
+      "archetype": "curious_student",
+      "characterMode": "3d-model",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 45,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)",
+      "language": "hi"
+    }
+  },
+  "configHash": "a0b2151fcaee2675",
+  "workspacePath": "projects/why-do-indian-temples-have-bells-607f81",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T16:46:03.399Z",
+        "source": "manual",
+        "baseVersion": null,
+        "fingerprint": "89295d31be54",
+        "configHash": "a0b2151fcaee2675",
+        "wordCount": 107,
+        "estimatedSeconds": 41.9,
+        "language": "hi-conversational",
+        "personality": "educational",
+        "targetSeconds": 45,
+        "approved": true,
+        "approvedAt": "2026-11-10T16:46:03.408Z"
+      }
+    ]
+  },
+  "storyboard": null,
+  "models": {},
+  "assets": {},
+  "voice": null,
+  "render": null,
+  "qa": null,
+  "exportPath": null,
+  "history": [
+    {
+      "jobId": "job_20261110164603_9026df",
+      "status": "started",
+      "at": "2026-11-10T16:46:03.496Z"
+    }
+  ]
+}

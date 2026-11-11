@@ -1,0 +1,27 @@
+duration 27.82 s · WebGL renderer: ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025AC) Direct3D11 vs_5_0 ps_5_0, D3D11)
+S01     0.00 →   4.44  (4.44 s)  scene3d · mountains · a frozen glacial lake high in snowy mountains at night
+S02     4.44 →   7.89  (3.45 s)  scene3d · mountains · a dark mysterious shoreline with old bones under a single lamp
+S03     7.89 →  12.47  (4.58 s)  scene3d · nature · a forest guard with a lantern discovering something in the dark
+S04    12.47 →  15.53  (3.06 s)  scene3d · mountains · a dark stormy mountain night
+S05    15.53 →  20.01  (4.48 s)  scene3d · lab · a scientist examining DNA samples in a lab
+S06    20.01 →  23.29  (3.29 s)  scene3d · lab · DNA strands next to old case files on a desk
+S07    23.29 →  27.82  (4.53 s)  scene3d · mountains · the dark lake under a single light, a case file marked unsolved
+captions: 17
+    0.31–1.66   High in the *Himalayas
+    1.66–3.06   lies a *frozen lake
+    3.06–4.52   called *Roopkund.
+    4.52–5.90   Around it lie *hundreds
+    5.90–7.93   of human *skeletons.
+    7.93–9.52   A *forest ranger found
+    9.52–12.51  *them in 1942.
+   12.51–14.24  People *believed one storm
+   14.24–15.57  *killed them all.
+   15.57–17.54  But in *2019,
+   17.54–20.05  *scientists tested their DNA.
+   20.05–21.12  They died in *different
+   21.12–21.56  *groups,
+   21.56–23.33  *centuries apart.
+   23.33–24.24  Why they all *ended
+   24.24–25.44  up here is *still
+   25.44–27.82  *unsolved.
+CHECK OK

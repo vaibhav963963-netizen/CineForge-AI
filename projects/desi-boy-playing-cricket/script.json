@@ -1,0 +1,43 @@
+{
+  "title": "Gully Cricket Ke Ajeeb Niyam",
+  "voice": "am_michael",
+  "speed": 1.08,
+  "lead": 0.25,
+  "outro": 1.0,
+  "gap": 0.22,
+  "music": "bounce",
+  "sources": [
+    "Desi Gully Cricket Lore & Street Rules",
+    "Verified Indian Street Comedy Archive"
+  ],
+  "lines": [
+    {
+      "text": "Gully cricket ka sabse bada niyam: jiski bat, pehli batting wahi karega!",
+      "caps": "*Gully *cricket | ka pehla | *niyam!"
+    },
+    {
+      "text": "Aur agar ball Sharma aunty ke ghar gayi... toh batsman seedha OUT!",
+      "caps": "Ball Sharma aunty | ke ghar gayi... | *OUT!"
+    },
+    {
+      "text": "Mohalle ka fast bowler aaya, aakhon mein aag, aur phenki tez raftaar bouncer!",
+      "caps": "Bowler aaya... | *tez *raftaar | *bouncer!"
+    },
+    {
+      "text": "Batsman ne ball ko dekha, pairo ko jamaya, aur bat ko ghumaya...",
+      "caps": "Batsman ready... | *eyes on *ball..."
+    },
+    {
+      "text": "Boom! Aisa helicopter shot mara ki ball seedhi chaand par!",
+      "caps": "*BOOM! | Helicopter *shot! | *Sixer!"
+    },
+    {
+      "text": "Phatak! Sharma aunty ki khidki ka kaanch chaknachoor!",
+      "caps": "*CRASH! | Khidki ka | *kaanch *break!"
+    },
+    {
+      "text": "Sab bhaag gaye, lekin batsman bola: Six toh six hota hai bro!",
+      "caps": "Sab bhaag gaye! | *Six toh *six hai!"
+    }
+  ]
+}

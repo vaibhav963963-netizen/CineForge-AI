@@ -1,0 +1,49 @@
+{
+ "duration": 33.323,
+ "voice": "am_michael",
+ "speed": 1.08,
+ "lines": [
+  {
+   "i": 0,
+   "text": "Gully cricket ka sabse bada niyam: jiski bat, pehli batting wahi karega!",
+   "start": 0.25,
+   "end": 5.128
+  },
+  {
+   "i": 1,
+   "text": "Aur agar ball Sharma aunty ke ghar gayi... toh batsman seedha OUT!",
+   "start": 5.348,
+   "end": 10.177
+  },
+  {
+   "i": 2,
+   "text": "Mohalle ka fast bowler aaya, aakhon mein aag, aur phenki tez raftaar bouncer!",
+   "start": 10.397,
+   "end": 15.619
+  },
+  {
+   "i": 3,
+   "text": "Batsman ne ball ko dekha, pairo ko jamaya, aur bat ko ghumaya...",
+   "start": 15.839,
+   "end": 20.102
+  },
+  {
+   "i": 4,
+   "text": "Boom! Aisa helicopter shot mara ki ball seedhi chaand par!",
+   "start": 20.322,
+   "end": 24.324
+  },
+  {
+   "i": 5,
+   "text": "Phatak! Sharma aunty ki khidki ka kaanch chaknachoor!",
+   "start": 24.544,
+   "end": 27.577
+  },
+  {
+   "i": 6,
+   "text": "Sab bhaag gaye, lekin batsman bola: Six toh six hota hai bro!",
+   "start": 27.797,
+   "end": 32.103
+  }
+ ]
+}

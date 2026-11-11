@@ -1,0 +1,66 @@
+{
+  "title": "मंगलयान: कम पैसा, ज़्यादा दिमाग़",
+  "lines": [
+    {
+      "text": "एक मिनट! सुनो, भारत ने मंगल ग्रह तक अपना मिशन पहली ही बार में पहुँचा दिया।",
+      "visual": "the Mangalyaan orbiter satellite arriving at Mars in space",
+      "onScreen": "2014"
+    },
+    {
+      "text": "और ये कोई छोटी बात नहीं है, बॉस।",
+      "visual": "an Indian flag waving proudly, a scientist celebrating"
+    },
+    {
+      "text": "पूरा मंगलयान मिशन सिर्फ़ साढ़े चार सौ करोड़ रुपये में बना।",
+      "visual": "stacks of coins and money on a table",
+      "onScreen": "₹450 करोड़"
+    },
+    {
+      "text": "हॉलीवुड की फ़िल्म ग्रेविटी इससे भी ज़्यादा महँगी थी!",
+      "visual": "a film reel and movie camera in a studio",
+      "onScreen": "ग्रेविटी $100M vs मंगलयान $74M"
+    },
+    {
+      "text": "तो इसरो ने ये कमाल कैसे किया?",
+      "visual": "a curious engineer thinking with a question mark"
+    },
+    {
+      "text": "पहले, उन्होंने भरोसेमंद पीएसएलवी रॉकेट से लॉन्च किया।",
+      "visual": "a PSLV rocket launching from the launch pad at Sriharikota"
+    },
+    {
+      "text": "फिर यान ने कई हफ़्तों तक धरती के चक्कर लगाए।",
+      "visual": "a satellite circling Earth in orbit"
+    },
+    {
+      "text": "हर चक्कर के साथ उसकी कक्षा थोड़ी और बड़ी होती गई।",
+      "visual": "orbit diagram showing the path from Earth to Mars"
+    },
+    {
+      "text": "और फिर, एकदम सही समय पर, वो मंगल की तरफ़ निकल पड़ा।",
+      "visual": "the spacecraft flying away from Earth toward Mars"
+    },
+    {
+      "text": "कम पैसा, ज़्यादा दिमाग़।",
+      "visual": "an engineer with a lightbulb idea in an office"
+    },
+    {
+      "text": "बोले तो, यही है असली इंडियन जुगाड़!",
+      "visual": "the engineer celebrating success with a trophy"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-10T13:04:40.144Z",
+    "source": "manual",
+    "baseVersion": null,
+    "fingerprint": "ca17e8bea4b4",
+    "configHash": "20fbdcaa7f5230e2",
+    "wordCount": 103,
+    "estimatedSeconds": 46.7,
+    "language": "hi-conversational",
+    "personality": "mumbai-conversational",
+    "targetSeconds": 40
+  }
+}

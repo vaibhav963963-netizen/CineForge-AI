@@ -1,0 +1,46 @@
+duration 37.38 s
+S01     0.00 →   3.70  (3.70 s)  face close-up: big inhale, then hold, wide eyes
+S02     3.70 →   6.23  (2.52 s)  medium shot orbit, timer 0:00 to 0:30
+S03     6.23 →   8.16  (1.93 s)  x-ray chest, lungs full
+S04     8.16 →  10.94  (2.78 s)  blood vessel, bright red cells, OXYGEN pill
+S05    10.94 →  13.83  (2.89 s)  CO2 bubbles fill the vessel, cells darken
+S06    13.83 →  18.51  (4.68 s)  x-ray body pulses red: CO2 alarm
+S07    18.51 →  22.27  (3.76 s)  diaphragm spasms: lungs jerk, body jolts
+S08    22.27 →  25.75  (3.48 s)  heart close-up, beats slow down
+S09    25.75 →  29.39  (3.64 s)  face: eyes close, head drops, blackout
+S10    29.39 →  33.16  (3.77 s)  from black: lungs inflate by themselves
+S11    33.16 →  37.38  (4.23 s)  hero looks at camera, warning sign
+captions:
+    0.30–0.87   What *happens
+    0.87–1.69   if you *hold
+    1.69–3.79   your *breath?
+    3.79–4.01   The first
+    4.01–5.27   *30 seconds
+    5.27–6.31   nothing *much
+    6.31–8.05   Lungs are *full
+    8.05–8.73   your *blood
+    8.73–10.97  still has *oxygen
+   10.97–12.23  Carbon *dioxide
+   12.23–13.86  starts *building up
+   13.86–15.03  That, *not
+   15.03–16.69  lack of *oxygen
+   16.69–17.55  makes you *desperate
+   17.55–18.55  to *breathe
+   18.55–19.43  Your *diaphragm
+   19.43–20.75  starts *twitching
+   20.75–21.31  trying to *force
+   21.31–22.30  a *breath
+   22.30–23.45  Your *heart
+   23.45–24.25  slows *down
+   24.25–25.78  to save *oxygen
+   25.78–27.29  Push even *further
+   27.29–28.23  your *brain
+   28.23–29.47  switches you *off
+   29.47–30.63  You pass *out
+   30.63–31.43  your *body
+   31.43–32.23  *breathing again
+   32.23–33.23  on its *own
+   33.23–33.91  Which is *why
+   33.91–34.77  you should *never
+   34.77–37.38  try this *underwater
+CHECK OK

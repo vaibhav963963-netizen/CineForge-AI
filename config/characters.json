@@ -1,0 +1,110 @@
+[
+  {
+    "id": "desi_hero",
+    "name": "Bunty",
+    "title": "Desi Street Hero",
+    "role": "Street Cricket Legend & Relatable Storyteller",
+    "attire": "Royal Blue Jersey (#1E88E5) with Navy Vest",
+    "headwear": "Cricket Cap with Visor",
+    "skin": "#F2B98E",
+    "accentColor": "#1E88E5",
+    "hairColor": "#1E1E1E",
+    "hairStyle": "Modern Quiff Fade",
+    "svgType": "hero",
+    "usedInProjects": [
+      "desi-boy-playing-cricket",
+      "the-science-behind-indian"
+    ]
+  },
+  {
+    "id": "chanakya_scholar",
+    "name": "Acharya Chanakya",
+    "title": "Ancient Mastermind",
+    "role": "Philosopher, Strategic Advisor & Statecraft Guru",
+    "attire": "Ivory Angavastram Shawl (#FFF3E0) & Saffron Sash",
+    "headwear": "Vedic Shikha (Top-Knot Bun) & Sandalwood Tilak",
+    "skin": "#EAA97B",
+    "accentColor": "#F57C00",
+    "hairColor": "#212121",
+    "hairStyle": "Vedic Bun",
+    "svgType": "chanakya",
+    "usedInProjects": [
+      "the-science-behind-indian"
+    ]
+  },
+  {
+    "id": "warrior_king",
+    "name": "Chhatrapati Shivaji Maharaj",
+    "title": "Maratha Sovereign",
+    "role": "Master Strategist, Freedom Icon & Valorous Ruler",
+    "attire": "Crimson Angrakha (#C2185B) & Iron Armor Breastplate",
+    "headwear": "Saffron Royal Pagri (Turban) with Golden Kalgi Brooch",
+    "skin": "#E59B6E",
+    "accentColor": "#E65100",
+    "hairColor": "#1B1B1B",
+    "hairStyle": "Handlebar Mustache & Pagri",
+    "svgType": "shivaji",
+    "usedInProjects": []
+  },
+  {
+    "id": "desi_uncle",
+    "name": "Sharma Ji",
+    "title": "Desi Elder & Balcony Watcher",
+    "role": "The Quintessential Mohalla Elder & Neighbor",
+    "attire": "Classic Ivory Kurta & Maroon Nehru Jacket (#C62828)",
+    "headwear": "Reading Spectacles & Side-Part Silver Hair",
+    "skin": "#DE9B72",
+    "accentColor": "#D32F2F",
+    "hairColor": "#424242",
+    "hairStyle": "Side Part with Silver Streaks",
+    "svgType": "uncle",
+    "usedInProjects": []
+  },
+  {
+    "id": "indian_techie",
+    "name": "Arjun",
+    "title": "Bengaluru Techie & Creator",
+    "role": "Startup Founder, Coder & Modern Tech Explainer",
+    "attire": "Teal Modern Hoodie (#00897B) & Smart Glasses",
+    "headwear": "Over-Ear Studio Monitor Headphones Around Neck",
+    "skin": "#E8A87C",
+    "accentColor": "#00897B",
+    "hairColor": "#1A1A1A",
+    "hairStyle": "Textured Modern Crop",
+    "svgType": "techie",
+    "usedInProjects": []
+  },
+  {
+    "id": "curious_student",
+    "name": "Aarav",
+    "title": "Curious Explorer",
+    "role": "Inquisitive Youth Uncovering Science & Indian Heritage",
+    "attire": "Sunset Orange Graphic Tee (#FB8C00) & School Backpack",
+    "headwear": "School Baseball Cap",
+    "skin": "#F7C59F",
+    "accentColor": "#FB8C00",
+    "hairColor": "#2B2B2B",
+    "hairStyle": "Lively Curls",
+    "svgType": "student",
+    "usedInProjects": [
+      "why-do-indian-temples-hav"
+    ]
+  },
+  {
+    "id": "authority_suit",
+    "name": "Dr. Vikram",
+    "title": "Council Director / Executive",
+    "role": "Financial Case Study & Investigative Documentary Authority",
+    "attire": "Tailored Charcoal 2-Piece Suit & Bold Red Silk Tie",
+    "headwear": "Wireframe Executive Spectacles",
+    "skin": "#F0BA95",
+    "accentColor": "#37474F",
+    "hairColor": "#37474F",
+    "hairStyle": "Polished Side Part",
+    "svgType": "authority",
+    "usedInProjects": [
+      "the-man-who-bought-a-bank",
+      "bank-dollar"
+    ]
+  }
+]

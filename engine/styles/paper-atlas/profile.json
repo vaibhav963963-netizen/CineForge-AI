@@ -1,0 +1,22 @@
+{
+  "id": "paper-atlas",
+  "name": "Paper Atlas",
+  "summary": "History in cut paper: aged parchment, maps with crimson routes, gold date ribbons, simple period figures, captions on torn paper strips.",
+  "dimension": "2d",
+  "renderer": "canvas2d",
+  "characterMode": "2d-figure",
+  "palette": { "bg": "#E9DCBC", "sky": "#CFDDE0", "horizon": "#E3E6DA", "ground": "#B9A27A", "ink": "#3E2C1E", "primary": "#A8322D", "secondary": "#2F3550", "accent": "#C9A03A", "danger": "#A8322D", "paper": "#F2E8CF", "text": "#3E2C1E" },
+  "grade": { "flatten": 0.15, "posterize": 0, "outline": false, "sat": 0.78, "vignette": 0.25, "paper": true, "sepia": 0.35 },
+  "lighting": { "mood": "soft paper shadows; night = parchment under a navy wash" },
+  "captions": { "font": "Caladea", "weight": 700, "y": 1640, "size": 92, "fill": "#3E2C1E", "stroke": null, "strokeW": 0, "hi": "#A8322D", "box": { "color": "#F2E8CF", "radius": 6, "pad": 26, "torn": true }, "maxWords": 4, "upper": false, "typeOn": false, "pop": true },
+  "camera": { "behavior": "pan", "moves": ["pan", "push", "slide"], "intensity": 0.5 },
+  "transition": { "type": "slide", "duration": 0.3 },
+  "typography": { "title": "Caladea", "titleWeight": 700, "label": "Caladea", "labelWeight": 700 },
+  "image": {
+    "prompt": "layered cut paper collage illustration, aged parchment texture, storybook historical scene, muted earthy colors with crimson and gold accents, soft paper drop shadows, vertical composition",
+    "negative": "photo, realistic, 3d render, glossy, text, watermark, logo, gore, violence, nsfw"
+  },
+  "music": "tension",
+  "sfx": ["whoosh", "tock", "pop", "thud"],
+  "pacing": { "minShot": 2.2, "maxShot": 4.5 }
+}

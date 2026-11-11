@@ -1,0 +1,78 @@
+{
+  "title": "गल्ली क्रिकेट के नियम!",
+  "lines": [
+    {
+      "text": "भाईयो, गुलि क्रिकेट... ये तो सब जानते हैं, है ना?।",
+      "visual": "A wide shot of a bustling Mumbai street with kids playing cricket in the narrow lane.",
+      "onScreen": "Mumbai"
+    },
+    {
+      "text": "लेकिन, ये नियम तो अनौपचारिक होते हैं, समझे?।",
+      "visual": "Close-up shot of a young boy adjusting his cricket helmet."
+    },
+    {
+      "text": "पहला नियम, बल्ले हमेशा थोड़ा टूटा होना चाहिए।",
+      "visual": "A boy carefully inspecting a broken cricket bat.",
+      "onScreen": "Around 70% bats are broken"
+    },
+    {
+      "text": "क्यों? ताकि गेंद थोड़ी धीमी हो, वरना क्या होगा?।",
+      "visual": "A cricket ball rolling slowly across the dusty ground."
+    },
+    {
+      "text": "दूसरा नियम, ‘मिशन’ से ज़्यादा फील्डिंग!",
+      "visual": "A group of boys frantically fielding, diving for a catch.",
+      "onScreen": "Approx. 80% fielding"
+    },
+    {
+      "text": "मतलब, ज़्यादातर टाइम गेंद को रोकने पर ध्यान देना।",
+      "visual": "A fielder leaping to stop a powerful shot."
+    },
+    {
+      "text": "तीसरा, बजट कम होता है, इसलिए ज़्यादा सामान नहीं।",
+      "visual": "A boy holding a simple cricket ball and bat.",
+      "onScreen": "₹50-₹100 per set"
+    },
+    {
+      "text": "कोई नई गेंद नहीं, पुरानी ही इस्तेमाल करते हैं।",
+      "visual": "Close-up of a worn and faded cricket ball."
+    },
+    {
+      "text": "चौथा नियम, ‘फोन’ से दूर रहना है, खेलने में मज़ा!",
+      "visual": "Boys engrossed in a cricket match, ignoring their phones."
+    },
+    {
+      "text": "खेलने के लिए ही आए हैं, याद रखना!",
+      "visual": "Boys celebrating a successful run."
+    },
+    {
+      "text": "पांचवा, अगर विकेट गिरे, तो ‘विज्ञान’ का इस्तेमाल नहीं।",
+      "visual": "A boy marking a run with a stick.",
+      "onScreen": "Simple marking system"
+    },
+    {
+      "text": "बस, गिनती करते हैं और आगे बढ़ते हैं!।",
+      "visual": "Boys counting runs, laughing and cheering.",
+      "onScreen": "Total Runs"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-10T16:11:20.235Z",
+    "source": "llm-at-render",
+    "fingerprint": "55f4569a48ed",
+    "configHash": "6f78d018c83c4104",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 103,
+    "estimatedSeconds": 46.9,
+    "language": "hi-conversational",
+    "personality": "mumbai-conversational",
+    "targetSeconds": 40
+  }
+}

@@ -1,0 +1,131 @@
+duration 51.73 s
+S01     0.00 →   3.18  (3.18 s)  crane down main street to the post office; the family arrives
+S02     3.18 →   5.13  (1.95 s)  May stands on the post-office scale, clerk gasps, parents proud
+S03     5.13 →   6.66  (1.53 s)  grandma's pink house, grandma waving on the porch
+S04     6.66 →   8.60  (1.94 s)  close-up of May: stamps pop onto her coat on "stamps"
+S05     8.60 →  12.31  (3.71 s)  post office front: the mailman carries parcels out, parcels pile up on "packages"
+S06    12.31 →  15.02  (2.71 s)  home: the family in the front yard, May hopeful, mom talking
+S07    15.02 →  16.91  (1.88 s)  signpost LEWISTON 73 MI, camera rises past it toward the far hills
+S08    16.91 →  18.84  (1.93 s)  close-up dad: ticket "$$$", sweating; mom peeks with an empty purse
+S09    18.84 →  21.67  (2.83 s)  dad and May walk along the boardwalk to the post office, camera tracks
+S10    21.67 →  24.07  (2.40 s)  dad asks at the counter; on "kid" the clerk freezes and we punch in
+S11    24.07 →  25.74  (1.67 s)  clerk flips through the big RULES book, sweating
+S12    25.74 →  27.14  (1.40 s)  clerk slams the book shut and shrugs; dad grins
+S13    27.14 →  29.68  (2.54 s)  May climbs on the scale, the needle swings up to 48.5
+S14    29.68 →  31.49  (1.81 s)  dial close-up: needle trembles just under the red 50 LIMIT zone
+S15    31.49 →  33.90  (2.41 s)  clerk slaps stamp after stamp on her coat (4 → 10)
+S16    33.90 →  36.72  (2.82 s)  wide: steam train with the U.S. MAIL car rolls across the meadow
+S17    36.72 →  39.90  (3.18 s)  inside the mail car: May sits on a mail sack, the cousin sorts letters, tips his cap
+S18    39.90 →  42.52  (2.62 s)  cousin walks May up grandma's path; the door opens on 'door'; grandma beams
+S19    42.52 →  45.52  (2.99 s)  Postmaster General slams his stamp on "banned"; NOTICE: NO PEOPLE pops on the wall
+S20    45.52 →  48.97  (3.45 s)  a crate of peeping chicks on the counter, the clerk happily stamps it
+S21    48.97 →  51.73  (2.76 s)  little sister stands in a stamped parcel box, smug; RETURN TO SENDER stamp slams down
+captions:
+    0.27–2.13   In 1914,
+    2.13–2.51   a couple
+    2.51–3.27   in Idaho
+    3.27–3.69   mailed
+    3.69–3.95   their
+    3.95–4.71   five year old
+    4.71–5.16   daughter
+    5.16–5.45   to her
+    5.45–6.05   grandma's
+    6.05–6.73   house.
+    6.73–6.83   With
+    6.83–7.25   the stamps
+    7.25–7.55   stuck
+    7.55–7.87   right
+    7.87–8.19   on her
+    8.19–8.91   coat.
+    8.91–9.15   See,
+    9.15–9.47   the post
+    9.47–9.87   office
+    9.87–10.07  had
+   10.07–10.25  just
+   10.25–10.65  started
+   10.65–11.15  delivering
+   11.15–12.34  packages,
+   12.34–12.83  and May's
+   12.83–13.15  parents
+   13.15–13.45  wanted
+   13.45–13.77  her to
+   13.77–13.99  visit
+   13.99–15.05  grandma,
+   15.05–16.23  73 miles
+   16.23–16.94  away.
+   16.94–17.17  But a
+   17.17–17.49  train
+   17.49–17.83  ticket
+   17.83–18.23  wasn't
+   18.23–18.87  cheap.
+   18.87–19.25  So her
+   19.25–19.55  dad
+   19.55–19.87  walked
+   19.87–20.19  her into
+   20.19–20.63  the post
+   20.63–21.70  office
+   21.70–21.93  and asked
+   21.93–22.25  how
+   22.25–22.45  much
+   22.45–22.93  it costs
+   22.93–23.37  to mail
+   23.37–24.13  a kid.
+   24.13–24.45  The clerk
+   24.45–24.77  checked
+   24.77–25.77  the rules,
+   25.77–26.19  and nothing
+   26.19–26.51  said
+   26.51–27.17  he couldn't.
+   27.17–27.35  May
+   27.35–27.59  weighed
+   27.59–28.81  48 and a half
+   28.81–29.71  pounds,
+   29.71–29.95  just
+   29.95–30.19  under
+   30.19–30.97  the 50 pound
+   30.97–31.65  limit.
+   31.65–32.05  So on
+   32.05–32.25  went
+   32.25–33.25  53 cents
+   33.25–34.29  in stamps,
+   34.29–34.69  and she
+   34.69–34.91  rode
+   34.91–35.39  the train
+   35.39–35.71  in the
+   35.71–35.91  mail
+   35.91–36.75  car,
+   36.75–36.89  with
+   36.89–37.55  her mom's
+   37.55–38.13  cousin,
+   38.13–38.29  who
+   38.29–38.49  happened
+   38.49–38.85  to be
+   38.85–39.25  the mail
+   39.25–39.99  clerk.
+   39.99–40.27  He walked
+   40.27–40.75  her right
+   40.75–41.11  up to
+   41.11–41.75  grandma's
+   41.75–41.95  front
+   41.95–42.63  door.
+   42.63–42.79  Soon
+   42.79–43.41  after,
+   43.41–43.71  the post
+   43.71–43.97  office
+   43.97–44.47  banned
+   44.47–44.85  mailing
+   44.85–45.57  people.
+   45.57–45.71  Which
+   45.71–46.17  is why
+   46.17–47.09  today,
+   47.09–47.11  you
+   47.11–47.27  can
+   47.27–47.51  still
+   47.51–47.83  mail
+   47.83–48.25  baby
+   48.25–49.01  chicks,
+   49.01–49.33  but not
+   49.33–49.49  your
+   49.49–49.71  little
+   49.71–51.73  sister.
+CHECK OK

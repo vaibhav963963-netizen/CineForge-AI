@@ -1,0 +1,49 @@
+{
+  "title": "The Skeleton Lake of the Himalayas",
+  "lines": [
+    {
+      "text": "High in the Himalayas lies a frozen lake called Roopkund.",
+      "visual": "a frozen glacial lake high in snowy mountains at night"
+    },
+    {
+      "text": "Around it lie hundreds of human skeletons.",
+      "visual": "a dark mysterious shoreline with old bones under a single lamp"
+    },
+    {
+      "text": "A forest ranger found them in 1942.",
+      "visual": "a forest guard with a lantern discovering something in the dark",
+      "onScreen": "1942"
+    },
+    {
+      "text": "People believed one storm killed them all.",
+      "visual": "a dark stormy mountain night"
+    },
+    {
+      "text": "But in 2019, scientists tested their DNA.",
+      "visual": "a scientist examining DNA samples in a lab",
+      "onScreen": "2019"
+    },
+    {
+      "text": "They died in different groups, centuries apart.",
+      "visual": "DNA strands next to old case files on a desk"
+    },
+    {
+      "text": "Why they all ended up here is still unsolved.",
+      "visual": "the dark lake under a single light, a case file marked unsolved"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-10T15:41:52.342Z",
+    "source": "manual",
+    "baseVersion": null,
+    "fingerprint": "4c2218ab521c",
+    "configHash": "70cf3db95bf8d7e7",
+    "wordCount": 54,
+    "estimatedSeconds": 24,
+    "language": "en",
+    "personality": "documentary",
+    "targetSeconds": 30
+  }
+}

@@ -1,0 +1,668 @@
+{
+  "schema": 1,
+  "title": "मंदिर में घंटी क्यों?",
+  "style": {
+    "id": "tall-tale",
+    "name": "Tall Tale 3D",
+    "summary": "Playful true stories: sunny, saturated 3D worlds, cartoon cast, camera always moving, one-word-at-a-time captions.",
+    "dimension": "3d",
+    "renderer": "webgl",
+    "characterMode": "3d-model",
+    "palette": {
+      "bg": "#8EC9F2",
+      "sky": "#3D8EE0",
+      "horizon": "#BFE4F7",
+      "ground": "#79C25A",
+      "ink": "#1A1A1E",
+      "primary": "#D8343F",
+      "secondary": "#3C6FB6",
+      "accent": "#FFD43B",
+      "paper": "#F4EFE4",
+      "text": "#FFFFFF"
+    },
+    "grade": {
+      "bloom": 0.3,
+      "warm": 0.04,
+      "sat": 1.16,
+      "vignette": 0.18,
+      "grain": 0.01,
+      "exposure": 1,
+      "aperture": 0.0012
+    },
+    "lighting": {
+      "key": "#FFF0D4",
+      "keyI": 3.4,
+      "rim": "#90CAF9",
+      "rimI": 2.2,
+      "sky": "#E3F2FD",
+      "ground": "#6D5A45",
+      "hemiI": 1,
+      "fog": "#D0E3F0",
+      "mood": "bright midday sun outside, warm bulbs inside, pink sunset for endings"
+    },
+    "captions": {
+      "font": "Inter",
+      "weight": 900,
+      "y": 1340,
+      "size": 96,
+      "fill": "#FFFFFF",
+      "stroke": "#0B0B10",
+      "strokeW": 16,
+      "hi": null,
+      "box": null,
+      "maxWords": 2,
+      "upper": false,
+      "typeOn": false,
+      "pop": true
+    },
+    "camera": {
+      "behavior": "dynamic",
+      "moves": [
+        "push",
+        "crane",
+        "orbit",
+        "pan",
+        "punch",
+        "track"
+      ],
+      "intensity": 1
+    },
+    "transition": {
+      "type": "whip",
+      "duration": 0.22
+    },
+    "typography": {
+      "title": "Caladea",
+      "titleWeight": 700,
+      "label": "Inter",
+      "labelWeight": 900
+    },
+    "image": {
+      "prompt": "stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw"
+    },
+    "music": "bounce",
+    "sfx": [
+      "whoosh",
+      "pop",
+      "plop",
+      "boing",
+      "tock",
+      "sparkle"
+    ],
+    "pacing": {
+      "minShot": 1.6,
+      "maxShot": 4
+    },
+    "available": true,
+    "reason": null
+  },
+  "fonts": [
+    {
+      "family": "Inter",
+      "weight": 900,
+      "sample": "A"
+    },
+    {
+      "family": "Inter",
+      "weight": 800,
+      "sample": "A"
+    },
+    {
+      "family": "Caladea",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "FreeMono",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "StudioDeva",
+      "weight": 800,
+      "sample": "अ"
+    }
+  ],
+  "music": "bounce",
+  "language": {
+    "id": "hi-conversational",
+    "code": "hi",
+    "captionScript": "Deva"
+  },
+  "character": {
+    "id": "curious_student",
+    "name": "Aarav",
+    "archetype": "curious_student",
+    "mode": "3d-model",
+    "colors": {
+      "skin": "#F7C59F",
+      "shirt": "#FB8C00",
+      "pants": "#37474F",
+      "hair": "#2B2B2B",
+      "accent": "#FB8C00",
+      "accent2": "#00ACC1"
+    },
+    "accessory": "none",
+    "attire": "Sunset Orange Graphic Tee (#FB8C00) & School Backpack"
+  },
+  "targetSeconds": 45,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 4.695,
+      "narration": "आपने देखा होगा, मंदिर में घुसते ही लोग घंटी बजाते हैं।",
+      "visualObjective": "a devotee ringing a brass bell at the entrance of an Indian temple",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        },
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student",
+          "generic extra"
+        ]
+      },
+      "animation": "Aarav: ring_bell; extra: explain; scene: swing; camera: medium punch",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "temple",
+        "bell",
+        "people"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 4.695,
+      "end": 7.723,
+      "narration": "पर ये घंटी आखिर लगाई क्यों जाती है?",
+      "visualObjective": "a curious student looking up at a temple bell with a question mark",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [
+        "question"
+      ],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "question"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell",
+        "question"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 7.723,
+      "end": 10.178,
+      "narration": "परंपरा के अनुसार, घंटी की आवाज़ पूजा की शुरुआत का संकेत है। (part 1/2)",
+      "visualObjective": "an Indian temple at dawn with diyas glowing",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "orbit"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: medium orbit",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        2
+      ],
+      "start": 10.178,
+      "end": 12.932,
+      "narration": "परंपरा के अनुसार, घंटी की आवाज़ पूजा की शुरुआत का संकेत है। (part 2/2)",
+      "visualObjective": "an Indian temple at dawn with diyas glowing",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: wide pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        3
+      ],
+      "start": 12.932,
+      "end": 16.993,
+      "narration": "मान्यता है कि ये आवाज़ मन को भटकने से रोकती है।",
+      "visualObjective": "a calm temple courtyard, a person standing with eyes closed",
+      "subject": "an Indian temple",
+      "environment": "temple",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: wide push",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        4
+      ],
+      "start": 16.993,
+      "end": 21.578,
+      "narration": "घंटियाँ अक्सर पीतल या कई धातुओं के मिश्रण से बनती हैं।",
+      "visualObjective": "a close up of a shiny brass temple bell",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "track"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: wide track",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S07",
+      "lines": [
+        5
+      ],
+      "start": 21.578,
+      "end": 25.86,
+      "narration": "इसलिए इनकी आवाज़ तेज़ होती है और देर तक गूँजती है।",
+      "visualObjective": "the brass bell swinging and ringing in the temple",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: medium push",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S08",
+      "lines": [
+        6
+      ],
+      "start": 25.86,
+      "end": 29.777,
+      "narration": "भीड़ और शोर में भी ये आवाज़ ध्यान खींच लेती है।",
+      "visualObjective": "a busy Indian street outside a temple",
+      "subject": "an Indian street",
+      "environment": "temple",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "street"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S09",
+      "lines": [
+        7
+      ],
+      "start": 29.777,
+      "end": 33.318,
+      "narration": "कई लोग कहते हैं कि इससे दिमाग़ शांत होता है।",
+      "visualObjective": "a glowing brain, calm and relaxed",
+      "subject": "Aarav (talk)",
+      "environment": "lab",
+      "objects": [
+        "brain"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "talk"
+        },
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "brain"
+        ],
+        "actors": [
+          "curious_student",
+          "generic extra"
+        ]
+      },
+      "animation": "Aarav: talk; extra: explain; camera: medium crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "brain",
+        "people"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S10",
+      "lines": [
+        8
+      ],
+      "start": 33.318,
+      "end": 37.745,
+      "narration": "पर इस दावे पर ठोस वैज्ञानिक शोध अभी बहुत कम है।",
+      "visualObjective": "a scientist in a lab thinking about research",
+      "subject": "Aarav (think)",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "bulb"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "think"
+        },
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "atom",
+          "bulb"
+        ],
+        "actors": [
+          "curious_student",
+          "generic extra"
+        ]
+      },
+      "animation": "Aarav: think; extra: explain; camera: wide pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "science",
+        "idea",
+        "people"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S11",
+      "lines": [
+        9
+      ],
+      "start": 37.745,
+      "end": 43.012,
+      "narration": "तो अगली बार घंटी बजाएँ, तो उसकी गूँज ध्यान से सुनिए।",
+      "visualObjective": "the student ringing the temple bell and smiling",
+      "subject": "an Indian temple",
+      "environment": "temple",
+      "objects": [],
+      "action": "swing",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": []
+      },
+      "animation": "scene: swing; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "title": "How India Reached Mars on a Budget",
+  "planner": "rules+lexicon v1",
+  "createdAt": "2026-11-10T12:53:25.505Z",
+  "durationSeconds": 31.221,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 4.666,
+      "narration": "In 2014, India reached Mars on its very first try.",
+      "visualObjective": "the Mangalyaan orbiter satellite arriving at Mars in space",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite",
+        "trophy",
+        "flag"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite",
+          "trophy",
+          "flag"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "date",
+        "text": "2014"
+      },
+      "transition": "black",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit",
+        "win",
+        "india"
+      ]
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 4.666,
+      "end": 7.071,
+      "narration": "No country had ever done that before.",
+      "visualObjective": "an Indian flag waving proudly, a scientist celebrating",
+      "subject": "atom",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "flag"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "atom",
+          "flag"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide orbit",
+      "overlay": null,
+      "transition": "flash",
+      "concepts": [
+        "science",
+        "india"
+      ]
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 7.071,
+      "end": 10.661,
+      "narration": "The whole mission cost about seventy four million dollars,",
+      "visualObjective": "stacks of coins and money on a table",
+      "subject": "coins",
+      "environment": "launchpad",
+      "objects": [
+        "coins"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "coins"
+        ],
+        "actors": []
+      },
+      "animation": "camera: close drift",
+      "overlay": {
+        "type": "number",
+        "value": "$74 million",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "money"
+      ]
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3,
+        4
+      ],
+      "start": 10.661,
+      "end": 15.118,
+      "narration": "less than the Hollywood movie Gravity. So how did ISRO do it so cheaply?",
+      "visualObjective": "a film reel and movie camera in a studio a curious engineer thinking with a question mark",
+      "subject": "Bunty (think)",
+      "environment": "palace",
+      "objects": [
+        "coins",
+        "film",
+        "camera"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "think"
+        }
+      ],
+      "camera": {
+        "angle": "low",
+        "move": "dolly"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "infographic",
+      "renderMethod": "Animated infographic over defocused environment",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "palace",
+        "props": [
+          "coins",
+          "film",
+          "camera"
+        ],
+        "actors": [
+          "desi_hero"
+        ]
+      },
+      "animation": "Bunty: think; camera: low dolly",
+      "overlay": {
+        "type": "comparison",
+        "items": [
+          {
+            "label": "Gravity M",
+            "value": 100,
+            "display": "$100"
+          },
+          {
+            "label": "Mangalyaan M",
+            "value": 74,
+            "display": "$74"
+          }
+        ]
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "money",
+        "movie",
+        "history",
+        "idea",
+        "question"
+      ]
+    },
+    {
+      "id": "S05",
+      "lines": [
+        5
+      ],
+      "start": 15.118,
+      "end": 18.745,
+      "narration": "First, the rocket was a proven workhorse, the PSLV.",
+      "visualObjective": "a PSLV rocket launching from the launch pad at Sriharikota",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: medium push",
+      "overlay": null,
+      "transition": "flash",
+      "concepts": [
+        "launch"
+      ]
+    },
+    {
+      "id": "S06",
+      "lines": [
+        6
+      ],
+      "start": 18.745,
+      "end": 22.815,
+      "narration": "Instead of one powerful push, the spacecraft circled Earth for weeks,",
+      "visualObjective": "a satellite circling Earth in orbit, transfer orbit diagram",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "infographic",
+      "renderMethod": "Animated infographic over defocused environment",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide orbit",
+      "overlay": {
+        "type": "orbit",
+        "labels": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ]
+    },
+    {
+      "id": "S07",
+      "lines": [
+        7
+      ],
+      "start": 22.815,
+      "end": 26.835,
+      "narration": "raising its orbit step by step before sailing to Mars.",
+      "visualObjective": "orbit diagram showing the path from Earth to Mars",
+      "subject": "question",
+      "environment": "space",
+      "objects": [
+        "question"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "infographic",
+      "renderMethod": "Animated infographic over defocused environment",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "question"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "orbit",
+        "labels": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "orbit",
+        "question"
+      ]
+    },
+    {
+      "id": "S08",
+      "lines": [
+        8
+      ],
+      "start": 26.835,
+      "end": 31.221,
+      "narration": "Smart engineering, not big money, made history.",
+      "visualObjective": "the engineer celebrating success with a trophy",
+      "subject": "Bunty (celebrate)",
+      "environment": "launchpad",
+      "objects": [
+        "coins",
+        "bulb",
+        "trophy"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "celebrate"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "coins",
+          "bulb",
+          "trophy"
+        ],
+        "actors": [
+          "desi_hero"
+        ]
+      },
+      "animation": "Bunty: celebrate; camera: wide push",
+      "overlay": null,
+      "transition": "flash",
+      "concepts": [
+        "money",
+        "idea",
+        "win"
+      ]
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 1
+}

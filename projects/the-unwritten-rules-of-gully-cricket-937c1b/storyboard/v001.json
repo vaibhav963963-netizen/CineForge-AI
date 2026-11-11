@@ -1,0 +1,541 @@
+{
+  "title": "गल्ली क्रिकेट के नियम!",
+  "planner": "rules+lexicon v1",
+  "createdAt": "2026-11-10T16:17:21.323Z",
+  "durationSeconds": 40.878,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 3.958,
+      "narration": "भाईयो, गुलि क्रिकेट... ये तो सब जानते हैं, है ना?।",
+      "visualObjective": "A wide shot of a bustling Mumbai street with kids playing cricket in the narrow lane.",
+      "subject": "an Indian city",
+      "environment": "cricket",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A wide shot of a bustling Mumbai street with kids playing cricket in the narrow lane., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: wide punch",
+      "overlay": {
+        "type": "label",
+        "text": "Mumbai"
+      },
+      "transition": "black",
+      "concepts": [
+        "cricket",
+        "city",
+        "street"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 3.958,
+      "end": 7.734,
+      "narration": "लेकिन, ये नियम तो अनौपचारिक होते हैं, समझे?।",
+      "visualObjective": "Close-up shot of a young boy adjusting his cricket helmet.",
+      "subject": "a cricket match",
+      "environment": "cricket",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "Close-up shot of a young boy adjusting his cricket helmet., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "shock"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 7.734,
+      "end": 11.084,
+      "narration": "पहला नियम, बल्ले हमेशा थोड़ा टूटा होना चाहिए।",
+      "visualObjective": "A boy carefully inspecting a broken cricket bat.",
+      "subject": "bat",
+      "environment": "cricket",
+      "objects": [
+        "bat",
+        "ball"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "bowl",
+          "position": "bowler"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "orbit"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "cricket",
+        "props": [
+          "bat",
+          "ball"
+        ],
+        "actors": [
+          "generic extra"
+        ]
+      },
+      "animation": "extra: bowl; camera: medium orbit",
+      "overlay": {
+        "type": "number",
+        "value": "70%",
+        "label": "Around  bats are broken"
+      },
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "batting"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3
+      ],
+      "start": 11.084,
+      "end": 14.753,
+      "narration": "क्यों? ताकि गेंद थोड़ी धीमी हो, वरना क्या होगा?।",
+      "visualObjective": "A cricket ball rolling slowly across the dusty ground.",
+      "subject": "ball",
+      "environment": "cricket",
+      "objects": [
+        "ball",
+        "question"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "bowl",
+          "position": "bowler"
+        }
+      ],
+      "camera": {
+        "angle": "low",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A cricket ball rolling slowly across the dusty ground., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "extra: bowl; camera: low pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "bowling",
+        "question"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        4
+      ],
+      "start": 14.753,
+      "end": 17.344,
+      "narration": "दूसरा नियम, ‘मिशन’ से ज़्यादा फील्डिंग!",
+      "visualObjective": "A group of boys frantically fielding, diving for a catch.",
+      "subject": "an Indian village",
+      "environment": "village",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A group of boys frantically fielding, diving for a catch., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: medium crane",
+      "overlay": {
+        "type": "number",
+        "value": "80%",
+        "label": "Approx.  fielding"
+      },
+      "transition": "whip",
+      "concepts": [
+        "village"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        5
+      ],
+      "start": 17.344,
+      "end": 20.999,
+      "narration": "मतलब, ज़्यादातर टाइम गेंद को रोकने पर ध्यान देना।",
+      "visualObjective": "A fielder leaping to stop a powerful shot.",
+      "subject": "ball",
+      "environment": "village",
+      "objects": [
+        "ball"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "bowl",
+          "position": "bowler"
+        }
+      ],
+      "camera": {
+        "angle": "high",
+        "move": "track"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A fielder leaping to stop a powerful shot., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "extra: bowl; camera: high track",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "bowling",
+        "village"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S07",
+      "lines": [
+        6
+      ],
+      "start": 20.999,
+      "end": 24.415,
+      "narration": "तीसरा, बजट कम होता है, इसलिए ज़्यादा सामान नहीं।",
+      "visualObjective": "A boy holding a simple cricket ball and bat.",
+      "subject": "bat",
+      "environment": "cricket",
+      "objects": [
+        "bat",
+        "ball",
+        "coins"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "bowl",
+          "position": "bowler"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "cricket",
+        "props": [
+          "bat",
+          "ball",
+          "coins"
+        ],
+        "actors": [
+          "generic extra"
+        ]
+      },
+      "animation": "extra: bowl; camera: medium push",
+      "overlay": {
+        "type": "number",
+        "value": "₹50",
+        "label": "-₹100 per set"
+      },
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "batting",
+        "money"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S08",
+      "lines": [
+        7
+      ],
+      "start": 24.415,
+      "end": 27.519,
+      "narration": "कोई नई गेंद नहीं, पुरानी ही इस्तेमाल करते हैं।",
+      "visualObjective": "Close-up of a worn and faded cricket ball.",
+      "subject": "ball",
+      "environment": "cricket",
+      "objects": [
+        "ball"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "bowl",
+          "position": "bowler"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "Close-up of a worn and faded cricket ball., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "extra: bowl; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "bowling"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S09",
+      "lines": [
+        8
+      ],
+      "start": 27.519,
+      "end": 30.722,
+      "narration": "चौथा नियम, ‘फोन’ से दूर रहना है, खेलने में मज़ा!",
+      "visualObjective": "Boys engrossed in a cricket match, ignoring their phones.",
+      "subject": "phone",
+      "environment": "cricket",
+      "objects": [
+        "phone"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "orbit"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "Boys engrossed in a cricket match, ignoring their phones., stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": null,
+      "assets3d": null,
+      "animation": "camera: medium orbit",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "phone"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S10",
+      "lines": [
+        9
+      ],
+      "start": 30.722,
+      "end": 33.203,
+      "narration": "खेलने के लिए ही आए हैं, याद रखना!",
+      "visualObjective": "Boys celebrating a successful run.",
+      "subject": "trophy",
+      "environment": "cricket",
+      "objects": [
+        "trophy"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "celebrate"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "cricket",
+        "props": [
+          "trophy"
+        ],
+        "actors": [
+          "generic extra"
+        ]
+      },
+      "animation": "extra: celebrate; camera: wide pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "win"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S11",
+      "lines": [
+        10
+      ],
+      "start": 33.203,
+      "end": 36.691,
+      "narration": "पांचवा, अगर विकेट गिरे, तो ‘विज्ञान’ का इस्तेमाल नहीं।",
+      "visualObjective": "A boy marking a run with a stick.",
+      "subject": "atom",
+      "environment": "cricket",
+      "objects": [
+        "atom"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "cricket",
+        "props": [
+          "atom"
+        ],
+        "actors": []
+      },
+      "animation": "camera: close punch",
+      "overlay": {
+        "type": "label",
+        "text": "Simple marking system"
+      },
+      "transition": "whip",
+      "concepts": [
+        "cricket",
+        "science"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S12",
+      "lines": [
+        11
+      ],
+      "start": 36.691,
+      "end": 40.878,
+      "narration": "बस, गिनती करते हैं और आगे बढ़ते हैं!।",
+      "visualObjective": "Boys counting runs, laughing and cheering.",
+      "subject": "cricket",
+      "environment": "cricket",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "cricket",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: wide crane",
+      "overlay": {
+        "type": "label",
+        "text": "Total Runs"
+      },
+      "transition": "whip",
+      "concepts": [],
+      "spaceView": null
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 1
+}

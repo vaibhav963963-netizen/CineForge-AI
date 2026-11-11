@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "id": "how-isro-reached-mars-for-less-d42255",
+  "title": "How ISRO reached Mars for less than the budget of the movie Gravity",
+  "topic": "How ISRO reached Mars for less than the budget of the movie Gravity",
+  "status": "rendered",
+  "createdAt": "2026-11-10T12:52:11.315Z",
+  "updatedAt": "2026-11-10T12:57:21.572Z",
+  "config": {
+    "schema": 1,
+    "topic": "How ISRO reached Mars for less than the budget of the movie Gravity",
+    "language": {
+      "id": "en",
+      "code": "en",
+      "name": "English",
+      "script": "Latn",
+      "dialect": "standard",
+      "locale": "en-IN",
+      "captionScript": "Latn",
+      "ttsScript": "Latn"
+    },
+    "narration": {
+      "personality": "documentary",
+      "personalityName": "Documentary",
+      "voice": "am_michael",
+      "voiceName": "Michael (American English, Male)",
+      "voiceLanguage": "en-us",
+      "ttsLang": "en-us",
+      "speed": 0.98,
+      "delivery": {
+        "speed": 0.98,
+        "gap": 0.32,
+        "lead": 0.35,
+        "outro": 1.1
+      }
+    },
+    "visual": {
+      "style": "deep-dive",
+      "styleName": "Deep Dive 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "desi_hero",
+      "characterName": "Bunty",
+      "archetype": "desi_hero",
+      "characterMode": "3d-model",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 30,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small.en (English only)",
+      "language": "en"
+    }
+  },
+  "configHash": "b028eb01ca8bf4e9",
+  "workspacePath": "projects/how-isro-reached-mars-for-less-d42255",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T12:52:11.835Z",
+        "source": "manual",
+        "baseVersion": null,
+        "fingerprint": "a47e0046a176",
+        "configHash": "b028eb01ca8bf4e9",
+        "wordCount": 77,
+        "estimatedSeconds": 33.5,
+        "language": "en",
+        "personality": "documentary",
+        "targetSeconds": 30,
+        "approved": true,
+        "approvedAt": "2026-11-10T12:52:11.844Z"
+      }
+    ]
+  },
+  "storyboard": {
+    "version": 1,
+    "shots": 8,
+    "planner": "rules+lexicon v1",
+    "methods": {
+      "scene3d": 5,
+      "infographic": 3
+    },
+    "environments": [
+      "space",
+      "lab",
+      "launchpad",
+      "palace"
+    ]
+  },
+  "models": {
+    "tts": {
+      "engine": "Kokoro-82M v1.0 ONNX",
+      "voice": "am_michael",
+      "lang": "en-us"
+    },
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small.en (English only)"
+    }
+  },
+  "assets": {
+    "runtime": {
+      "runtime": "engine/runtime",
+      "style": "deep-dive",
+      "renderer": "webgl",
+      "fonts": [
+        "Inter-Black.otf",
+        "Inter-ExtraBold.otf",
+        "Caladea-Bold.ttf",
+        "FreeMonoBold.ttf",
+        "NotoSansDevanagari-Variable.ttf → StudioDeva.ttf"
+      ],
+      "threeJs": "three.js r170 (MIT)",
+      "characterAsset": "engine/styles/tall-tale/example/src/core/character3d.js"
+    },
+    "character": {
+      "id": "desi_hero",
+      "name": "Bunty",
+      "archetype": "desi_hero",
+      "mode": "3d-model",
+      "colors": {
+        "skin": "#F2B98E",
+        "shirt": "#1E88E5",
+        "vest": "#0D47A1",
+        "pants": "#263238",
+        "hair": "#1E1E1E",
+        "accent": "#0D47A1",
+        "accent2": "#FFD54F"
+      },
+      "accessory": "cap",
+      "attire": "Royal Blue Jersey (#1E88E5) with Navy Vest"
+    },
+    "environments": [
+      "space",
+      "lab",
+      "launchpad",
+      "palace"
+    ],
+    "props": [
+      "satellite",
+      "trophy",
+      "flag",
+      "atom",
+      "coins",
+      "film",
+      "camera",
+      "rocket",
+      "question",
+      "bulb"
+    ]
+  },
+  "voice": {
+    "id": "am_michael",
+    "ttsLang": "en-us",
+    "speed": 1.13,
+    "narrationSeconds": 31.221,
+    "speechSeconds": 27.041,
+    "model": "Kokoro-82M v1.0 ONNX",
+    "synthSeconds": 20.5
+  },
+  "render": {
+    "webgl": "ANGLE (Intel, Intel(R) UHD Graphics (0x000046A3) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "jobId": "job_20261110125211_3a4519",
+    "finishedAt": "2026-11-10T12:57:21.572Z",
+    "durationSeconds": 31.23,
+    "targetSeconds": 30,
+    "withinTolerance": true,
+    "frames": 937,
+    "captureSeconds": 172.9,
+    "file": "projects/how-isro-reached-mars-for-less-d42255/renders/how-isro-reached-mars-for-less-d42255.mp4",
+    "exportPath": "exports/how-isro-reached-mars-for-less-d42255.mp4",
+    "scriptVersion": 1,
+    "storyboardVersion": 1
+  },
+  "qa": {
+    "status": "PASS",
+    "checks": {
+      "mp4_readable": true,
+      "resolution_1080x1920": true,
+      "fps_matches": true,
+      "video_h264": true,
+      "audio_aac": true,
+      "audio_not_silent": true,
+      "duration_within_tolerance": true,
+      "video_matches_narration": true,
+      "no_long_freezes": true,
+      "no_black_gaps": true
+    },
+    "failed": [],
+    "report": "projects/how-isro-reached-mars-for-less-d42255/review/qa_report.json"
+  },
+  "exportPath": "exports/how-isro-reached-mars-for-less-d42255.mp4",
+  "history": [
+    {
+      "jobId": "job_20261110125211_3a4519",
+      "status": "started",
+      "at": "2026-11-10T12:52:11.980Z"
+    },
+    {
+      "jobId": "job_20261110125211_3a4519",
+      "status": "completed",
+      "at": "2026-11-10T12:57:21.572Z"
+    }
+  ],
+  "alignment": {
+    "model": "faster-whisper small.en (English only)",
+    "words": 77,
+    "matchRate": 1,
+    "detectedLanguage": "en",
+    "languageProbability": 1,
+    "languageCheck": "english-only-model",
+    "transcriptSample": "In 2014, India reached Mars on its very first try. No country had ever done that before. The whole mission cost about seventy four million dollars, less than the Hollywood movie Gravity. So how did ISRO do it so cheaply? First, the rocket was a proven workhorse, the PSLV. Instead of one powerful pus"
+  }
+}

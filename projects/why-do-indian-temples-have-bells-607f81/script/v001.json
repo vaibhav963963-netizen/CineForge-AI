@@ -1,0 +1,59 @@
+{
+  "title": "मंदिर में घंटी क्यों?",
+  "lines": [
+    {
+      "text": "आपने देखा होगा, मंदिर में घुसते ही लोग घंटी बजाते हैं।",
+      "visual": "a devotee ringing a brass bell at the entrance of an Indian temple"
+    },
+    {
+      "text": "पर ये घंटी आखिर लगाई क्यों जाती है?",
+      "visual": "a curious student looking up at a temple bell with a question mark"
+    },
+    {
+      "text": "परंपरा के अनुसार, घंटी की आवाज़ पूजा की शुरुआत का संकेत है।",
+      "visual": "an Indian temple at dawn with diyas glowing"
+    },
+    {
+      "text": "मान्यता है कि ये आवाज़ मन को भटकने से रोकती है।",
+      "visual": "a calm temple courtyard, a person standing with eyes closed"
+    },
+    {
+      "text": "घंटियाँ अक्सर पीतल या कई धातुओं के मिश्रण से बनती हैं।",
+      "visual": "a close up of a shiny brass temple bell"
+    },
+    {
+      "text": "इसलिए इनकी आवाज़ तेज़ होती है और देर तक गूँजती है।",
+      "visual": "the brass bell swinging and ringing in the temple"
+    },
+    {
+      "text": "भीड़ और शोर में भी ये आवाज़ ध्यान खींच लेती है।",
+      "visual": "a busy Indian street outside a temple"
+    },
+    {
+      "text": "कई लोग कहते हैं कि इससे दिमाग़ शांत होता है।",
+      "visual": "a glowing brain, calm and relaxed"
+    },
+    {
+      "text": "पर इस दावे पर ठोस वैज्ञानिक शोध अभी बहुत कम है।",
+      "visual": "a scientist in a lab thinking about research"
+    },
+    {
+      "text": "तो अगली बार घंटी बजाएँ, तो उसकी गूँज ध्यान से सुनिए।",
+      "visual": "the student ringing the temple bell and smiling"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-10T16:46:03.399Z",
+    "source": "manual",
+    "baseVersion": null,
+    "fingerprint": "89295d31be54",
+    "configHash": "a0b2151fcaee2675",
+    "wordCount": 107,
+    "estimatedSeconds": 41.9,
+    "language": "hi-conversational",
+    "personality": "educational",
+    "targetSeconds": 45
+  }
+}

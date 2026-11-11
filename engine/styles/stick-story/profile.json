@@ -1,0 +1,22 @@
+{
+  "id": "stick-story",
+  "name": "Stick Story",
+  "summary": "Survival steps and diagrams: ink-black stick people with big white eyes, flat illustrated rooms, gold numbered step cards, one picture per clause.",
+  "dimension": "2d",
+  "renderer": "canvas2d",
+  "characterMode": "2d-figure",
+  "palette": { "bg": "#EDE6D8", "sky": "#BFD9EC", "horizon": "#DCE8F0", "ground": "#C9B79C", "ink": "#16161A", "primary": "#F2B23E", "secondary": "#5E8C61", "accent": "#F2B23E", "danger": "#D8443A", "paper": "#FFF9EE", "text": "#FFFFFF" },
+  "grade": { "flatten": 0.25, "posterize": 0, "outline": false, "sat": 0.95, "vignette": 0.05, "paper": true },
+  "lighting": { "mood": "flat illustrated rooms, night versions for the problem, daylight for the ending" },
+  "captions": { "font": "Inter", "weight": 900, "y": 1690, "size": 96, "fill": "#FFFFFF", "stroke": null, "strokeW": 0, "hi": "#F2B23E", "box": { "color": "rgba(22,22,26,0.9)", "radius": 28, "pad": 28 }, "maxWords": 4, "upper": false, "typeOn": false, "pop": true },
+  "camera": { "behavior": "steady", "moves": ["pan", "push"], "intensity": 0.6 },
+  "transition": { "type": "wipe", "duration": 0.2 },
+  "typography": { "title": "Inter", "titleWeight": 900, "label": "Inter", "labelWeight": 800 },
+  "image": {
+    "prompt": "simple whiteboard doodle illustration, black marker line art, stick figure style, minimal flat color accents, off-white paper background, clear diagram, vertical composition",
+    "negative": "photo, realistic, 3d render, shading, text, watermark, logo, gore, nsfw"
+  },
+  "music": "bed",
+  "sfx": ["whoosh", "pop", "plop", "tock"],
+  "pacing": { "minShot": 1.5, "maxShot": 3.0 }
+}

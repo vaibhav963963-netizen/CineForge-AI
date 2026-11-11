@@ -1,0 +1,27 @@
+{
+  "title": "The Man Who Bought A Bank For $1",
+  "voice": "am_michael",
+  "speed": 1.05,
+  "lead": 0.3,
+  "outro": 1.2,
+  "gap": 0.22,
+  "music": "bounce",
+  "sources": [
+    "Theaster Gates / Stony Island Arts Bank, Chicago (2013: City of Chicago sold the 1923 Stony Island Trust & Savings Bank building for $1 to Rebuild Foundation)",
+    "New York Times / Art Basel: Gates salvaged marble from the bank washrooms, created 'Bank Bonds' inscribed with 'In ART We Trust', and sold them for $5,000 each to raise millions for restoration without traditional bank debt"
+  ],
+  "lines": [
+    { "text": "In 2013, an artist in Chicago bought an entire historic bank", "caps": "In 2013, | an artist | in Chicago | bought | an *entire | *bank" },
+    { "text": "for one single dollar.", "caps": "for *one | single | *dollar." },
+    { "text": "The city was about to bulldoze the crumbling building,", "caps": "The city | was about to | *bulldoze | the building," },
+    { "text": "because the roof was leaking and repairs cost millions.", "caps": "repairs cost | *millions." },
+    { "text": "So Theaster Gates offered them a single buck,", "caps": "So Theaster | offered them | a single | *buck," },
+    { "text": "and City Hall handed him the keys.", "caps": "and they | handed him | the *keys." },
+    { "text": "The catch? He had no money, and banks refused to give him a loan.", "caps": "No money, | and banks | *refused | a loan." },
+    { "text": "So he salvaged the discarded marble slabs from the walls,", "caps": "So he | salvaged | the *marble | slabs," },
+    { "text": "engraved them as artistic bank bonds,", "caps": "engraved them | as *bank | *bonds," },
+    { "text": "and sold each slab for five thousand dollars.", "caps": "and sold each | for *5,000 | *dollars." },
+    { "text": "He raised millions, restored the bank into a grand arts palace,", "caps": "He raised | *millions, | and restored | the *bank," },
+    { "text": "and never owed Wall Street a single dime.", "caps": "without owing | Wall Street | a single | *dime.", "gap": 0.4 }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "title": "The Skeleton Lake of the Himalayas",
+  "language": "en",
+  "voice": "bm_george",
+  "speed": 0.98,
+  "lead": 0.35,
+  "outro": 1.1,
+  "gap": 0.32,
+  "lines": [
+    {
+      "text": "High in the Himalayas lies a frozen lake called Roopkund."
+    },
+    {
+      "text": "Around its shores lie hundreds of human skeletons."
+    },
+    {
+      "text": "A forest ranger stumbled upon them in 1942."
+    },
+    {
+      "text": "For decades, people believed they all died in a single storm."
+    },
+    {
+      "text": "But in 2019, scientists finally tested their DNA."
+    },
+    {
+      "text": "The bones came from different groups, who died centuries apart."
+    },
+    {
+      "text": "Some even had ancestry from the distant Mediterranean."
+    },
+    {
+      "text": "Why they all ended up at this lake is still unsolved."
+    }
+  ]
+}

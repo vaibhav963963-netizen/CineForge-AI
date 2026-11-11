@@ -1,0 +1,1 @@
+{ "name": "faster-whisper small (multilingual)", "source": "https://huggingface.co/Systran/faster-whisper-small", "license": "MIT", "languages": "99 incl. Hindi", "sha256_model_bin": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671" }

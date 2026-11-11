@@ -1,0 +1,8 @@
+{
+  "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+  "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+  "source": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF (quantization of google/gemma-3-4b-it)",
+  "sha256": "4996030242583a40aa151ff93f49ed787ac8c25e4120c3ae4588b2e2a7d1ae94",
+  "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+  "runtime": "llama.cpp b12244 (MIT), Vulkan build"
+}

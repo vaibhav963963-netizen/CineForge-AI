@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "id": "the-unwritten-rules-of-gully-cricket-937c1b",
+  "title": "The Unwritten Rules of Gully Cricket",
+  "topic": "The Unwritten Rules of Gully Cricket",
+  "status": "rendering",
+  "createdAt": "2026-11-10T16:10:26.229Z",
+  "updatedAt": "2026-11-10T16:17:21.329Z",
+  "config": {
+    "schema": 1,
+    "topic": "The Unwritten Rules of Gully Cricket",
+    "language": {
+      "id": "hi-conversational",
+      "code": "hi",
+      "name": "Hindi — Conversational (Devanagari)",
+      "script": "Deva",
+      "dialect": "conversational",
+      "locale": "hi-IN",
+      "captionScript": "Deva",
+      "ttsScript": "Deva"
+    },
+    "narration": {
+      "personality": "mumbai-conversational",
+      "personalityName": "Mumbai Conversational",
+      "voice": "hf_alpha",
+      "voiceName": "Alpha (Hindi, Female)",
+      "voiceLanguage": "hi",
+      "ttsLang": "hi",
+      "speed": 1.06,
+      "delivery": {
+        "speed": 1.06,
+        "gap": 0.2,
+        "lead": 0.25,
+        "outro": 0.9
+      }
+    },
+    "visual": {
+      "style": "tall-tale",
+      "styleName": "Tall Tale 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "none",
+      "characterName": "No Lead Character",
+      "archetype": null,
+      "characterMode": "none",
+      "visualMode": "hybrid-local"
+    },
+    "durationSeconds": 40,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)",
+      "language": "hi"
+    }
+  },
+  "configHash": "6f78d018c83c4104",
+  "workspacePath": "projects/the-unwritten-rules-of-gully-cricket-937c1b",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T16:11:20.235Z",
+        "source": "llm-at-render",
+        "fingerprint": "55f4569a48ed",
+        "configHash": "6f78d018c83c4104",
+        "model": {
+          "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+          "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+          "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+          "runtime": "llama.cpp (Vulkan)"
+        },
+        "wordCount": 103,
+        "estimatedSeconds": 46.9,
+        "language": "hi-conversational",
+        "personality": "mumbai-conversational",
+        "targetSeconds": 40,
+        "approved": true,
+        "approvedAt": "2026-11-10T16:11:20.242Z"
+      }
+    ]
+  },
+  "storyboard": {
+    "version": 1,
+    "shots": 12,
+    "planner": "rules+lexicon v1",
+    "methods": {
+      "image": 7,
+      "scene3d": 5
+    },
+    "environments": [
+      "cricket",
+      "village"
+    ]
+  },
+  "models": {},
+  "assets": {},
+  "voice": {
+    "id": "hf_alpha",
+    "ttsLang": "hi",
+    "speed": 1.21,
+    "narrationSeconds": 40.878,
+    "speechSeconds": 37.328,
+    "model": "Kokoro-82M v1.0 ONNX",
+    "synthSeconds": 89.2
+  },
+  "render": null,
+  "qa": null,
+  "exportPath": null,
+  "history": [
+    {
+      "jobId": "job_20261110161026_40ec81",
+      "status": "started",
+      "at": "2026-11-10T16:10:26.375Z"
+    }
+  ],
+  "alignment": {
+    "model": "faster-whisper small (multilingual)",
+    "words": 103,
+    "matchRate": 0.466,
+    "detectedLanguage": "hi",
+    "languageProbability": 0.992,
+    "languageCheck": "whisper-language-id",
+    "transcriptSample": "बःयो गुलिखरिकित यह तो सब जानते है आप पुर्नूराम लेकिन यह निम तो अनआप्चारिक होते है समझे पुर्नूराम पहला निम बल ले हमेशा थोडा तुटा हूना चाहिए क्यों ता की गेईईद थोडी दीमी हो वरना क्या होगा पुर्नूराम तुस्रा निम मि अगर विकेट गिरे तो विज्यान का इस्तेमाल नहीं बस गिन्ती करते है और आगे बरते है पुर्नुराम."
+  }
+}

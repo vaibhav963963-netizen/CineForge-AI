@@ -1,0 +1,7 @@
+#!/bin/bash
+# Runs Python from the workspace environment (runtime/python-venv). No fallback to ~/.faceless-shorts or a system
+# Python: a missing environment is an error, so nothing silently runs with different packages or models.
+WS_PY="$(cd "$(dirname "$0")/../../runtime/python-venv" 2>/dev/null && pwd)"
+for p in "$WS_PY/Scripts/python.exe" "$WS_PY/bin/python"; do [ -x "$p" ] && exec "$p" "$@"; done
+echo "runtime/python-venv is missing: run setup-workspace.bat" >&2
+exit 2

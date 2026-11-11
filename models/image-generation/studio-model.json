@@ -1,0 +1,8 @@
+{
+  "name": "DreamShaper 8 (SD1.5-class)",
+  "checkpoint": "DreamShaper_8_pruned.safetensors",
+  "source": "https://huggingface.co/Lykon/DreamShaper",
+  "sha256": "879db523c30d3b9017143d56705015e15a2cb5628762c11d086fed9538abd7fd",
+  "license": "CreativeML OpenRAIL-M (use-based restrictions apply; commercial use of outputs permitted)",
+  "settings": null
+}

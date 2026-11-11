@@ -1,0 +1,38 @@
+duration 31.22 s · WebGL renderer: ANGLE (Intel, Intel(R) UHD Graphics (0x000046A3) Direct3D11 vs_5_0 ps_5_0, D3D11)
+S01     0.00 →   4.67  (4.67 s)  scene3d · space · the Mangalyaan orbiter satellite arriving at Mars in space
+S02     4.67 →   7.07  (2.40 s)  scene3d · lab · an Indian flag waving proudly, a scientist celebrating
+S03     7.07 →  10.66  (3.59 s)  scene3d · launchpad · stacks of coins and money on a table
+S04    10.66 →  15.12  (4.46 s)  infographic · palace · a film reel and movie camera in a studio a curious engineer thinking with a question mark
+S05    15.12 →  18.75  (3.63 s)  scene3d · launchpad · a PSLV rocket launching from the launch pad at Sriharikota
+S06    18.75 →  22.82  (4.07 s)  infographic · space · a satellite circling Earth in orbit, transfer orbit diagram
+S07    22.82 →  26.84  (4.02 s)  infographic · space · orbit diagram showing the path from Earth to Mars
+S08    26.84 →  31.22  (4.39 s)  scene3d · launchpad · the engineer celebrating success with a trophy
+captions: 27
+    0.31–2.08   In *2014,
+    2.08–3.00   India *reached Mars
+    3.00–3.62   on its *very
+    3.62–4.72   *first try.
+    4.72–5.54   No *country had
+    5.54–6.30   *ever done that
+    6.30–7.14   *before.
+    7.14–7.78   The whole *mission
+    7.78–8.90   cost about *seventy
+    8.90–10.70  four *million dollars,
+   10.70–11.68  less than the *Hollywood
+   11.68–13.04  movie *Gravity.
+   13.04–13.52  So *how did
+   13.52–14.26  *ISRO do it so
+   14.26–15.20  *cheaply?
+   15.20–15.88  First, the *rocket
+   15.88–16.52  was a *proven
+   16.52–18.84  *workhorse, the PSLV.
+   18.84–19.50  *Instead of one
+   19.50–21.46  powerful push, the *spacecraft
+   21.46–23.34  *circled Earth for weeks,
+   23.34–24.30  *raising its orbit
+   24.30–25.18  *step by step
+   25.18–26.88  before *sailing to Mars.
+   26.88–28.14  Smart *engineering,
+   28.14–28.98  not big *money,
+   28.98–31.22  made *history.
+CHECK OK

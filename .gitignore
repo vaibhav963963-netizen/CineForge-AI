@@ -1,0 +1,173 @@
+
+# ==============================================================================
+# CineForge AI — Production .gitignore
+# Local-first AI Video Production Studio
+# Protects source repository from model weights, generated media, secrets
+# and machine-specific runtime files.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# PYTHON ENVIRONMENTS & CACHE
+# ------------------------------------------------------------------------------
+runtime/python-venv/
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ------------------------------------------------------------------------------
+# NODE.JS
+# ------------------------------------------------------------------------------
+node_modules/
+dist/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# LOCAL BINARIES
+# ------------------------------------------------------------------------------
+runtime/ffmpeg/bin/
+*.exe
+*.dll
+*.pdb
+
+# ------------------------------------------------------------------------------
+# AI MODEL WEIGHTS — NEVER COMMIT MODEL FILES
+# ------------------------------------------------------------------------------
+models/**/*.gguf
+models/**/*.safetensors
+models/**/*.ckpt
+models/**/*.onnx
+models/**/*.pt
+models/**/*.pth
+models/**/*.bin
+models/**/*.model
+models/**/*.tflite
+models/**/*.engine
+
+# Model caches and downloaded repositories
+models/**/blobs/
+models/**/snapshots/
+models/**/hub/
+.cache/
+hf-cache/
+huggingface/
+transformers_cache/
+
+# Preserve model directory structure
+!models/.gitkeep
+!models/**/.gitkeep
+
+# ------------------------------------------------------------------------------
+# COMFYUI
+# ------------------------------------------------------------------------------
+ComfyUI/models/
+ComfyUI/output/
+ComfyUI/temp/
+ComfyUI/input/
+ComfyUI/user/
+comfyui_models/
+
+# ------------------------------------------------------------------------------
+# GENERATED VIDEO, AUDIO & RENDER OUTPUTS
+# ------------------------------------------------------------------------------
+projects/*/renders/
+projects/*/review/
+projects/*/audio/
+projects/*/data/*.wav
+projects/*/data/*.mp3
+projects/*/data/*.flac
+projects/*/data/*.mp4
+projects/*/data/*.mkv
+projects/*/data/*.webm
+
+exports/
+!exports/.gitkeep
+
+# Generated media files anywhere else
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.wav
+*.flac
+*.aac
+*.m4a
+
+# ------------------------------------------------------------------------------
+# TEMPORARY FRAMES & CHROME
+# ------------------------------------------------------------------------------
+tmp/
+temp/
+runtime/tmp/
+fs-chrome-*/
+*.tmp
+*.part
+*.incomplete
+*.lock
+
+# ------------------------------------------------------------------------------
+# LOGS & EXECUTION TRACES
+# ------------------------------------------------------------------------------
+logs/
+*.log
+*.trace
+
+# ------------------------------------------------------------------------------
+# SAFETY BACKUPS
+# ------------------------------------------------------------------------------
+backups/
+
+# ------------------------------------------------------------------------------
+# SECRETS & CREDENTIALS
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.template
+
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+
+youtube/tokens.json
+youtube/client_secret.json
+youtube/credentials.json
+credentials/
+secrets/
+
+# ------------------------------------------------------------------------------
+# LOCAL DATABASES & MACHINE-SPECIFIC DATA
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------------------------
+# IDE & EDITOR
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# PRESERVE IMPORTANT EMPTY DIRECTORIES
+# ------------------------------------------------------------------------------
+!projects/.gitkeep
+!youtube/queue/.gitkeep

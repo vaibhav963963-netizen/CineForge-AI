@@ -1,0 +1,79 @@
+{
+ "duration": 40.868,
+ "voice": "am_michael",
+ "speed": 1.05,
+ "lines": [
+  {
+   "i": 0,
+   "text": "In 2013, an artist in Chicago bought an entire historic bank",
+   "start": 0.3,
+   "end": 5.09
+  },
+  {
+   "i": 1,
+   "text": "for one single dollar.",
+   "start": 5.16,
+   "end": 6.778
+  },
+  {
+   "i": 2,
+   "text": "The city was about to bulldoze the crumbling building,",
+   "start": 6.998,
+   "end": 9.558
+  },
+  {
+   "i": 3,
+   "text": "because the roof was leaking and repairs cost millions.",
+   "start": 10.118,
+   "end": 13.337
+  },
+  {
+   "i": 4,
+   "text": "So Theaster Gates offered them a single buck,",
+   "start": 13.557,
+   "end": 15.727
+  },
+  {
+   "i": 5,
+   "text": "and City Hall handed him the keys.",
+   "start": 16.237,
+   "end": 18.199
+  },
+  {
+   "i": 6,
+   "text": "The catch? He had no money, and banks refused to give him a loan.",
+   "start": 18.419,
+   "end": 22.228
+  },
+  {
+   "i": 7,
+   "text": "So he salvaged the discarded marble slabs from the walls,",
+   "start": 22.448,
+   "end": 25.958
+  },
+  {
+   "i": 8,
+   "text": "engraved them as artistic bank bonds,",
+   "start": 26.408,
+   "end": 28.738
+  },
+  {
+   "i": 9,
+   "text": "and sold each slab for five thousand dollars.",
+   "start": 29.158,
+   "end": 32.082
+  },
+  {
+   "i": 10,
+   "text": "He raised millions, restored the bank into a grand arts palace,",
+   "start": 32.302,
+   "end": 36.332
+  },
+  {
+   "i": 11,
+   "text": "and never owed Wall Street a single dime.",
+   "start": 36.702,
+   "end": 39.268
+  }
+ ]
+}

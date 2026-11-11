@@ -1,0 +1,49 @@
+{
+  "name": "AI Shorts Studio India",
+  "version": "3.0.0",
+  "port": 3000,
+  "host": "127.0.0.1",
+  "paths": {
+    "engine": "engine",
+    "styles": "engine/styles",
+    "runtimeTemplate": "engine/runtime",
+    "engineScripts": "engine/scripts",
+    "comfyWorkflows": "engine/comfy-workflows",
+    "projects": "projects",
+    "exports": "exports",
+    "logs": "logs",
+    "jobs": "logs/jobs",
+    "fonts": "assets/fonts",
+    "characters": "config/characters.json",
+    "models": {
+      "kokoro": "models/kokoro",
+      "whisperEnglish": "models/whisper",
+      "whisperMultilingual": "models/whisper-multilingual",
+      "llm": "models/llm",
+      "imageGeneration": "models/image-generation"
+    },
+    "runtime": {
+      "python": "runtime/python-venv/Scripts/python.exe",
+      "ffmpeg": "runtime/ffmpeg/bin",
+      "llamaCpp": "runtime/llama.cpp",
+      "comfyui": "runtime/comfyui"
+    }
+  },
+  "generation": {
+    "resolution": "1080x1920",
+    "fps": 30,
+    "durationMin": 20,
+    "durationMax": 90,
+    "durationTolerance": 0.10
+  },
+  "services": {
+    "llmPort": 8091,
+    "comfyPort": 8188
+  },
+  "licenses": {
+    "kokoro": "Apache-2.0",
+    "faster_whisper": "MIT",
+    "three_js": "MIT",
+    "ffmpeg": "GPLv3"
+  }
+}

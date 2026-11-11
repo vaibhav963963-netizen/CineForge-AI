@@ -1,0 +1,38 @@
+duration 36.23 s
+S01     0.00 →   3.61  (3.61 s)  cabin from the front, date types on
+S02     3.61 →   7.28  (3.67 s)  the subject walks up the aisle toward us
+S03     7.28 →   9.99  (2.71 s)  paper ticket insert, name circled
+S04     9.99 →  13.05  (3.06 s)  attendant stops at his row; the note appears
+S05    13.05 →  16.66  (3.61 s)  case file: the demands type on
+S06    16.66 →  19.65  (2.99 s)  passengers vanish one by one; the subject stays
+S07    19.65 →  22.99  (3.34 s)  the rear door: rain, lightning flashes
+S08    22.99 →  25.53  (2.55 s)  door opens on "opens"; he is gone on "jumps"
+S09    25.53 →  27.59  (2.06 s)  empty cabin, door open, rain
+S10    27.59 →  31.73  (4.14 s)  case wall, 1980 date, red circle
+S11    31.73 →  36.23  (4.50 s)  case file slams down, UNSOLVED stamp
+captions:
+    0.55–2.79   *November 24,
+    2.79–3.77   *1971.
+    3.77–5.31   A quiet *man
+    5.31–6.13   boards a *flight
+    6.13–7.37   to *Seattle.
+    7.37–8.65   His *ticket says
+    8.65–10.04  Dan *Cooper.
+   10.04–12.03  He *hands her
+   12.03–13.10  a *note.
+   13.10–14.53  *$200,000
+   14.53–16.75  and four *parachutes.
+   16.75–17.77  In *Seattle,
+   17.77–19.71  every passenger *goes.
+   19.71–21.99  Over the dark *forests,
+   21.99–23.04  in the *rain,
+   23.04–24.23  he opens the *stairs,
+   24.23–25.61  and *jumps.
+   25.61–27.69  Never seen *again.
+   27.69–28.81  Nine years *later,
+   28.81–29.39  a *boy found
+   29.39–31.85  some of the *cash.
+   31.85–32.47  The *rest,
+   32.47–33.65  and Dan *Cooper,
+   33.65–36.23  still *missing.
+CHECK OK

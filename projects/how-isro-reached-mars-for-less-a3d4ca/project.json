@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "id": "how-isro-reached-mars-for-less-a3d4ca",
+  "title": "How ISRO reached Mars for less than the budget of Gravity",
+  "topic": "How ISRO reached Mars for less than the budget of Gravity",
+  "status": "script-ready",
+  "createdAt": "2026-11-10T12:52:39.671Z",
+  "updatedAt": "2026-11-10T12:52:41.768Z",
+  "config": {
+    "schema": 1,
+    "topic": "How ISRO reached Mars for less than the budget of Gravity",
+    "language": {
+      "id": "en",
+      "code": "en",
+      "name": "English",
+      "script": "Latn",
+      "dialect": "standard",
+      "locale": "en-IN",
+      "captionScript": "Latn",
+      "ttsScript": "Latn"
+    },
+    "narration": {
+      "personality": "documentary",
+      "personalityName": "Documentary",
+      "voice": "am_michael",
+      "voiceName": "Michael (American English, Male)",
+      "voiceLanguage": "en-us",
+      "ttsLang": "en-us",
+      "speed": 0.98,
+      "delivery": {
+        "speed": 0.98,
+        "gap": 0.32,
+        "lead": 0.35,
+        "outro": 1.1
+      }
+    },
+    "visual": {
+      "style": "deep-dive",
+      "styleName": "Deep Dive 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "desi_hero",
+      "characterName": "Bunty",
+      "archetype": "desi_hero",
+      "characterMode": "3d-model",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 30,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small.en (English only)",
+      "language": "en"
+    }
+  },
+  "configHash": "3ccd346c8a5262b8",
+  "workspacePath": "projects/how-isro-reached-mars-for-less-a3d4ca",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T12:52:41.177Z",
+        "source": "manual",
+        "baseVersion": null,
+        "fingerprint": "462784aad20f",
+        "configHash": "3ccd346c8a5262b8",
+        "wordCount": 77,
+        "estimatedSeconds": 33.5,
+        "language": "en",
+        "personality": "documentary",
+        "targetSeconds": 30,
+        "approved": true,
+        "approvedAt": "2026-11-10T12:52:41.182Z"
+      }
+    ]
+  },
+  "storyboard": null,
+  "models": {},
+  "assets": {},
+  "voice": null,
+  "render": null,
+  "qa": null,
+  "exportPath": null,
+  "history": []
+}

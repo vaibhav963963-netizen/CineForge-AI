@@ -1,0 +1,22 @@
+{
+  "id": "inside-out",
+  "name": "Inside Out 2D",
+  "summary": "Flat 2D vector explainers: clean shapes, limited palette (pink, cyan, red, yellow on cream), x-ray cutaways, punchy camera, one yellow word.",
+  "dimension": "2d",
+  "renderer": "canvas2d",
+  "characterMode": "2d-figure",
+  "palette": { "bg": "#F4F1EA", "sky": "#BFE3F2", "horizon": "#DDEFF5", "ground": "#E4DCCB", "ink": "#1A1A1E", "primary": "#E57A8A", "secondary": "#4FD1E8", "accent": "#FFD43B", "danger": "#D62839", "paper": "#FFFFFF", "text": "#FFFFFF" },
+  "grade": { "flatten": 0.35, "posterize": 6, "outline": true, "sat": 1.1, "vignette": 0 },
+  "lighting": { "mood": "flat colour, no gradients, depth from darker tones only" },
+  "captions": { "font": "Inter", "weight": 900, "y": 1400, "size": 132, "fill": "#FFFFFF", "stroke": "#1A1A1E", "strokeW": 24, "hi": "#FFD43B", "box": null, "maxWords": 3, "upper": true, "typeOn": false, "pop": true },
+  "camera": { "behavior": "punch", "moves": ["punch", "push", "pan"], "intensity": 0.9 },
+  "transition": { "type": "pop", "duration": 0.18 },
+  "typography": { "title": "Inter", "titleWeight": 900, "label": "Inter", "labelWeight": 900 },
+  "image": {
+    "prompt": "flat vector illustration, clean geometric shapes, thick dark outlines, limited palette of pink cyan red and yellow on a cream background, minimal, no gradients, infographic style, vertical composition",
+    "negative": "photo, realistic, 3d render, gradient, texture, text, watermark, logo, gore, nsfw"
+  },
+  "music": "bed",
+  "sfx": ["whoosh", "pop", "plop", "boing", "slam", "sparkle"],
+  "pacing": { "minShot": 1.4, "maxShot": 3.2 }
+}

@@ -1,0 +1,140 @@
+{
+ "duration": 37.382,
+ "cues": [
+  {
+   "t": 0.12,
+   "type": "inhale",
+   "dur": 1
+  },
+  {
+   "t": 3.704,
+   "type": "whoosh"
+  },
+  {
+   "t": 3.754,
+   "type": "pop",
+   "gain": 0.6
+  },
+  {
+   "t": 6.228,
+   "type": "whoosh"
+  },
+  {
+   "t": 6.478,
+   "type": "pop",
+   "gain": 0.5
+  },
+  {
+   "t": 8.16,
+   "type": "whoosh"
+  },
+  {
+   "t": 8.16,
+   "type": "slide",
+   "dur": 2.783999999999999,
+   "gain": 0.5
+  },
+  {
+   "t": 10.944,
+   "type": "whoosh"
+  },
+  {
+   "t": 11.044,
+   "type": "bubbles",
+   "dur": 2.8900000000000006
+  },
+  {
+   "t": 13.834,
+   "type": "whoosh"
+  },
+  {
+   "t": 14.034,
+   "type": "alarm",
+   "dur": 4.477000000000003
+  },
+  {
+   "t": 18.511,
+   "type": "whoosh"
+  },
+  {
+   "t": 18.761,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 19.381,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 20.001,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 20.621,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 21.241,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 21.861,
+   "type": "thud",
+   "gain": 0.45
+  },
+  {
+   "t": 22.271,
+   "type": "whoosh"
+  },
+  {
+   "t": 22.421,
+   "type": "heartbeat"
+  },
+  {
+   "t": 22.921,
+   "type": "heartbeat"
+  },
+  {
+   "t": 23.511,
+   "type": "heartbeat"
+  },
+  {
+   "t": 24.207,
+   "type": "heartbeat"
+  },
+  {
+   "t": 25.029,
+   "type": "heartbeat"
+  },
+  {
+   "t": 28.28,
+   "type": "slide",
+   "dur": 1.2,
+   "gain": 0.5
+  },
+  {
+   "t": 31.48,
+   "type": "inhale",
+   "dur": 1
+  },
+  {
+   "t": 33.08,
+   "type": "inhale",
+   "dur": 1,
+   "gain": 0.7
+  },
+  {
+   "t": 33.155,
+   "type": "whoosh"
+  },
+  {
+   "t": 33.405,
+   "type": "slam",
+   "gain": 0.7
+  }
+ ]
+}

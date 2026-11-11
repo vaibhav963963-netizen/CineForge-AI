@@ -1,0 +1,67 @@
+{
+ "duration": 33.766,
+ "voice": "am_michael",
+ "speed": 1.05,
+ "lines": [
+  {
+   "i": 0,
+   "text": "Why do Indian temples always have heavy metal bells?",
+   "start": 0.3,
+   "end": 3.814
+  },
+  {
+   "i": 1,
+   "text": "It is not just tradition, it is pure science.",
+   "start": 4.034,
+   "end": 6.69
+  },
+  {
+   "i": 2,
+   "text": "These bells are cast with seven sacred metals,",
+   "start": 6.909,
+   "end": 9.419
+  },
+  {
+   "i": 3,
+   "text": "including copper, silver, zinc and gold.",
+   "start": 9.55,
+   "end": 12.515
+  },
+  {
+   "i": 4,
+   "text": "When struck, the bell produces a distinct acoustic chime",
+   "start": 12.735,
+   "end": 16.125
+  },
+  {
+   "i": 5,
+   "text": "that resonates for exactly seven seconds.",
+   "start": 16.645,
+   "end": 19.157
+  },
+  {
+   "i": 6,
+   "text": "This frequency synchronizes your left and right brain,",
+   "start": 19.377,
+   "end": 22.377
+  },
+  {
+   "i": 7,
+   "text": "clearing all chaotic thoughts in an instant.",
+   "start": 22.857,
+   "end": 25.242
+  },
+  {
+   "i": 8,
+   "text": "So before you pray, your mind becomes completely calm.",
+   "start": 25.462,
+   "end": 28.743
+  },
+  {
+   "i": 9,
+   "text": "Ancient architecture engineered for absolute peace.",
+   "start": 28.963,
+   "end": 32.166
+  }
+ ]
+}

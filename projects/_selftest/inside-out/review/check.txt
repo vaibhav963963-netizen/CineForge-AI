@@ -1,0 +1,43 @@
+duration 35.95 s
+S01     0.00 →   2.42  (2.42 s)  room, gum to mouth, gulp, shock
+S02     2.42 →   6.23  (3.81 s)  x-ray body, gum travels mouth to stomach
+S03     6.23 →   8.66  (2.43 s)  inside stomach, acid bubbles, sizzle on "work"
+S04     8.66 →  14.03  (5.37 s)  sugar specks fly off, GUM BASE tag on "base"
+S05    14.03 →  18.16  (4.13 s)  enzyme chompers bounce off stretchy gum
+S06    18.16 →  22.28  (4.12 s)  calendar 7 YEARS drops, red X slams on "myth"
+S07    22.28 →  24.72  (2.44 s)  gum travels the whole x-ray intestine
+S08    24.72 →  27.30  (2.58 s)  stopwatch spins DAY 1-3, gum zips out on "out"
+S09    27.30 →  30.17  (2.87 s)  many gums rain into the x-ray stomach
+S10    30.17 →  33.14  (2.97 s)  gum clump blocks the gut, warning pulses
+S11    33.14 →  35.95  (2.82 s)  hero wags his finger at camera
+captions:
+    0.35–0.81   WHAT *HAPPENS
+    0.81–1.53   IF YOU *SWALLOW
+    1.53–2.53   YOUR *GUM?
+    2.53–3.29   WELL, IT *SLIDES
+    3.29–4.79   DOWN YOUR *THROAT
+    4.79–6.26   RIGHT IN YOUR *STOMACH
+    6.26–7.35   WHERE STRONG *ACID
+    7.35–8.75   GETS TO *WORK
+    8.75–11.11  SUGAR *DISSOLVES
+   11.11–12.47  BUT THE *BASE
+   12.47–14.06  IS *DIFFERENT
+   14.06–15.83  RUBBERY *POLYMER
+   15.83–17.19  YOUR BODY *CAN'T
+   17.19–18.19  BREAK IT *DOWN
+   18.19–20.59  STAY 7 *YEARS?
+   20.59–21.33  *NOPE
+   21.33–22.33  TOTAL *MYTH
+   22.33–23.01  YOUR *GUT
+   23.01–24.75  KEEPS IT *MOVING
+   24.75–25.73  A FEW *DAYS
+   25.73–27.37  IT'S *OUT
+   27.37–27.75  BUT *IF...
+   27.75–29.01  SWALLOW A *LOT
+   29.01–30.20  ALL AT *ONCE
+   30.20–31.17  IT CAN *CLUMP
+   31.17–32.41  AND *BLOCK
+   32.41–33.35  YOUR *GUT
+   33.35–34.03  SO *MAYBE...
+   34.03–35.95  SPIT IT *OUT
+CHECK OK

@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "id": "the-mystery-of-roopkund-the-skeleton-079465",
+  "title": "The Mystery of Roopkund, the Skeleton Lake of the Himalayas",
+  "topic": "The Mystery of Roopkund, the Skeleton Lake of the Himalayas",
+  "status": "rendering",
+  "createdAt": "2026-11-10T15:27:36.638Z",
+  "updatedAt": "2026-11-10T15:27:36.706Z",
+  "config": {
+    "schema": 1,
+    "topic": "The Mystery of Roopkund, the Skeleton Lake of the Himalayas",
+    "language": {
+      "id": "en",
+      "code": "en",
+      "name": "English",
+      "script": "Latn",
+      "dialect": "standard",
+      "locale": "en-IN",
+      "captionScript": "Latn",
+      "ttsScript": "Latn"
+    },
+    "narration": {
+      "personality": "documentary",
+      "personalityName": "Documentary",
+      "voice": "bm_george",
+      "voiceName": "George (British English, Male)",
+      "voiceLanguage": "en-gb",
+      "ttsLang": "en-gb",
+      "speed": 0.98,
+      "delivery": {
+        "speed": 0.98,
+        "gap": 0.32,
+        "lead": 0.35,
+        "outro": 1.1
+      }
+    },
+    "visual": {
+      "style": "night-file",
+      "styleName": "Night File 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "none",
+      "characterName": "No Lead Character",
+      "archetype": null,
+      "characterMode": "none",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 30,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small.en (English only)",
+      "language": "en"
+    }
+  },
+  "configHash": "70cf3db95bf8d7e7",
+  "workspacePath": "projects/the-mystery-of-roopkund-the-skeleton-079465",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T15:27:36.651Z",
+        "source": "manual",
+        "baseVersion": null,
+        "fingerprint": "4c2218ab521c",
+        "configHash": "70cf3db95bf8d7e7",
+        "wordCount": 74,
+        "estimatedSeconds": 32.1,
+        "language": "en",
+        "personality": "documentary",
+        "targetSeconds": 30,
+        "approved": true,
+        "approvedAt": "2026-11-10T15:27:36.654Z"
+      }
+    ]
+  },
+  "storyboard": null,
+  "models": {},
+  "assets": {},
+  "voice": null,
+  "render": null,
+  "qa": null,
+  "exportPath": null,
+  "history": [
+    {
+      "jobId": "job_20261110152736_ff9398",
+      "status": "started",
+      "at": "2026-11-10T15:27:36.706Z"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "shorts-studio-dashboard",
+  "private": true,
+  "type": "module",
+  "description": "AI Shorts Studio dashboard + job server. Zero npm dependencies (Node 22+ built-ins only).",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test ../tests/"
+  }
+}

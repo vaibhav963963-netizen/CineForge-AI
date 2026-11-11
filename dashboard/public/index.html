@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Shorts Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="studio.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-badge">
+          <div class="tricolor-badge"><span class="dot-saffron"></span><span class="dot-white"></span><span class="dot-green"></span></div>
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div class="brand-text"><h2>SHORTS STUDIO</h2><span class="brand-sub">LOCAL AI EDITION</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">STUDIO SUITE</div>
+        <button class="nav-item active" data-screen="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
+        <button class="nav-item" data-screen="create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>Create Video</span><span class="badge-accent" id="nav-job-badge" hidden>Running</span></button>
+        <button class="nav-item" data-screen="scripts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Script Studio</span></button>
+        <button class="nav-item" data-screen="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Topic Ideas</span></button>
+        <button class="nav-item" data-screen="characters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Characters</span></button>
+        <button class="nav-item" data-screen="voices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><span>Voices</span></button>
+        <button class="nav-item" data-screen="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>Video Library</span><span class="badge-count" id="nav-video-count">0</span></button>
+        <button class="nav-item" data-screen="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Job History</span></button>
+        <button class="nav-item" data-screen="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Engines &amp; Paths</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="gpu-badge"><div class="gpu-indicator online" id="engine-dot"></div><div class="gpu-info"><span class="gpu-title" id="engine-title">Local engines</span><span class="gpu-sub" id="engine-sub">checking…</span></div></div>
+        <div class="cost-badge">100% local · no cloud APIs</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="bar-left"><h1 id="screen-title">Studio Dashboard</h1><p id="screen-subtitle">Overview of your local Shorts pipeline</p></div>
+        <div class="bar-right"><div class="telemetry-pill"><span class="pulse-dot"></span><span id="disk-free-pill">–</span></div><button class="btn btn-primary" id="btn-quick-create"><span>Create New Short</span></button></div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="screen active" id="screen-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-content"><span class="stat-label">Exported videos</span><h3 class="stat-value" id="stat-total-videos">–</h3><span class="stat-meta text-emerald">in exports/</span></div></div>
+          <div class="stat-card"><div class="stat-content"><span class="stat-label">Projects</span><h3 class="stat-value" id="stat-projects">–</h3><span class="stat-meta">in projects/</span></div></div>
+          <div class="stat-card"><div class="stat-content"><span class="stat-label">Languages ready</span><h3 class="stat-value" id="stat-langs">–</h3><span class="stat-meta" id="stat-langs-sub"></span></div></div>
+          <div class="stat-card"><div class="stat-content"><span class="stat-label">AI images (ComfyUI)</span><h3 class="stat-value" id="stat-comfy">–</h3><span class="stat-meta" id="stat-comfy-sub"></span></div></div>
+        </div>
+        <div class="content-split-grid">
+          <div class="panel"><div class="panel-header"><div><h3>Recent projects</h3><p>Settings shown are the ones each video was actually made with</p></div><button class="btn btn-secondary btn-sm" data-goto="library">View library</button></div><div class="projects-list" id="dashboard-recent-projects"></div></div>
+          <div class="panel"><div class="panel-header"><div><h3>Topic ideas</h3><p>Pre-filled with supported options</p></div><button class="btn btn-secondary btn-sm" data-goto="trends">Browse</button></div><div class="trending-mini-list" id="dashboard-trend-mini"></div></div>
+        </div>
+      </section>
+
+      <!-- CREATE -->
+      <section class="screen" id="screen-create">
+        <div class="create-container">
+          <div class="panel">
+            <div class="panel-header"><div><h2>Create a Short</h2><p>Every option below is checked against the models installed on this machine. Unsupported combinations are explained, never silently replaced.</p></div></div>
+            <form class="create-form" id="form-create" autocomplete="off">
+              <div class="form-group" data-field="topic">
+                <label for="f-topic">Short topic or question</label>
+                <div class="input-with-button"><input type="text" id="f-topic" maxlength="220" placeholder="e.g. How ISRO reached Mars for less than the budget of Gravity"><button type="button" class="btn btn-secondary" id="btn-random">🎲 Idea</button></div>
+                <span class="field-error"></span>
+              </div>
+              <div class="form-row three-col">
+                <div class="form-group" data-field="language"><label for="f-language">Language &amp; dialect <span class="tip" title="Hindi options write the script in Devanagari and use Kokoro's Hindi voices. Hinglish shows Roman-script captions while the Hindi voice reads a Devanagari version.">?</span></label><select id="f-language"></select><span class="field-error"></span></div>
+                <div class="form-group" data-field="personality"><label for="f-personality">Narration personality <span class="tip" title="Shapes the script's tone and wording, plus the speaking speed and pauses (Kokoro supports speed only, not emotion).">?</span></label><select id="f-personality"></select><span class="field-error"></span></div>
+                <div class="form-group" data-field="voice"><label for="f-voice">Voice profile (Kokoro ONNX) <span class="tip" title="Only voices installed in models/kokoro that speak the selected language are offered.">?</span></label><select id="f-voice"></select><span class="field-error"></span></div>
+              </div>
+              <div class="form-row three-col">
+                <div class="form-group" data-field="style"><label for="f-style">Visual animation style</label><select id="f-style"></select><span class="field-hint" id="style-hint"></span><span class="field-error"></span></div>
+                <div class="form-group" data-field="durationSeconds"><label for="f-duration">Target duration <span class="tip" title="Controls script length, number of shots and pacing. The final video must land within the tolerance shown.">?</span></label><div class="range-display"><input type="range" id="f-duration" min="20" max="60" step="5" value="40"><span id="duration-val">40s</span></div><span class="field-hint" id="duration-hint"></span><span class="field-error"></span></div>
+                <div class="form-group" data-field="character"><label for="f-character">Lead character</label><select id="f-character"></select><span class="field-hint" id="character-hint"></span><span class="field-error"></span></div>
+              </div>
+              <div class="form-row three-col">
+                <div class="form-group" data-field="visualMode"><label for="f-visualmode">Visual mode <span class="tip" title="Hybrid adds locally generated AI images (ComfyUI) to the 3D/2D animation. Procedural uses only animated scenes.">?</span></label><select id="f-visualmode"></select><span class="field-error"></span></div>
+                <div class="form-group span-2"><label>Resolved configuration</label><div class="config-summary" id="config-summary">–</div></div>
+              </div>
+              <div class="form-errors" id="form-errors" hidden></div>
+              <div class="preview-state" id="preview-state" hidden></div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary btn-lg" id="btn-manual" title="Create the project with these options and write or paste the script yourself (no script model needed)"><span>Write Script Myself</span></button>
+                <button type="button" class="btn btn-secondary btn-lg" id="btn-preview"><span>Generate &amp; Preview Script</span></button>
+                <button type="button" class="btn btn-primary btn-lg" id="btn-render"><span>Generate Complete MP4 Video</span></button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel progress-panel" id="job-panel" hidden>
+            <div class="progress-header">
+              <div class="pulse-indicator" id="job-pulse"></div>
+              <div class="job-head"><h3 id="job-title">–</h3><p id="job-message">–</p></div>
+              <span class="progress-percent" id="job-percent">0%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="job-fill" style="width:0%"></div></div>
+            <div class="job-meta" id="job-meta"></div>
+            <ol class="stage-list" id="job-stages"></ol>
+            <div class="job-warnings" id="job-warnings" hidden></div>
+            <div class="job-result" id="job-result" hidden></div>
+            <div class="job-actions"><button class="btn btn-secondary btn-sm" id="btn-cancel">Cancel job</button><button class="btn btn-secondary btn-sm" id="btn-retry" hidden>Retry</button><button class="btn btn-secondary btn-sm" id="btn-toggle-log">Show log</button><span class="transport" id="job-transport"></span></div>
+            <div class="progress-terminal" id="job-log" hidden></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCRIPT STUDIO -->
+      <section class="screen" id="screen-scripts">
+        <div class="script-studio-container">
+          <div class="panel script-left-panel">
+            <div class="panel-header">
+              <div><h3 id="script-title">No script loaded</h3><p id="script-sub">Generate a preview on the Create screen, or open a project from the library.</p></div>
+              <select id="script-version" class="version-select" hidden></select>
+            </div>
+            <div class="script-stats" id="script-stats"></div>
+            <div class="script-editor" id="script-editor"></div>
+            <div class="form-actions">
+              <button class="btn btn-secondary btn-sm" id="btn-add-line" disabled>+ Line</button>
+              <button class="btn btn-secondary" id="btn-regenerate" disabled>Regenerate</button>
+              <button class="btn btn-secondary" id="btn-save-version" disabled>Save as new version</button>
+              <button class="btn btn-primary" id="btn-approve-render" disabled>Approve &amp; render this version</button>
+            </div>
+            <div class="form-errors" id="script-errors" hidden></div>
+          </div>
+          <div class="panel script-right-panel">
+            <div class="panel-header"><h3>How lines become shots</h3></div>
+            <div class="rules-card"><h4>Narration</h4><p>• <b>Text</b> is spoken and captioned, in the project's language.</p><p>• Hinglish lines also need <b>Say</b>: the same sentence in Devanagari for the Hindi voice.</p></div>
+            <div class="rules-card"><h4>Visuals</h4><p>• <b>Visual</b> (English) describes what to show; the storyboard planner turns it into a scene, props and actions.</p><p>• <b>On screen</b> adds a number, year or comparison (e.g. <code>Gravity $100M vs Mangalyaan $74M</code>).</p></div>
+            <div class="rules-card"><h4>Facts</h4><p>The local model can be wrong. Check names, dates and numbers before rendering.</p></div>
+            <div class="rules-card" id="script-config-card"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOPIC IDEAS -->
+      <section class="screen" id="screen-trends"><div class="section-intro"><h2>Topic ideas</h2><p>Each idea fills the form with a supported language, personality and style. You can change anything.</p></div><div class="trends-grid" id="trends-grid"></div></section>
+
+      <!-- CHARACTERS -->
+      <section class="screen" id="screen-characters"><div class="section-intro"><h2>Character roster</h2><p>Registered characters with a 3D design in <code>character3d.js</code>. In 3D styles they appear as the 3D model; in 2D styles as a 2D figure in the same colours and signature accessory.</p></div><div class="characters-grid" id="characters-grid"></div></section>
+
+      <!-- VOICES -->
+      <section class="screen" id="screen-voices"><div class="section-intro"><h2>Installed voices</h2><p id="voices-intro">Read from models/kokoro/voices-v1.0.bin.</p></div><div class="voices-grid" id="voices-grid"></div></section>
+
+      <!-- LIBRARY -->
+      <section class="screen" id="screen-library"><div class="section-intro"><h2>Video library</h2><p>Videos in <code>exports/</code>, with the settings each one was actually created with.</p></div><div class="library-grid" id="library-grid"></div></section>
+
+      <!-- JOBS -->
+      <section class="screen" id="screen-jobs"><div class="section-intro"><h2>Job history</h2><p>Every script and render job with its real stage timings. Stored in <code>logs/jobs/</code>.</p></div><div class="job-history" id="job-history"></div></section>
+
+      <!-- SETTINGS -->
+      <section class="screen" id="screen-settings">
+        <div class="settings-container">
+          <div class="panel"><div class="panel-header"><h3>Local engines</h3><p>Detected from the files on disk</p></div><div class="settings-grid" id="engines-grid"></div></div>
+          <div class="panel"><div class="panel-header"><h3>Workspace paths</h3><p>All reads and writes resolve inside the workspace</p></div><div class="settings-grid" id="paths-grid"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="video-modal" style="display:none">
+    <div class="modal-card">
+      <div class="modal-header"><h3 id="modal-title">Preview</h3><button class="modal-close" id="btn-close-modal">&times;</button></div>
+      <div class="modal-body">
+        <div class="video-preview-wrapper"><video id="modal-player" controls playsinline preload="auto"></video></div>
+        <div class="modal-meta-pane"><h4>Created with</h4><div id="modal-settings"></div><div class="modal-actions"><a id="modal-download" class="btn btn-primary btn-block" href="#" download>Download MP4</a></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

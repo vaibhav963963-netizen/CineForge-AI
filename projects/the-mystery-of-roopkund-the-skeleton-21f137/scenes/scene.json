@@ -1,0 +1,445 @@
+{
+  "schema": 1,
+  "title": "The Skeleton Lake of the Himalayas",
+  "style": {
+    "id": "night-file",
+    "name": "Night File 3D",
+    "summary": "Mysteries and investigations: dark places with one light source, faceless silhouettes, red marks the subject, typewriter captions, film grain, slow camera.",
+    "dimension": "3d",
+    "renderer": "webgl",
+    "characterMode": "3d-model",
+    "palette": {
+      "bg": "#07080C",
+      "sky": "#0B0E16",
+      "horizon": "#151A26",
+      "ground": "#121318",
+      "ink": "#0A0A0A",
+      "primary": "#E4322B",
+      "secondary": "#F1D9A6",
+      "accent": "#E4322B",
+      "paper": "#D8CFBA",
+      "text": "#EFE6D2"
+    },
+    "grade": {
+      "bloom": 0.8,
+      "bloomThreshold": 0.55,
+      "warm": 0,
+      "sat": 0.85,
+      "vignette": 0.6,
+      "grain": 0.05,
+      "exposure": 1.2,
+      "aperture": 0.003
+    },
+    "lighting": {
+      "key": "#F1D9A6",
+      "keyI": 2.4,
+      "rim": "#E4322B",
+      "rimI": 2.6,
+      "sky": "#1A2030",
+      "ground": "#050505",
+      "hemiI": 0.18,
+      "fog": "#07080C",
+      "mood": "one hard light per scene, everything else falls into darkness, thin red rim on the subject"
+    },
+    "captions": {
+      "font": "FreeMono",
+      "weight": 700,
+      "y": 1560,
+      "size": 84,
+      "fill": "#EFE6D2",
+      "stroke": "#000000",
+      "strokeW": 10,
+      "hi": "#E4322B",
+      "box": null,
+      "maxWords": 4,
+      "upper": false,
+      "typeOn": true,
+      "pop": false
+    },
+    "camera": {
+      "behavior": "slow",
+      "moves": [
+        "push",
+        "drift",
+        "dolly"
+      ],
+      "intensity": 0.4
+    },
+    "transition": {
+      "type": "black",
+      "duration": 0.3
+    },
+    "typography": {
+      "title": "FreeMono",
+      "titleWeight": 700,
+      "label": "FreeMono",
+      "labelWeight": 700
+    },
+    "image": {
+      "prompt": "dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw"
+    },
+    "music": "tension",
+    "sfx": [
+      "whoosh",
+      "tock",
+      "slam",
+      "thud"
+    ],
+    "pacing": {
+      "minShot": 2.6,
+      "maxShot": 5
+    },
+    "available": true,
+    "reason": null
+  },
+  "fonts": [
+    {
+      "family": "Inter",
+      "weight": 900,
+      "sample": "A"
+    },
+    {
+      "family": "Inter",
+      "weight": 800,
+      "sample": "A"
+    },
+    {
+      "family": "Caladea",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "FreeMono",
+      "weight": 700,
+      "sample": "A"
+    },
+    {
+      "family": "StudioDeva",
+      "weight": 800,
+      "sample": "अ"
+    }
+  ],
+  "music": "tension",
+  "language": {
+    "id": "en",
+    "code": "en",
+    "captionScript": "Latn"
+  },
+  "character": {
+    "id": "none",
+    "mode": "none"
+  },
+  "targetSeconds": 30,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 4.441,
+      "narration": "High in the Himalayas lies a frozen lake called Roopkund.",
+      "visualObjective": "a frozen glacial lake high in snowy mountains at night",
+      "subject": "snowy Himalayan mountains and a frozen lake",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "mountains",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: wide push",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "mystery"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 4.441,
+      "end": 7.888,
+      "narration": "Around it lie hundreds of human skeletons.",
+      "visualObjective": "a dark mysterious shoreline with old bones under a single lamp",
+      "subject": "a dark mysterious place",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "mountains",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: wide drift",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "mystery"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 7.888,
+      "end": 12.469,
+      "narration": "A forest ranger found them in 1942.",
+      "visualObjective": "a forest guard with a lantern discovering something in the dark",
+      "subject": "nature",
+      "environment": "nature",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "dolly"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "nature",
+        "props": [],
+        "actors": []
+      },
+      "animation": "camera: close dolly",
+      "overlay": {
+        "type": "date",
+        "text": "1942"
+      },
+      "transition": "black",
+      "concepts": [
+        "nature",
+        "mystery"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3
+      ],
+      "start": 12.469,
+      "end": 15.531,
+      "narration": "People believed one storm killed them all.",
+      "visualObjective": "a dark stormy mountain night",
+      "subject": "a dark mysterious place",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "mountains",
+        "props": [],
+        "actors": [
+          "generic extra"
+        ]
+      },
+      "animation": "extra: explain; camera: wide push",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "mystery",
+        "people"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        4
+      ],
+      "start": 15.531,
+      "end": 20.008,
+      "narration": "But in 2019, scientists tested their DNA.",
+      "visualObjective": "a scientist examining DNA samples in a lab",
+      "subject": "atom",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "dna"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "drift"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "atom",
+          "dna"
+        ],
+        "actors": [
+          "generic extra"
+        ]
+      },
+      "animation": "extra: explain; camera: medium drift",
+      "overlay": {
+        "type": "date",
+        "text": "2019"
+      },
+      "transition": "black",
+      "concepts": [
+        "science",
+        "body",
+        "people"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        5
+      ],
+      "start": 20.008,
+      "end": 23.293,
+      "narration": "They died in different groups, centuries apart.",
+      "visualObjective": "DNA strands next to old case files on a desk",
+      "subject": "dna",
+      "environment": "lab",
+      "objects": [
+        "dna"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "high",
+        "move": "dolly"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "dna"
+        ],
+        "actors": []
+      },
+      "animation": "camera: high dolly",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "body"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S07",
+      "lines": [
+        6
+      ],
+      "start": 23.293,
+      "end": 27.818,
+      "narration": "Why they all ended up here is still unsolved.",
+      "visualObjective": "the dark lake under a single light, a case file marked unsolved",
+      "subject": "question",
+      "environment": "mountains",
+      "objects": [
+        "question"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "mountains",
+        "props": [
+          "question"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide push",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "mystery",
+        "question"
+      ],
+      "spaceView": null
+    }
+  ]
+}

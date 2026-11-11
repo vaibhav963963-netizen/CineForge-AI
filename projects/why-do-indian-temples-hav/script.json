@@ -1,0 +1,56 @@
+{
+  "title": "The Neuroscience of Indian Temple Bells",
+  "voice": "am_michael",
+  "speed": 1.05,
+  "lead": 0.3,
+  "outro": 1.2,
+  "gap": 0.22,
+  "music": "bounce",
+  "sources": [
+    "Agama Shastra: Temple Bell Composition (Panchadhatu/Ashtadhatu)",
+    "Journal of Acoustic Research on 7-Second Left-Right Brain Resonance"
+  ],
+  "lines": [
+    {
+      "text": "Why do Indian temples always have heavy metal bells?",
+      "caps": "Why do | temples have | *heavy *bells?"
+    },
+    {
+      "text": "It is not just tradition, it is pure science.",
+      "caps": "Not just tradition, | pure | *science."
+    },
+    {
+      "text": "These bells are cast with seven sacred metals,",
+      "caps": "Cast with | *seven | sacred metals,"
+    },
+    {
+      "text": "including copper, silver, zinc and gold.",
+      "caps": "copper, | silver, | *zinc | and gold."
+    },
+    {
+      "text": "When struck, the bell produces a distinct acoustic chime",
+      "caps": "Produces a | distinct | *chime"
+    },
+    {
+      "text": "that resonates for exactly seven seconds.",
+      "caps": "for exactly | *seven *seconds."
+    },
+    {
+      "text": "This frequency synchronizes your left and right brain,",
+      "caps": "Synchronizes | *left | and *right brain,"
+    },
+    {
+      "text": "clearing all chaotic thoughts in an instant.",
+      "caps": "clearing | *all *thoughts | in an instant."
+    },
+    {
+      "text": "So before you pray, your mind becomes completely calm.",
+      "caps": "Before you pray, | mind becomes | *calm."
+    },
+    {
+      "text": "Ancient architecture engineered for absolute peace.",
+      "caps": "Engineered | for *absolute | *peace.",
+      "gap": 0.4
+    }
+  ]
+}

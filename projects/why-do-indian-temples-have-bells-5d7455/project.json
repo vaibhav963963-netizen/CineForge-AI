@@ -1,0 +1,210 @@
+{
+  "schema": 1,
+  "id": "why-do-indian-temples-have-bells-5d7455",
+  "title": "Why Do Indian Temples Have Bells?",
+  "topic": "Why Do Indian Temples Have Bells?",
+  "status": "rendered",
+  "createdAt": "2026-11-10T15:46:06.748Z",
+  "updatedAt": "2026-11-10T15:56:03.722Z",
+  "config": {
+    "schema": 1,
+    "topic": "Why Do Indian Temples Have Bells?",
+    "language": {
+      "id": "hi-conversational",
+      "code": "hi",
+      "name": "Hindi — Conversational (Devanagari)",
+      "script": "Deva",
+      "dialect": "conversational",
+      "locale": "hi-IN",
+      "captionScript": "Deva",
+      "ttsScript": "Deva"
+    },
+    "narration": {
+      "personality": "educational",
+      "personalityName": "Friendly Educational Explainer",
+      "voice": "hf_alpha",
+      "voiceName": "Alpha (Hindi, Female)",
+      "voiceLanguage": "hi",
+      "ttsLang": "hi",
+      "speed": 1,
+      "delivery": {
+        "speed": 1,
+        "gap": 0.3,
+        "lead": 0.3,
+        "outro": 1
+      }
+    },
+    "visual": {
+      "style": "tall-tale",
+      "styleName": "Tall Tale 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "curious_student",
+      "characterName": "Aarav",
+      "archetype": "curious_student",
+      "characterMode": "3d-model",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 45,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)",
+      "language": "hi"
+    }
+  },
+  "configHash": "a0b2151fcaee2675",
+  "workspacePath": "projects/why-do-indian-temples-have-bells-5d7455",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-10T15:46:06.783Z",
+        "source": "manual",
+        "baseVersion": null,
+        "fingerprint": "89295d31be54",
+        "configHash": "a0b2151fcaee2675",
+        "wordCount": 107,
+        "estimatedSeconds": 51.8,
+        "language": "hi-conversational",
+        "personality": "educational",
+        "targetSeconds": 45,
+        "approved": true,
+        "approvedAt": "2026-11-10T15:46:06.792Z"
+      }
+    ]
+  },
+  "storyboard": {
+    "version": 1,
+    "shots": 11,
+    "planner": "rules+lexicon v1",
+    "methods": {
+      "scene3d": 11
+    },
+    "environments": [
+      "temple",
+      "lab"
+    ]
+  },
+  "models": {
+    "tts": {
+      "engine": "Kokoro-82M v1.0 ONNX",
+      "voice": "hf_alpha",
+      "lang": "hi"
+    },
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)"
+    }
+  },
+  "assets": {
+    "runtime": {
+      "runtime": "engine/runtime",
+      "style": "tall-tale",
+      "renderer": "webgl",
+      "fonts": [
+        "Inter-Black.otf",
+        "Inter-ExtraBold.otf",
+        "Caladea-Bold.ttf",
+        "FreeMonoBold.ttf",
+        "NotoSansDevanagari-Variable.ttf → StudioDeva.ttf"
+      ],
+      "threeJs": "three.js r170 (MIT)",
+      "characterAsset": "engine/styles/tall-tale/example/src/core/character3d.js"
+    },
+    "character": {
+      "id": "curious_student",
+      "name": "Aarav",
+      "archetype": "curious_student",
+      "mode": "3d-model",
+      "colors": {
+        "skin": "#F7C59F",
+        "shirt": "#FB8C00",
+        "pants": "#37474F",
+        "hair": "#2B2B2B",
+        "accent": "#FB8C00",
+        "accent2": "#00ACC1"
+      },
+      "accessory": "none",
+      "attire": "Sunset Orange Graphic Tee (#FB8C00) & School Backpack"
+    },
+    "environments": [
+      "temple",
+      "lab"
+    ],
+    "props": [
+      "question",
+      "brain",
+      "atom",
+      "bulb"
+    ]
+  },
+  "voice": {
+    "id": "hf_alpha",
+    "ttsLang": "hi",
+    "speed": 1,
+    "narrationSeconds": 43.012,
+    "speechSeconds": 38.711,
+    "model": "Kokoro-82M v1.0 ONNX",
+    "synthSeconds": 144.5
+  },
+  "render": {
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025AC) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "jobId": "job_20261110154606_ca8cf5",
+    "finishedAt": "2026-11-10T15:56:03.722Z",
+    "durationSeconds": 43,
+    "targetSeconds": 45,
+    "withinTolerance": true,
+    "frames": 1290,
+    "captureSeconds": 163,
+    "file": "projects/why-do-indian-temples-have-bells-5d7455/renders/why-do-indian-temples-have-bells-5d7455.mp4",
+    "exportPath": "exports/why-do-indian-temples-have-bells-5d7455.mp4",
+    "scriptVersion": 1,
+    "storyboardVersion": 1
+  },
+  "qa": {
+    "status": "PASS",
+    "checks": {
+      "mp4_readable": true,
+      "resolution_1080x1920": true,
+      "fps_matches": true,
+      "video_h264": true,
+      "audio_aac": true,
+      "audio_not_silent": true,
+      "duration_within_tolerance": true,
+      "video_matches_narration": true,
+      "no_long_freezes": true,
+      "no_black_gaps": true,
+      "visible_content": true
+    },
+    "failed": [],
+    "report": "projects/why-do-indian-temples-have-bells-5d7455/review/qa_report.json"
+  },
+  "exportPath": "exports/why-do-indian-temples-have-bells-5d7455.mp4",
+  "history": [
+    {
+      "jobId": "job_20261110154606_ca8cf5",
+      "status": "started",
+      "at": "2026-11-10T15:46:06.901Z"
+    },
+    {
+      "jobId": "job_20261110154606_ca8cf5",
+      "status": "completed",
+      "at": "2026-11-10T15:56:03.722Z"
+    }
+  ],
+  "alignment": {
+    "model": "faster-whisper small (multilingual)",
+    "words": 107,
+    "matchRate": 0.991,
+    "detectedLanguage": "hi",
+    "languageProbability": 0.989,
+    "languageCheck": "whisper-language-id",
+    "transcriptSample": "आपने देखा होगा, मंदिर में गुस्ते ही लोग गंटी बजाते है. पर ये गंटी आखिर लगाई क्यों जाती है. परमपरा के अनुसार गंटी की आवास पुजा की शुर्वात का संकित है. मानिता है कि ये आवास मन को बतकने से रोकती है. गंटिया अकसर पीटल या कई दातों के मिश्रन से बनती है. इसले इनकी आवास टेज होती है और देर तक गुजती है. भीर और"
+  }
+}

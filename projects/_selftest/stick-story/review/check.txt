@@ -1,0 +1,48 @@
+duration 33.83 s
+S01     0.00 →   3.25  (3.25 s)  evening, hero scrolls phone, looks up
+S02     3.25 →   6.32  (3.07 s)  lamp on, then BLACKOUT on "dark"
+S03     6.32 →   8.16  (1.84 s)  kitchen, hand stops before the fridge
+S04     8.16 →  13.90  (5.74 s)  fridge with 4 HOURS and 2 DAYS timers
+S05    13.90 →  16.13  (2.23 s)  flashlight beam on; candle gets a red X
+S06    16.13 →  18.86  (2.73 s)  candle flame licks toward the curtain
+S07    18.86 →  21.10  (2.24 s)  bottles pop onto the counter one by one
+S08    21.10 →  23.30  (2.20 s)  big rule card: 1 gallon / person / day
+S09    23.30 →  25.26  (1.96 s)  hero pulls the TV plug from the socket
+S10    25.26 →  28.43  (3.17 s)  power returns: zap on the TV
+S11    28.43 →  30.46  (2.03 s)  DAY 3 card, lamp flickers back on
+S12    30.46 →  33.83  (3.37 s)  daylight, hero relaxed, big check
+captions:
+    0.30–0.71   What would *you
+    0.71–1.45   do if the *power
+    1.45–3.35   went *out?
+    3.35–4.81   Nine at *night
+    4.81–6.59   everything goes *dark.
+    6.59–6.95   Step *one:
+    6.95–8.25   don't touch the *fridge.
+    8.25–9.37   Keep it *closed
+    9.37–10.61  food stays *cold
+   10.61–11.89  about four *hours
+   11.89–12.57  a full *freezer
+   12.57–14.13  lasts two *days.
+   14.13–14.53  Step *two:
+   14.53–15.29  grab a *flashlight
+   15.29–16.39  not a *candle.
+   16.39–17.63  *Candles?
+   17.63–19.11  real *fire risk.
+   19.11–19.59  Step *three:
+   19.59–20.23  fill some *bottles
+   20.23–21.13  with *water,
+   21.13–21.67  a *gallon
+   21.67–22.35  per *person,
+   22.35–23.51  every *day.
+   23.51–24.13  Step *four:
+   24.13–25.29  unplug your *electronics,
+   25.29–26.97  power comes *back
+   26.97–27.27  a *surge
+   27.27–28.46  can *fry them.
+   28.46–29.05  Day *three:
+   29.05–29.31  the *lights
+   29.31–30.59  flicker back *on.
+   30.59–31.11  You were *ready,
+   31.11–33.83  so you're *fine.
+CHECK OK
