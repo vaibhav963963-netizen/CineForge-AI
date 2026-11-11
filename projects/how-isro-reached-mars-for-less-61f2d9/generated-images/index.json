@@ -1,0 +1,184 @@
+{
+  "shots": {
+    "S03": {
+      "file": "generated-images/S03.png",
+      "prompt": "a spacecraft orbiting the red planet Mars, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition, empty background plate",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 2766957542,
+      "key": "8d5051fd0078fb26",
+      "cached": true,
+      "seconds": 0,
+      "exposure": {
+        "seed": 2766957542,
+        "avg": 53.5578,
+        "low": 24,
+        "high": 107,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:06:15.491Z"
+    },
+    "S04": {
+      "file": "generated-images/S04.png",
+      "prompt": "satellite orbiting Earth, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 2501798542,
+      "key": "3518d02e1f80d6d5",
+      "cached": false,
+      "seconds": 30.8,
+      "exposure": {
+        "seed": 2501798542,
+        "avg": 56.4823,
+        "low": 27,
+        "high": 115,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:07:12.116Z"
+    },
+    "S05": {
+      "file": "generated-images/S05.png",
+      "prompt": "earth and a satellite in orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 251171549,
+      "key": "55383be786d12d12",
+      "cached": false,
+      "seconds": 22.4,
+      "exposure": {
+        "seed": 251171549,
+        "avg": 70.3906,
+        "low": 22,
+        "high": 152,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:07:34.830Z"
+    },
+    "S06": {
+      "file": "generated-images/S06.png",
+      "prompt": "satellite gradually increasing its orbital altitude, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 897668191,
+      "key": "13f5c8ef95c0fc22",
+      "cached": false,
+      "seconds": 23.3,
+      "exposure": {
+        "seed": 897668191,
+        "avg": 64.0945,
+        "low": 21,
+        "high": 139,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:07:58.303Z"
+    },
+    "S07": {
+      "file": "generated-images/S07.png",
+      "prompt": "the spacecraft leaving Earth's orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 3010505598,
+      "key": "9a5887d1b7600313",
+      "cached": false,
+      "seconds": 24.1,
+      "exposure": {
+        "seed": 3010505598,
+        "avg": 58.3694,
+        "low": 23,
+        "high": 131,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:08:22.573Z"
+    },
+    "S08": {
+      "file": "generated-images/S08.png",
+      "prompt": "a wide view of the place in space, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 3842227784,
+      "key": "7c0e8e1dce209010",
+      "cached": true,
+      "seconds": 0,
+      "exposure": {
+        "seed": 3842227784,
+        "avg": 54.6853,
+        "low": 32,
+        "high": 99,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:08:22.796Z"
+    },
+    "S09": {
+      "file": "generated-images/S09.png",
+      "prompt": "the spacecraft entering Mars orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 412540840,
+      "key": "b1c7a7733a1acc0b",
+      "cached": true,
+      "seconds": 0,
+      "exposure": {
+        "seed": 412540840,
+        "avg": 85.725,
+        "low": 45,
+        "high": 142,
+        "problem": null
+      },
+      "attempts": 2,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:08:23.136Z"
+    },
+    "S10": {
+      "file": "generated-images/S10.png",
+      "prompt": "the Mars orbiter in orbit around Mars, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 1449077344,
+      "key": "cbd4ec8aba0b2c71",
+      "cached": false,
+      "seconds": 24.6,
+      "exposure": {
+        "seed": 1449077344,
+        "avg": 75.2902,
+        "low": 36,
+        "high": 127,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:08:47.879Z"
+    },
+    "S12": {
+      "file": "generated-images/S12.png",
+      "prompt": "A wide shot of Mars from space, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "seed": 517475949,
+      "key": "7d80033b655097b7",
+      "cached": false,
+      "seconds": 25.4,
+      "exposure": {
+        "seed": 517475949,
+        "avg": 60.9196,
+        "low": 22,
+        "high": 110,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T17:09:13.489Z"
+    }
+  }
+}

@@ -1,0 +1,437 @@
+{
+  "schema": 1,
+  "id": "how-isro-reached-mars-for-less-61f2d9",
+  "title": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+  "topic": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+  "status": "rendered",
+  "createdAt": "2026-11-11T17:02:21.874Z",
+  "updatedAt": "2026-11-11T17:10:58.889Z",
+  "config": {
+    "schema": 1,
+    "topic": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+    "language": {
+      "id": "hi-conversational",
+      "code": "hi",
+      "name": "Hindi — Conversational (Devanagari)",
+      "script": "Deva",
+      "dialect": "conversational",
+      "locale": "hi-IN",
+      "captionScript": "Deva",
+      "ttsScript": "Deva"
+    },
+    "narration": {
+      "personality": "mumbai-conversational",
+      "personalityName": "Mumbai Conversational",
+      "voice": "hm_omega",
+      "voiceName": "Omega (Hindi, Male)",
+      "voiceLanguage": "hi",
+      "ttsLang": "hi",
+      "speed": 1.06,
+      "delivery": {
+        "speed": 1.06,
+        "gap": 0.2,
+        "lead": 0.25,
+        "outro": 0.9
+      }
+    },
+    "visual": {
+      "style": "deep-dive",
+      "styleName": "Deep Dive 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "desi_hero",
+      "characterName": "Bunty",
+      "archetype": "desi_hero",
+      "characterMode": "3d-model",
+      "visualMode": "hybrid-local"
+    },
+    "durationSeconds": 40,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)",
+      "language": "hi"
+    }
+  },
+  "configHash": "6d12a436037c3800",
+  "workspacePath": "projects/how-isro-reached-mars-for-less-61f2d9",
+  "script": {
+    "approvedVersion": 2,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-11T17:03:54.196Z",
+        "factsProvided": false,
+        "factFile": "facts/isro-mars-orbiter.json",
+        "claimsApproved": false,
+        "claimsToVerify": [
+          {
+            "line": 1,
+            "text": "सूनो, एकदम अप्रत्याशित कहानी है!।",
+            "check": [
+              "quantity \"एक\""
+            ]
+          },
+          {
+            "line": 2,
+            "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ।",
+            "check": [
+              "number ₹450",
+              "quantity \"करोड़\""
+            ]
+          },
+          {
+            "line": 3,
+            "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना।",
+            "check": [
+              "number ₹100",
+              "quantity \"करोड़\""
+            ]
+          },
+          {
+            "line": 5,
+            "text": "उन्होंने एक महीना पृथ्वी के चारों ओर चक्कर लगाया।",
+            "check": [
+              "quantity \"एक\"",
+              "quantity \"चार\""
+            ]
+          },
+          {
+            "line": 7,
+            "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली।",
+            "check": [
+              "year 2013",
+              "number 1"
+            ]
+          },
+          {
+            "line": 8,
+            "text": "मार्स के लिए यात्रा ₹298 दिनों का था।",
+            "check": [
+              "number ₹298"
+            ]
+          },
+          {
+            "line": 9,
+            "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला।",
+            "check": [
+              "year 2014",
+              "number ₹24"
+            ]
+          },
+          {
+            "line": 10,
+            "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!।",
+            "check": [
+              "number ₹7.4",
+              "quantity \"करोड़\""
+            ]
+          },
+          {
+            "line": 11,
+            "text": "इसरो ने मार्स पर 8 साल तक काम किया।",
+            "check": [
+              "number 8"
+            ]
+          },
+          {
+            "line": 12,
+            "text": "एकदम कमाल है, ना?।",
+            "check": [
+              "quantity \"एक\""
+            ]
+          }
+        ],
+        "source": "llm",
+        "fingerprint": "ca17e8bea4b4",
+        "configHash": "6d12a436037c3800",
+        "model": {
+          "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+          "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+          "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+          "runtime": "llama.cpp (Vulkan)"
+        },
+        "wordCount": 94,
+        "estimatedSeconds": 42,
+        "language": "hi-conversational",
+        "personality": "mumbai-conversational",
+        "targetSeconds": 40,
+        "claimSummary": {
+          "factFile": "facts/isro-mars-orbiter.json",
+          "userFacts": false,
+          "total": 26,
+          "supported": 23,
+          "unverified": 2,
+          "contradicted": 1,
+          "needsAttribution": 0,
+          "needsReview": 3
+        },
+        "approved": false,
+        "approvedAt": "2026-11-11T17:03:54.218Z"
+      },
+      {
+        "version": 2,
+        "createdAt": "2026-11-11T17:04:42.315Z",
+        "source": "edited",
+        "baseVersion": 1,
+        "fingerprint": "ca17e8bea4b4",
+        "configHash": "6d12a436037c3800",
+        "wordCount": 97,
+        "estimatedSeconds": 43.8,
+        "language": "hi-conversational",
+        "personality": "mumbai-conversational",
+        "targetSeconds": 40,
+        "factFile": "facts/isro-mars-orbiter.json",
+        "claimsApproved": true,
+        "claimSummary": {
+          "factFile": "facts/isro-mars-orbiter.json",
+          "userFacts": false,
+          "total": 23,
+          "supported": 23,
+          "unverified": 0,
+          "contradicted": 0,
+          "needsAttribution": 0,
+          "needsReview": 0
+        },
+        "confirmedClaims": [],
+        "claimsApprovedAt": "2026-11-11T17:04:42.332Z",
+        "claimsApprovedBy": "author (approveClaims)",
+        "approved": true,
+        "approvedAt": "2026-11-11T17:04:42.342Z"
+      }
+    ]
+  },
+  "storyboard": {
+    "version": 1,
+    "shots": 12,
+    "planner": "rules+lexicon v2",
+    "methods": {
+      "scene3d": 2,
+      "hybrid": 1,
+      "image": 9
+    },
+    "environments": [
+      "launchpad",
+      "studio",
+      "space"
+    ]
+  },
+  "models": {
+    "imageGeneration": {
+      "engine": "ComfyUI",
+      "checkpoint": "DreamShaper_8_pruned.safetensors",
+      "license": "CreativeML OpenRAIL-M (use-based restrictions apply; commercial use of outputs permitted)"
+    },
+    "tts": {
+      "engine": "Kokoro-82M v1.0 ONNX",
+      "voice": "hm_omega",
+      "lang": "hi"
+    },
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)"
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "shot": "S03",
+        "file": "generated-images/S03.png",
+        "seed": 2766957542,
+        "cached": true,
+        "seconds": 0,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S04",
+        "file": "generated-images/S04.png",
+        "seed": 2501798542,
+        "cached": false,
+        "seconds": 30.8,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S05",
+        "file": "generated-images/S05.png",
+        "seed": 251171549,
+        "cached": false,
+        "seconds": 22.4,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S06",
+        "file": "generated-images/S06.png",
+        "seed": 897668191,
+        "cached": false,
+        "seconds": 23.3,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S07",
+        "file": "generated-images/S07.png",
+        "seed": 3010505598,
+        "cached": false,
+        "seconds": 24.1,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S08",
+        "file": "generated-images/S08.png",
+        "seed": 3842227784,
+        "cached": true,
+        "seconds": 0,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S09",
+        "file": "generated-images/S09.png",
+        "seed": 412540840,
+        "cached": true,
+        "seconds": 0,
+        "attempts": 2,
+        "rejected": false
+      },
+      {
+        "shot": "S10",
+        "file": "generated-images/S10.png",
+        "seed": 1449077344,
+        "cached": false,
+        "seconds": 24.6,
+        "attempts": 1,
+        "rejected": false
+      },
+      {
+        "shot": "S12",
+        "file": "generated-images/S12.png",
+        "seed": 517475949,
+        "cached": false,
+        "seconds": 25.4,
+        "attempts": 1,
+        "rejected": false
+      }
+    ],
+    "imageReuse": [
+      {
+        "shot": "S11",
+        "from": "S08"
+      }
+    ],
+    "runtime": {
+      "runtime": "engine/runtime",
+      "style": "deep-dive",
+      "renderer": "webgl",
+      "fonts": [
+        "Inter-Black.otf",
+        "Inter-ExtraBold.otf",
+        "Caladea-Bold.ttf",
+        "FreeMonoBold.ttf",
+        "NotoSansDevanagari-Variable.ttf → StudioDeva.ttf"
+      ],
+      "threeJs": "three.js r170 (MIT)",
+      "characterAsset": "engine/styles/tall-tale/example/src/core/character3d.js"
+    },
+    "character": {
+      "id": "desi_hero",
+      "name": "Bunty",
+      "archetype": "desi_hero",
+      "mode": "3d-model",
+      "colors": {
+        "skin": "#F2B98E",
+        "shirt": "#1E88E5",
+        "vest": "#0D47A1",
+        "pants": "#263238",
+        "hair": "#1E1E1E",
+        "accent": "#0D47A1",
+        "accent2": "#FFD54F"
+      },
+      "accessory": "cap",
+      "attire": "Royal Blue Jersey (#1E88E5) with Navy Vest"
+    },
+    "environments": [
+      "launchpad",
+      "studio",
+      "space"
+    ],
+    "props": [
+      "rocket",
+      "coins",
+      "film",
+      "camera",
+      "satellite"
+    ]
+  },
+  "voice": {
+    "id": "hm_omega",
+    "ttsLang": "hi",
+    "speed": 1.24,
+    "narrationSeconds": 43.178,
+    "speechSeconds": 39.628,
+    "model": "Kokoro-82M v1.0 ONNX",
+    "synthSeconds": 21.7
+  },
+  "render": {
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025AC) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "jobId": "job_20261111170450_f4eedc",
+    "finishedAt": "2026-11-11T17:10:58.889Z",
+    "durationSeconds": 43.17,
+    "targetSeconds": 40,
+    "withinTolerance": true,
+    "frames": 1295,
+    "captureSeconds": 75.5,
+    "file": "projects/how-isro-reached-mars-for-less-61f2d9/renders/how-isro-reached-mars-for-less-61f2d9.mp4",
+    "exportPath": "exports/how-isro-reached-mars-for-less-61f2d9.mp4",
+    "scriptVersion": 2,
+    "storyboardVersion": 1
+  },
+  "qa": {
+    "status": "PASS",
+    "checks": {
+      "mp4_readable": true,
+      "resolution_1080x1920": true,
+      "fps_matches": true,
+      "video_h264": true,
+      "audio_aac": true,
+      "audio_not_silent": true,
+      "duration_within_tolerance": true,
+      "video_matches_narration": true,
+      "no_long_freezes": true,
+      "no_black_gaps": true,
+      "visible_content": true,
+      "shot_exposure": true
+    },
+    "failed": [],
+    "report": "projects/how-isro-reached-mars-for-less-61f2d9/review/qa_report.json"
+  },
+  "exportPath": "exports/how-isro-reached-mars-for-less-61f2d9.mp4",
+  "history": [
+    {
+      "jobId": "job_20261111170450_f4eedc",
+      "status": "started",
+      "at": "2026-11-11T17:04:51.024Z"
+    },
+    {
+      "jobId": "job_20261111170450_f4eedc",
+      "status": "completed",
+      "at": "2026-11-11T17:10:58.889Z"
+    }
+  ],
+  "alignment": {
+    "model": "faster-whisper small (multilingual)",
+    "words": 97,
+    "matchRate": 0.876,
+    "detectedLanguage": "hi",
+    "languageProbability": 0.993,
+    "languageCheck": "whisper-language-id",
+    "transcriptSample": "सुनो एक दम अप्रत्याशित कहानी है पुर्नुई राम. इस्रोंने मिशन शूरू किया चारसो प्चाज्करोड बजजत के साथ. पिल्मग ग्रीवीटी का बजजत लगबभग दस करोड डुलर था. पार्ती वेग्यानिको ने मार्स तक पहुचने का मिशन लिया. उनहोंने एक महीना प्रिट्वी के चारों और चकर लगाया फिर दिरे -दिरे उनहोंने अपना अरभिट बड़ाया एक दिसमबर 2013"
+  }
+}

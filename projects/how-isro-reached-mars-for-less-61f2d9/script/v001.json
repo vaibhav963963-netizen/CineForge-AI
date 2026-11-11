@@ -1,0 +1,413 @@
+{
+  "title": "Mars Mission Miracle",
+  "lines": [
+    {
+      "text": "सूनो, एकदम अप्रत्याशित कहानी है!।",
+      "visual": "A rocket launching from Sriharikota, flames and smoke.",
+      "onScreen": "5 नवंबर 2013"
+    },
+    {
+      "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ।",
+      "visual": "Close-up shot of the PSLV rocket.",
+      "onScreen": "₹450 crore"
+    },
+    {
+      "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना।",
+      "visual": "A poster of the movie Gravity.",
+      "onScreen": "₹100 करोड़ (US)"
+    },
+    {
+      "text": "भारतीय वैज्ञानिकों ने मार्स तक पहुँचने का मिशन लिया।",
+      "visual": "Satellite orbiting Earth.",
+      "onScreen": "2013"
+    },
+    {
+      "text": "उन्होंने एक महीना पृथ्वी के चारों ओर चक्कर लगाया।",
+      "visual": "Animated diagram of Earth and a satellite in orbit.",
+      "onScreen": "1 महीना"
+    },
+    {
+      "text": "फिर धीरे-धीरे उन्होंने अपना ऑर्बिट बढ़ाया।",
+      "visual": "Satellite gradually increasing its orbital altitude.",
+      "onScreen": "ऑर्बिट बढ़ाना"
+    },
+    {
+      "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली।",
+      "visual": "The spacecraft leaving Earth's orbit.",
+      "onScreen": "1 दिसंबर 2013"
+    },
+    {
+      "text": "मार्स के लिए यात्रा ₹298 दिनों का था।",
+      "visual": "A timeline showing 298 days.",
+      "onScreen": "298 दिन"
+    },
+    {
+      "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला।",
+      "visual": "The spacecraft entering Mars orbit.",
+      "onScreen": "24 सितंबर 2014"
+    },
+    {
+      "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!।",
+      "visual": "A graphic showing the Mars orbiter in orbit around Mars.",
+      "onScreen": "₹7.4 करोड़ (US)"
+    },
+    {
+      "text": "इसरो ने मार्स पर 8 साल तक काम किया।",
+      "visual": "A graphic showing the mission timeline of 8 years.",
+      "onScreen": "8 साल"
+    },
+    {
+      "text": "एकदम कमाल है, ना?।",
+      "visual": "A wide shot of Mars from space.",
+      "onScreen": "मार्स"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-11T17:03:54.196Z",
+    "factsProvided": false,
+    "factFile": "facts/isro-mars-orbiter.json",
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L1-1",
+          "line": 1,
+          "text": "सूनो, एकदम अप्रत्याशित कहानी है!। · 5 नवंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L1-2",
+          "line": 1,
+          "text": "सूनो, एकदम अप्रत्याशित कहानी है!। · 5 नवंबर 2013",
+          "kind": "number",
+          "value": "5",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-1",
+          "line": 2,
+          "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ। · ₹450 crore",
+          "kind": "number",
+          "value": "₹450 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-2",
+          "line": 2,
+          "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ। · ₹450 crore",
+          "kind": "number",
+          "value": "₹450 crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-1",
+          "line": 3,
+          "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना। · ₹100 करोड़ (US)",
+          "kind": "known error",
+          "value": "Gravity was made for ₹100 crore",
+          "status": "contradicted",
+          "note": "Correct: Gravity cost about 100 million US dollars (roughly ₹600+ crore at the time); Mangalyaan cost about ₹450 crore (about 74 million dollars)."
+        },
+        {
+          "id": "L3-2",
+          "line": 3,
+          "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना। · ₹100 करोड़ (US)",
+          "kind": "number",
+          "value": "₹100 करोड़",
+          "status": "unverified",
+          "note": "The verified facts give 100 with a different unit (million)."
+        },
+        {
+          "id": "L3-3",
+          "line": 3,
+          "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना। · ₹100 करोड़ (US)",
+          "kind": "number",
+          "value": "₹100 करोड़",
+          "status": "unverified",
+          "note": "The verified facts give 100 with a different unit (million)."
+        },
+        {
+          "id": "L3-4",
+          "line": 3,
+          "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना। · ₹100 करोड़ (US)",
+          "kind": "name / place",
+          "value": "US",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-1",
+          "line": 4,
+          "text": "भारतीय वैज्ञानिकों ने मार्स तक पहुँचने का मिशन लिया। · 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-1",
+          "line": 5,
+          "text": "उन्होंने 1 महीना पृथ्वी के चारों ओर चक्कर लगाया। · 1 महीना",
+          "kind": "number",
+          "value": "1 महीना",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-2",
+          "line": 5,
+          "text": "उन्होंने 1 महीना पृथ्वी के चारों ओर चक्कर लगाया। · 1 महीना",
+          "kind": "number",
+          "value": "1 महीना",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-1",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-2",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-3",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "number",
+          "value": "1",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-4",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "number",
+          "value": "1",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-1",
+          "line": 8,
+          "text": "मार्स के लिए यात्रा ₹298 दिनों का था। · 298 दिन",
+          "kind": "number",
+          "value": "₹298 दिन",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-2",
+          "line": 8,
+          "text": "मार्स के लिए यात्रा ₹298 दिनों का था। · 298 दिन",
+          "kind": "number",
+          "value": "298 दिन",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-1",
+          "line": 9,
+          "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला। · 24 सितंबर 2014",
+          "kind": "year",
+          "value": "2014",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-2",
+          "line": 9,
+          "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला। · 24 सितंबर 2014",
+          "kind": "year",
+          "value": "2014",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-3",
+          "line": 9,
+          "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला। · 24 सितंबर 2014",
+          "kind": "number",
+          "value": "₹24",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-4",
+          "line": 9,
+          "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला। · 24 सितंबर 2014",
+          "kind": "number",
+          "value": "24",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-1",
+          "line": 10,
+          "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!। · ₹7.4 करोड़ (US)",
+          "kind": "number",
+          "value": "₹7.4 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-2",
+          "line": 10,
+          "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!। · ₹7.4 करोड़ (US)",
+          "kind": "number",
+          "value": "₹7.4 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-3",
+          "line": 10,
+          "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!। · ₹7.4 करोड़ (US)",
+          "kind": "name / place",
+          "value": "US",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-1",
+          "line": 11,
+          "text": "इसरो ने मार्स पर 8 साल तक काम किया। · 8 साल",
+          "kind": "number",
+          "value": "8 साल",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-2",
+          "line": 11,
+          "text": "इसरो ने मार्स पर 8 साल तक काम किया। · 8 साल",
+          "kind": "number",
+          "value": "8 साल",
+          "status": "supported",
+          "note": null
+        }
+      ],
+      "summary": {
+        "factFile": "facts/isro-mars-orbiter.json",
+        "userFacts": false,
+        "total": 26,
+        "supported": 23,
+        "unverified": 2,
+        "contradicted": 1,
+        "needsAttribution": 0,
+        "needsReview": 3
+      }
+    },
+    "claimsApproved": false,
+    "claimsToVerify": [
+      {
+        "line": 1,
+        "text": "सूनो, एकदम अप्रत्याशित कहानी है!।",
+        "check": [
+          "quantity \"एक\""
+        ]
+      },
+      {
+        "line": 2,
+        "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ।",
+        "check": [
+          "number ₹450",
+          "quantity \"करोड़\""
+        ]
+      },
+      {
+        "line": 3,
+        "text": "ग्रेविटी मूवी ₹100 करोड़ से भी ज़्यादा बजट में बना।",
+        "check": [
+          "number ₹100",
+          "quantity \"करोड़\""
+        ]
+      },
+      {
+        "line": 5,
+        "text": "उन्होंने एक महीना पृथ्वी के चारों ओर चक्कर लगाया।",
+        "check": [
+          "quantity \"एक\"",
+          "quantity \"चार\""
+        ]
+      },
+      {
+        "line": 7,
+        "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली।",
+        "check": [
+          "year 2013",
+          "number 1"
+        ]
+      },
+      {
+        "line": 8,
+        "text": "मार्स के लिए यात्रा ₹298 दिनों का था।",
+        "check": [
+          "number ₹298"
+        ]
+      },
+      {
+        "line": 9,
+        "text": "मार्स पर ऑर्बिट ₹24 सितंबर 2014 को मिला।",
+        "check": [
+          "year 2014",
+          "number ₹24"
+        ]
+      },
+      {
+        "line": 10,
+        "text": "₹7.4 करोड़ डॉलर में मार्स मिशन कंप्लीट!।",
+        "check": [
+          "number ₹7.4",
+          "quantity \"करोड़\""
+        ]
+      },
+      {
+        "line": 11,
+        "text": "इसरो ने मार्स पर 8 साल तक काम किया।",
+        "check": [
+          "number 8"
+        ]
+      },
+      {
+        "line": 12,
+        "text": "एकदम कमाल है, ना?।",
+        "check": [
+          "quantity \"एक\""
+        ]
+      }
+    ],
+    "source": "llm",
+    "fingerprint": "ca17e8bea4b4",
+    "configHash": "6d12a436037c3800",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 94,
+    "estimatedSeconds": 42,
+    "language": "hi-conversational",
+    "personality": "mumbai-conversational",
+    "targetSeconds": 40
+  }
+}

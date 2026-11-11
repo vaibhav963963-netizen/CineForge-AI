@@ -1,0 +1,430 @@
+{
+  "title": "Mars Mission: Budget vs Gravity",
+  "lines": [
+    {
+      "text": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा?",
+      "visual": "Close-up shot of a smiling ISRO engineer, pointing to a rocket.",
+      "onScreen": "5 नवंबर 2013"
+    },
+    {
+      "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था।",
+      "visual": "Wide shot of the PSLV rocket launching from Sriharikota.",
+      "onScreen": "PSLV Rocket"
+    },
+    {
+      "text": "यह श्रीहरिकोटा से लॉन्च हुआ, आप जानते हैं।",
+      "visual": "Drone shot of Sriharikota launch site.",
+      "onScreen": "Sriharikota"
+    },
+    {
+      "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी।",
+      "visual": "Graphic showing ₹450 crore amount.",
+      "onScreen": "₹450 Crore"
+    },
+    {
+      "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था।",
+      "visual": "Movie poster of the film Gravity.",
+      "onScreen": "₹100 Crore"
+    },
+    {
+      "text": "यह एक बड़ी बात है, है ना? कम पैसे में कमाल!",
+      "visual": "Split screen: Rocket launch vs. Gravity movie scene.",
+      "onScreen": "Mars vs. Earth"
+    },
+    {
+      "text": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा।",
+      "visual": "Animation showing the spacecraft orbiting Earth.",
+      "onScreen": "Orbiting Earth"
+    },
+    {
+      "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ।",
+      "visual": "Shot of the spacecraft leaving Earth’s atmosphere.",
+      "onScreen": "Departure from Earth"
+    },
+    {
+      "text": "यह यात्रा लगभग 298 दिन की थी।",
+      "visual": "Timeline showing the 298-day journey to Mars.",
+      "onScreen": "298 Days"
+    },
+    {
+      "text": "भारत, पहला देश, मंगल ग्रह की कक्षा में पहुंचा।",
+      "visual": "Map of the solar system highlighting Mars' orbit.",
+      "onScreen": "First Asian Nation"
+    },
+    {
+      "text": "वैज्ञानिकों का मानना है, यह अद्भुत उपलब्धि है।",
+      "visual": "Close-up shot of a scientist working on a computer.",
+      "onScreen": "Scientists Think"
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-11T15:43:12.628Z",
+    "factsProvided": false,
+    "factFile": "facts/isro-mars-orbiter.json",
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L1-1",
+          "line": 1,
+          "text": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा? · 5 नवंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L1-2",
+          "line": 1,
+          "text": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा? · 5 नवंबर 2013",
+          "kind": "number",
+          "value": "5",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-1",
+          "line": 2,
+          "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था। · PSLV Rocket",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-2",
+          "line": 2,
+          "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था। · PSLV Rocket",
+          "kind": "number",
+          "value": "5",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-3",
+          "line": 2,
+          "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था। · PSLV Rocket",
+          "kind": "name / place",
+          "value": "PSLV Rocket",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-1",
+          "line": 3,
+          "text": "यह श्रीहरिकोटा से लॉन्च हुआ, आप जानते हैं। · Sriharikota",
+          "kind": "name / place",
+          "value": "Sriharikota",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-1",
+          "line": 4,
+          "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी। · ₹450 Crore",
+          "kind": "number",
+          "value": "₹450 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-2",
+          "line": 4,
+          "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी। · ₹450 Crore",
+          "kind": "number",
+          "value": "₹450 Crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-3",
+          "line": 4,
+          "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी। · ₹450 Crore",
+          "kind": "quantity",
+          "value": "करोड़",
+          "status": "unverified",
+          "note": "Check this quantity."
+        },
+        {
+          "id": "L4-4",
+          "line": 4,
+          "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी। · ₹450 Crore",
+          "kind": "quantity",
+          "value": "crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-5",
+          "line": 4,
+          "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी। · ₹450 Crore",
+          "kind": "name / place",
+          "value": "Crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-1",
+          "line": 5,
+          "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था। · ₹100 Crore",
+          "kind": "number",
+          "value": "₹100 करोड़",
+          "status": "unverified",
+          "note": "The verified facts give 100 with a different unit (million)."
+        },
+        {
+          "id": "L5-2",
+          "line": 5,
+          "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था। · ₹100 Crore",
+          "kind": "number",
+          "value": "₹100 Crore",
+          "status": "unverified",
+          "note": "The verified facts give 100 with a different unit (million)."
+        },
+        {
+          "id": "L5-3",
+          "line": 5,
+          "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था। · ₹100 Crore",
+          "kind": "quantity",
+          "value": "करोड़",
+          "status": "unverified",
+          "note": "Check this quantity."
+        },
+        {
+          "id": "L5-4",
+          "line": 5,
+          "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था। · ₹100 Crore",
+          "kind": "quantity",
+          "value": "crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-5",
+          "line": 5,
+          "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था। · ₹100 Crore",
+          "kind": "name / place",
+          "value": "Crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L6-1",
+          "line": 6,
+          "text": "यह एक बड़ी बात है, है ना? कम पैसे में कमाल! · Mars vs. Earth",
+          "kind": "name / place",
+          "value": "Mars",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-1",
+          "line": 7,
+          "text": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा। · Orbiting Earth",
+          "kind": "quantity",
+          "value": "चार",
+          "status": "unverified",
+          "note": "Check this quantity."
+        },
+        {
+          "id": "L7-2",
+          "line": 7,
+          "text": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा। · Orbiting Earth",
+          "kind": "name / place",
+          "value": "Orbiting Earth",
+          "status": "unverified",
+          "note": "Not in the verified facts: possibly invented."
+        },
+        {
+          "id": "L8-1",
+          "line": 8,
+          "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ। · Departure from Earth",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-2",
+          "line": 8,
+          "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ। · Departure from Earth",
+          "kind": "number",
+          "value": "1",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-3",
+          "line": 8,
+          "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ। · Departure from Earth",
+          "kind": "name / place",
+          "value": "Departure",
+          "status": "unverified",
+          "note": "Not in the verified facts: possibly invented."
+        },
+        {
+          "id": "L8-4",
+          "line": 8,
+          "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ। · Departure from Earth",
+          "kind": "name / place",
+          "value": "Earth",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-1",
+          "line": 9,
+          "text": "यह यात्रा लगभग 298 दिन की थी। · 298 Days",
+          "kind": "number",
+          "value": "298 दिन",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-2",
+          "line": 9,
+          "text": "यह यात्रा लगभग 298 दिन की थी। · 298 Days",
+          "kind": "number",
+          "value": "298 Days",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-3",
+          "line": 9,
+          "text": "यह यात्रा लगभग 298 दिन की थी। · 298 Days",
+          "kind": "name / place",
+          "value": "Days",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-1",
+          "line": 10,
+          "text": "भारत, पहला देश, मंगल ग्रह की कक्षा में पहुंचा। · First Asian Nation",
+          "kind": "name / place",
+          "value": "First Asian Nation",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-1",
+          "line": 11,
+          "text": "वैज्ञानिकों का मानना है, यह अद्भुत उपलब्धि है। · Scientists Think",
+          "kind": "name / place",
+          "value": "Scientists Think",
+          "status": "unverified",
+          "note": "Not in the verified facts: possibly invented."
+        }
+      ],
+      "summary": {
+        "factFile": "facts/isro-mars-orbiter.json",
+        "userFacts": false,
+        "total": 28,
+        "supported": 20,
+        "unverified": 8,
+        "contradicted": 0,
+        "needsAttribution": 0,
+        "needsReview": 8
+      }
+    },
+    "claimsApproved": true,
+    "claimsToVerify": [
+      {
+        "line": 1,
+        "text": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा?",
+        "check": [
+          "quantity \"एक\""
+        ]
+      },
+      {
+        "line": 2,
+        "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था।",
+        "check": [
+          "year 2013",
+          "number 5"
+        ]
+      },
+      {
+        "line": 4,
+        "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी।",
+        "check": [
+          "number ₹450",
+          "quantity \"करोड़\""
+        ]
+      },
+      {
+        "line": 5,
+        "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था।",
+        "check": [
+          "number ₹100",
+          "quantity \"करोड़\""
+        ]
+      },
+      {
+        "line": 6,
+        "text": "यह एक बड़ी बात है, है ना? कम पैसे में कमाल!",
+        "check": [
+          "quantity \"एक\""
+        ]
+      },
+      {
+        "line": 7,
+        "text": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा।",
+        "check": [
+          "quantity \"चार\"",
+          "quantity \"एक\""
+        ]
+      },
+      {
+        "line": 8,
+        "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ।",
+        "check": [
+          "year 2013",
+          "number 1"
+        ]
+      },
+      {
+        "line": 9,
+        "text": "यह यात्रा लगभग 298 दिन की थी।",
+        "check": [
+          "number 298"
+        ]
+      },
+      {
+        "line": 10,
+        "text": "भारत, पहला देश, मंगल ग्रह की कक्षा में पहुंचा।",
+        "check": [
+          "quantity \"पहला\""
+        ]
+      }
+    ],
+    "source": "llm",
+    "fingerprint": "ca17e8bea4b4",
+    "configHash": "20fbdcaa7f5230e2",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 107,
+    "estimatedSeconds": 42.4,
+    "language": "hi-conversational",
+    "personality": "mumbai-conversational",
+    "targetSeconds": 40,
+    "confirmedClaims": [
+      "L4-3",
+      "L5-1",
+      "L5-2",
+      "L5-3",
+      "L7-1",
+      "L7-2",
+      "L8-3",
+      "L11-1"
+    ],
+    "claimsApprovedAt": "2026-11-11T15:43:12.716Z",
+    "claimsApprovedBy": "user (Script Studio)"
+  }
+}

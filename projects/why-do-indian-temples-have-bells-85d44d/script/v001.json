@@ -1,0 +1,135 @@
+{
+  "title": "Temple Bells: A Mystical Tradition",
+  "lines": [
+    {
+      "text": "मंदिर के घंटे सुने हैं क्या?।",
+      "visual": "Close-up of a temple bell hanging prominently."
+    },
+    {
+      "text": "माना जाता है घंटे मंदिरों में लगे होते हैं।",
+      "visual": "Wide shot of a Hindu temple exterior with a bell."
+    },
+    {
+      "text": "भक्त प्रवेश से पहले घंटे बजाते हैं।",
+      "visual": "A devotee ringing the bell outside a temple."
+    },
+    {
+      "text": "आरती में भी घंटे बजाए जाते हैं।",
+      "visual": "A group of people performing an aarti with bells."
+    },
+    {
+      "text": "घंटे कांस्य या पीतल से बनते हैं।",
+      "visual": "A craftsman casting a temple bell from bronze."
+    },
+    {
+      "text": "पंचधातु से भी घंटे बनाए जाते हैं।",
+      "visual": "Close-up of a panchdhatu bell."
+    },
+    {
+      "text": "घंटे भक्त को बुलाते हैं, यह माना जाता है।",
+      "visual": "A devotee approaching the temple entrance."
+    },
+    {
+      "text": "यह दुनिया की बातों से दूर करता है।",
+      "visual": "A serene image of a deity inside the temple."
+    },
+    {
+      "text": "ध्यान देवताओं की ओर खींचता है।",
+      "visual": "A devotee with eyes closed, meditating."
+    },
+    {
+      "text": "माना जाता है गूंज सात सेकंड तक होती है।",
+      "visual": "Sound waves emanating from the bell."
+    },
+    {
+      "text": "यह मस्तिष्क को संतुलित करने का दावा है।",
+      "visual": "Simplified illustration of the brain."
+    },
+    {
+      "text": "माना जाता है चक्र सक्रिय होते हैं।",
+      "visual": "Stylized depiction of chakras."
+    },
+    {
+      "text": "नकारात्मक ऊर्जा दूर करने का मानना है।",
+      "visual": "A bell ringing with a faint glow."
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-11T16:39:31.622Z",
+    "factsProvided": false,
+    "factFile": "facts/temple-bells.json",
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L10-1",
+          "line": 10,
+          "text": "माना जाता है गूंज 7 सेकंड तक होती है।",
+          "kind": "number",
+          "value": "7",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-1",
+          "line": 11,
+          "text": "यह मस्तिष्क को संतुलित करने का दावा है।",
+          "kind": "belief stated as fact",
+          "value": "It is popularly claimed that the bell's echo lasts about seven seconds and balances the left and right sides of the brain or activates chakras. There is no scientific evidence for this; present it as a belief.",
+          "status": "needs-attribution",
+          "note": "This is a popular belief without scientific evidence: frame it as a belief (\"it is believed …\" / \"माना जाता है …\"), never as science."
+        },
+        {
+          "id": "L13-1",
+          "line": 13,
+          "text": "नकारात्मक ऊर्जा दूर करने का मानना है।",
+          "kind": "belief stated as fact",
+          "value": "Many people believe the sound drives away negative energy or evil spirits. This is a religious belief, not a scientific finding.",
+          "status": "needs-attribution",
+          "note": "This is a popular belief without scientific evidence: frame it as a belief (\"it is believed …\" / \"माना जाता है …\"), never as science."
+        }
+      ],
+      "summary": {
+        "factFile": "facts/temple-bells.json",
+        "userFacts": false,
+        "total": 3,
+        "supported": 1,
+        "unverified": 0,
+        "contradicted": 0,
+        "needsAttribution": 2,
+        "needsReview": 2
+      }
+    },
+    "claimsApproved": true,
+    "claimsToVerify": [
+      {
+        "line": 10,
+        "text": "माना जाता है गूंज सात सेकंड तक होती है।",
+        "check": [
+          "quantity \"सात\""
+        ]
+      }
+    ],
+    "source": "llm",
+    "fingerprint": "89295d31be54",
+    "configHash": "a0b2151fcaee2675",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 97,
+    "estimatedSeconds": 43.2,
+    "language": "hi-conversational",
+    "personality": "educational",
+    "targetSeconds": 45,
+    "confirmedClaims": [
+      "L11-1",
+      "L13-1"
+    ],
+    "claimsApprovedAt": "2026-11-11T16:39:31.717Z",
+    "claimsApprovedBy": "user (Script Studio)"
+  }
+}

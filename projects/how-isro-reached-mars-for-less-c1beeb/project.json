@@ -1,0 +1,321 @@
+{
+  "schema": 1,
+  "id": "how-isro-reached-mars-for-less-c1beeb",
+  "title": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+  "topic": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+  "status": "rendered",
+  "createdAt": "2026-11-11T15:41:41.982Z",
+  "updatedAt": "2026-11-11T15:45:59.746Z",
+  "config": {
+    "schema": 1,
+    "topic": "How ISRO Reached Mars for Less Than the Budget of the Movie Gravity",
+    "language": {
+      "id": "hi-conversational",
+      "code": "hi",
+      "name": "Hindi — Conversational (Devanagari)",
+      "script": "Deva",
+      "dialect": "conversational",
+      "locale": "hi-IN",
+      "captionScript": "Deva",
+      "ttsScript": "Deva"
+    },
+    "narration": {
+      "personality": "mumbai-conversational",
+      "personalityName": "Mumbai Conversational",
+      "voice": "hm_omega",
+      "voiceName": "Omega (Hindi, Male)",
+      "voiceLanguage": "hi",
+      "ttsLang": "hi",
+      "speed": 1.06,
+      "delivery": {
+        "speed": 1.06,
+        "gap": 0.2,
+        "lead": 0.25,
+        "outro": 0.9
+      }
+    },
+    "visual": {
+      "style": "deep-dive",
+      "styleName": "Deep Dive 3D",
+      "dimension": "3d",
+      "renderer": "webgl",
+      "character": "desi_hero",
+      "characterName": "Bunty",
+      "archetype": "desi_hero",
+      "characterMode": "3d-model",
+      "visualMode": "procedural"
+    },
+    "durationSeconds": 40,
+    "durationTolerance": 0.1,
+    "resolution": "1080x1920",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)",
+      "language": "hi"
+    }
+  },
+  "configHash": "20fbdcaa7f5230e2",
+  "workspacePath": "projects/how-isro-reached-mars-for-less-c1beeb",
+  "script": {
+    "approvedVersion": 1,
+    "versions": [
+      {
+        "version": 1,
+        "createdAt": "2026-11-11T15:43:12.628Z",
+        "factsProvided": false,
+        "factFile": "facts/isro-mars-orbiter.json",
+        "claimsApproved": true,
+        "claimsToVerify": [
+          {
+            "line": 1,
+            "text": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा?",
+            "check": [
+              "quantity \"एक\""
+            ]
+          },
+          {
+            "line": 2,
+            "text": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था।",
+            "check": [
+              "year 2013",
+              "number 5"
+            ]
+          },
+          {
+            "line": 4,
+            "text": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी।",
+            "check": [
+              "number ₹450",
+              "quantity \"करोड़\""
+            ]
+          },
+          {
+            "line": 5,
+            "text": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था।",
+            "check": [
+              "number ₹100",
+              "quantity \"करोड़\""
+            ]
+          },
+          {
+            "line": 6,
+            "text": "यह एक बड़ी बात है, है ना? कम पैसे में कमाल!",
+            "check": [
+              "quantity \"एक\""
+            ]
+          },
+          {
+            "line": 7,
+            "text": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा।",
+            "check": [
+              "quantity \"चार\"",
+              "quantity \"एक\""
+            ]
+          },
+          {
+            "line": 8,
+            "text": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ।",
+            "check": [
+              "year 2013",
+              "number 1"
+            ]
+          },
+          {
+            "line": 9,
+            "text": "यह यात्रा लगभग 298 दिन की थी।",
+            "check": [
+              "number 298"
+            ]
+          },
+          {
+            "line": 10,
+            "text": "भारत, पहला देश, मंगल ग्रह की कक्षा में पहुंचा।",
+            "check": [
+              "quantity \"पहला\""
+            ]
+          }
+        ],
+        "source": "llm",
+        "fingerprint": "ca17e8bea4b4",
+        "configHash": "20fbdcaa7f5230e2",
+        "model": {
+          "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+          "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+          "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+          "runtime": "llama.cpp (Vulkan)"
+        },
+        "wordCount": 107,
+        "estimatedSeconds": 42.4,
+        "language": "hi-conversational",
+        "personality": "mumbai-conversational",
+        "targetSeconds": 40,
+        "claimSummary": {
+          "factFile": "facts/isro-mars-orbiter.json",
+          "userFacts": false,
+          "total": 28,
+          "supported": 20,
+          "unverified": 8,
+          "contradicted": 0,
+          "needsAttribution": 0,
+          "needsReview": 8
+        },
+        "approved": true,
+        "approvedAt": "2026-11-11T15:43:12.642Z",
+        "confirmedClaims": [
+          "L4-3",
+          "L5-1",
+          "L5-2",
+          "L5-3",
+          "L7-1",
+          "L7-2",
+          "L8-3",
+          "L11-1"
+        ],
+        "claimsApprovedAt": "2026-11-11T15:43:12.716Z",
+        "claimsApprovedBy": "user (Script Studio)"
+      }
+    ]
+  },
+  "storyboard": {
+    "version": 1,
+    "shots": 11,
+    "planner": "rules+lexicon v2",
+    "methods": {
+      "scene3d": 11
+    },
+    "environments": [
+      "space",
+      "launchpad",
+      "office",
+      "studio",
+      "lab"
+    ]
+  },
+  "models": {
+    "tts": {
+      "engine": "Kokoro-82M v1.0 ONNX",
+      "voice": "hm_omega",
+      "lang": "hi"
+    },
+    "alignment": {
+      "engine": "faster-whisper",
+      "model": "faster-whisper small (multilingual)"
+    }
+  },
+  "assets": {
+    "runtime": {
+      "runtime": "engine/runtime",
+      "style": "deep-dive",
+      "renderer": "webgl",
+      "fonts": [
+        "Inter-Black.otf",
+        "Inter-ExtraBold.otf",
+        "Caladea-Bold.ttf",
+        "FreeMonoBold.ttf",
+        "NotoSansDevanagari-Variable.ttf → StudioDeva.ttf"
+      ],
+      "threeJs": "three.js r170 (MIT)",
+      "characterAsset": "engine/styles/tall-tale/example/src/core/character3d.js"
+    },
+    "character": {
+      "id": "desi_hero",
+      "name": "Bunty",
+      "archetype": "desi_hero",
+      "mode": "3d-model",
+      "colors": {
+        "skin": "#F2B98E",
+        "shirt": "#1E88E5",
+        "vest": "#0D47A1",
+        "pants": "#263238",
+        "hair": "#1E1E1E",
+        "accent": "#0D47A1",
+        "accent2": "#FFD54F"
+      },
+      "accessory": "cap",
+      "attire": "Royal Blue Jersey (#1E88E5) with Navy Vest"
+    },
+    "environments": [
+      "space",
+      "launchpad",
+      "office",
+      "studio",
+      "lab"
+    ],
+    "props": [
+      "rocket",
+      "satellite",
+      "coins",
+      "film",
+      "camera",
+      "atom",
+      "laptop"
+    ]
+  },
+  "voice": {
+    "id": "hm_omega",
+    "ttsLang": "hi",
+    "speed": 1.24,
+    "narrationSeconds": 41.15,
+    "speechSeconds": 37.8,
+    "model": "Kokoro-82M v1.0 ONNX",
+    "synthSeconds": 21.1
+  },
+  "render": {
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB Laptop GPU (0x000025AC) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "jobId": "job_20261111154312_7f124e",
+    "finishedAt": "2026-11-11T15:45:59.746Z",
+    "durationSeconds": 41.17,
+    "targetSeconds": 40,
+    "withinTolerance": true,
+    "frames": 1235,
+    "captureSeconds": 66.4,
+    "file": "projects/how-isro-reached-mars-for-less-c1beeb/renders/how-isro-reached-mars-for-less-c1beeb.mp4",
+    "exportPath": "exports/how-isro-reached-mars-for-less-c1beeb.mp4",
+    "scriptVersion": 1,
+    "storyboardVersion": 1
+  },
+  "qa": {
+    "status": "PASS",
+    "checks": {
+      "mp4_readable": true,
+      "resolution_1080x1920": true,
+      "fps_matches": true,
+      "video_h264": true,
+      "audio_aac": true,
+      "audio_not_silent": true,
+      "duration_within_tolerance": true,
+      "video_matches_narration": true,
+      "no_long_freezes": true,
+      "no_black_gaps": true,
+      "visible_content": true,
+      "shot_exposure": true
+    },
+    "failed": [],
+    "report": "projects/how-isro-reached-mars-for-less-c1beeb/review/qa_report.json"
+  },
+  "exportPath": "exports/how-isro-reached-mars-for-less-c1beeb.mp4",
+  "history": [
+    {
+      "jobId": "job_20261111154312_7f124e",
+      "status": "started",
+      "at": "2026-11-11T15:43:12.787Z"
+    },
+    {
+      "jobId": "job_20261111154312_7f124e",
+      "status": "completed",
+      "at": "2026-11-11T15:45:59.746Z"
+    }
+  ],
+  "alignment": {
+    "model": "faster-whisper small (multilingual)",
+    "words": 107,
+    "matchRate": 0.869,
+    "detectedLanguage": "hi",
+    "languageProbability": 0.997,
+    "languageCheck": "whisper-language-id",
+    "transcriptSample": "इक मिन्नेत सुनो क्या आप जानते है इस्रोने मंगल तक पहुचा मंगलयान इस्रो का मिशन पाच नवमबर 2013 को शुरू हूँ आथ हा यह श्रिहरी कोटा से लाईज बहुए आप जानते हैं लगबबख 450 करोड में इस्रोने मंगल की उरान भरी फिल्मग्रेवीटी का बजजत लगबवग एक सो करोर था यह एक बढ़ी बाथ है लग, कम पैसे में कमाल मिशन शुरू होने से पहले "
+  }
+}

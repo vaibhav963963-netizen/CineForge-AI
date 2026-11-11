@@ -1,0 +1,275 @@
+{
+  "title": "Skeleton Lake Mystery",
+  "lines": [
+    {
+      "text": "Roopkund: a Himalayan glacial lake waits.",
+      "visual": "Drone shot of the high-altitude lake in the mountains.",
+      "onScreen": "5,020 meters"
+    },
+    {
+      "text": "It’s known as Skeleton Lake, sadly.",
+      "visual": "Close-up of exposed bones in the snow.",
+      "onScreen": "300-800"
+    },
+    {
+      "text": "Madhwal found remains in 1942, you know.",
+      "visual": "Old photo of a forest ranger examining the lake.",
+      "onScreen": "1942"
+    },
+    {
+      "text": "The lake freezes, bones appear slowly.",
+      "visual": "Time-lapse of snow melting, revealing bones."
+    },
+    {
+      "text": "Ancient DNA reveals separate deaths now.",
+      "visual": "Scientist analyzing a bone fragment.",
+      "onScreen": "2019"
+    },
+    {
+      "text": "Groups died centuries, a long time ago.",
+      "visual": "Timeline graphic showing group deaths.",
+      "onScreen": "1,000 years"
+    },
+    {
+      "text": "South Asian ancestry died around 800 CE.",
+      "visual": "Artist's depiction of the South Asian group.",
+      "onScreen": "800 CE"
+    },
+    {
+      "text": "Mediterranean group died around 1800 CE.",
+      "visual": "Panoramic view of the lake and mountains.",
+      "onScreen": "1800 CE"
+    },
+    {
+      "text": "Why? A mystery still unsolved, sadly.",
+      "visual": "Close-up of the frozen lake surface."
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-11T15:54:51.782Z",
+    "factsProvided": false,
+    "factFile": "facts/roopkund.json",
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L1-1",
+          "line": 1,
+          "text": "Roopkund: a Himalayan glacial lake waits. · 5,020 meters",
+          "kind": "number",
+          "value": "5,020 meters",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L1-2",
+          "line": 1,
+          "text": "Roopkund: a Himalayan glacial lake waits. · 5,020 meters",
+          "kind": "name / place",
+          "value": "Himalayan",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-1",
+          "line": 2,
+          "text": "It’s known as Skeleton Lake, sadly. · 300-800",
+          "kind": "number",
+          "value": "300",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-2",
+          "line": 2,
+          "text": "It’s known as Skeleton Lake, sadly. · 300-800",
+          "kind": "number",
+          "value": "800",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-3",
+          "line": 2,
+          "text": "It’s known as Skeleton Lake, sadly. · 300-800",
+          "kind": "name / place",
+          "value": "Skeleton Lake",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-1",
+          "line": 3,
+          "text": "Madhwal found remains in 1942, you know. · 1942",
+          "kind": "year",
+          "value": "1942",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-2",
+          "line": 3,
+          "text": "Madhwal found remains in 1942, you know. · 1942",
+          "kind": "year",
+          "value": "1942",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-1",
+          "line": 5,
+          "text": "Ancient DNA reveals separate deaths now. · 2019",
+          "kind": "year",
+          "value": "2019",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-2",
+          "line": 5,
+          "text": "Ancient DNA reveals separate deaths now. · 2019",
+          "kind": "name / place",
+          "value": "Ancient DNA",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L6-1",
+          "line": 6,
+          "text": "Groups died centuries, a long time ago. · 1,000 years",
+          "kind": "number",
+          "value": "1,000 years",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-1",
+          "line": 7,
+          "text": "South Asian ancestry died around 800 CE. · 800 CE",
+          "kind": "number",
+          "value": "800",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-2",
+          "line": 7,
+          "text": "South Asian ancestry died around 800 CE. · 800 CE",
+          "kind": "number",
+          "value": "800",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-3",
+          "line": 7,
+          "text": "South Asian ancestry died around 800 CE. · 800 CE",
+          "kind": "name / place",
+          "value": "South Asian",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-4",
+          "line": 7,
+          "text": "South Asian ancestry died around 800 CE. · 800 CE",
+          "kind": "name / place",
+          "value": "CE",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-1",
+          "line": 8,
+          "text": "Mediterranean group died around 1800 CE. · 1800 CE",
+          "kind": "year",
+          "value": "1800",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-2",
+          "line": 8,
+          "text": "Mediterranean group died around 1800 CE. · 1800 CE",
+          "kind": "year",
+          "value": "1800",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-3",
+          "line": 8,
+          "text": "Mediterranean group died around 1800 CE. · 1800 CE",
+          "kind": "name / place",
+          "value": "CE",
+          "status": "supported",
+          "note": null
+        }
+      ],
+      "summary": {
+        "factFile": "facts/roopkund.json",
+        "userFacts": false,
+        "total": 17,
+        "supported": 17,
+        "unverified": 0,
+        "contradicted": 0,
+        "needsAttribution": 0,
+        "needsReview": 0
+      }
+    },
+    "claimsApproved": true,
+    "claimsToVerify": [
+      {
+        "line": 1,
+        "text": "Roopkund: a Himalayan glacial lake waits.",
+        "check": [
+          "name Himalayan"
+        ]
+      },
+      {
+        "line": 2,
+        "text": "It’s known as Skeleton Lake, sadly.",
+        "check": [
+          "name Skeleton Lake"
+        ]
+      },
+      {
+        "line": 3,
+        "text": "Madhwal found remains in 1942, you know.",
+        "check": [
+          "year 1942"
+        ]
+      },
+      {
+        "line": 7,
+        "text": "South Asian ancestry died around 800 CE.",
+        "check": [
+          "number 800",
+          "name Asian"
+        ]
+      },
+      {
+        "line": 8,
+        "text": "Mediterranean group died around 1800 CE.",
+        "check": [
+          "year 1800"
+        ]
+      }
+    ],
+    "source": "llm",
+    "fingerprint": "4c2218ab521c",
+    "configHash": "235f48da77f141d5",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 57,
+    "estimatedSeconds": 29,
+    "language": "en",
+    "personality": "documentary",
+    "targetSeconds": 30
+  }
+}

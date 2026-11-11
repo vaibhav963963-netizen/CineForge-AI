@@ -1,0 +1,184 @@
+{
+  "shots": {
+    "S01": {
+      "file": "generated-images/S01.png",
+      "prompt": "drone shot of the high-altitude lake in the mountains, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 2095483319,
+      "key": "98407075965cbed2",
+      "cached": false,
+      "seconds": 36,
+      "exposure": {
+        "seed": 2095483319,
+        "avg": 62.9121,
+        "low": 31,
+        "high": 110,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:56:34.143Z"
+    },
+    "S02": {
+      "file": "generated-images/S02.png",
+      "prompt": "close-up of exposed bones in the snow, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 250356523,
+      "key": "bb9b24a160fd6837",
+      "cached": false,
+      "seconds": 22,
+      "exposure": {
+        "seed": 250356523,
+        "avg": 94.3524,
+        "low": 25,
+        "high": 171,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:56:56.539Z"
+    },
+    "S03": {
+      "file": "generated-images/S03.png",
+      "prompt": "a man in a forest ranger uniform examining the lake, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 1650800232,
+      "key": "cbf316cc46cf4c4b",
+      "cached": false,
+      "seconds": 22.2,
+      "exposure": {
+        "seed": 1650800232,
+        "avg": 60.8309,
+        "low": 29,
+        "high": 146,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:57:19.160Z"
+    },
+    "S04": {
+      "file": "generated-images/S04.png",
+      "prompt": "snow melting, revealing bones, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 4096233613,
+      "key": "a41621f8cbb6236e",
+      "cached": false,
+      "seconds": 22.3,
+      "exposure": {
+        "seed": 4096233613,
+        "avg": 80.1125,
+        "low": 32,
+        "high": 124,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:57:41.718Z"
+    },
+    "S05": {
+      "file": "generated-images/S05.png",
+      "prompt": "scientist analyzing a bone fragment in the snowy Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 2085100120,
+      "key": "5d967841ed06fc31",
+      "cached": false,
+      "seconds": 22.4,
+      "exposure": {
+        "seed": 2085100120,
+        "avg": 96.4663,
+        "low": 36,
+        "high": 170,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:58:04.333Z"
+    },
+    "S06": {
+      "file": "generated-images/S06.png",
+      "prompt": "pilgrims walking along a narrow snowy trail high in the Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 3520931366,
+      "key": "cb8996888af2b8de",
+      "cached": true,
+      "seconds": 0,
+      "exposure": {
+        "seed": 3520931366,
+        "avg": 100.123,
+        "low": 52,
+        "high": 146,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:58:04.569Z"
+    },
+    "S07": {
+      "file": "generated-images/S07.png",
+      "prompt": "artist's depiction of the South Asian group in the snowy Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 2730174649,
+      "key": "6a92f817e9e43068",
+      "cached": false,
+      "seconds": 22.4,
+      "exposure": {
+        "seed": 2730174649,
+        "avg": 69.3207,
+        "low": 28,
+        "high": 132,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:58:27.212Z"
+    },
+    "S08": {
+      "file": "generated-images/S08.png",
+      "prompt": "panoramic view of the lake and mountains, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 2827732741,
+      "key": "dea08c129190dbd6",
+      "cached": true,
+      "seconds": 0,
+      "exposure": {
+        "seed": 2827732741,
+        "avg": 72.6279,
+        "low": 27,
+        "high": 157,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:58:27.417Z"
+    },
+    "S09": {
+      "file": "generated-images/S09.png",
+      "prompt": "close-up of the frozen lake surface, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "seed": 2705314531,
+      "key": "44869915183125b2",
+      "cached": false,
+      "seconds": 23.2,
+      "exposure": {
+        "seed": 2705314531,
+        "avg": 54.1433,
+        "low": 27,
+        "high": 93,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T15:58:50.848Z"
+    }
+  }
+}

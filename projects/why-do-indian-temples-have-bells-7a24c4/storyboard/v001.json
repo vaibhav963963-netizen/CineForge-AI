@@ -1,0 +1,661 @@
+{
+  "title": "Temple Bells: A Mystical Tradition",
+  "planner": "rules+lexicon v2",
+  "createdAt": "2026-11-11T16:15:54.322Z",
+  "durationSeconds": 47.04,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 2.42,
+      "narration": "क्या आपको पता है, मंदिरों में लगे घंटे का क्या मतलब है?। (part 1/2)",
+      "visualObjective": "Close-up shot of a temple bell hanging near the entrance.",
+      "subject": "Aarav (think)",
+      "environment": "temple",
+      "objects": [
+        "bell",
+        "question"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "think"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "close-up shot of an Indian Hindu temple bell hanging near the entrance, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S01.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell",
+          "question"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: think; camera: medium punch",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "temple",
+        "bell",
+        "question"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        0
+      ],
+      "start": 2.42,
+      "end": 4.921,
+      "narration": "क्या आपको पता है, मंदिरों में लगे घंटे का क्या मतलब है?। (part 2/2)",
+      "visualObjective": "Close-up shot of a temple bell hanging near the entrance.",
+      "subject": "Aarav (think)",
+      "environment": "temple",
+      "objects": [
+        "bell",
+        "question"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "think"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "close-up shot of an Indian Hindu temple bell hanging near the entrance, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S01.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell",
+          "question"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: think; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell",
+        "question"
+      ],
+      "spaceView": null,
+      "imageReuse": "S01"
+    },
+    {
+      "id": "S03",
+      "lines": [
+        1
+      ],
+      "start": 4.921,
+      "end": 9.158,
+      "narration": "भारत में, लगभग हर हिंदू मंदिर में घंटा लटका होता है।",
+      "visualObjective": "Wide shot of a temple complex with bells visible.",
+      "subject": "bell",
+      "environment": "temple",
+      "objects": [
+        "bell",
+        "flag"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "orbit"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "wide shot of an Indian Hindu temple complex with bells visible, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": "generated-images/S03.png",
+      "assets3d": null,
+      "animation": "camera: close orbit",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell",
+        "india"
+      ],
+      "spaceView": null,
+      "focus": "bell"
+    },
+    {
+      "id": "S04",
+      "lines": [
+        2
+      ],
+      "start": 9.158,
+      "end": 13.023,
+      "narration": "भक्त मंदिर में प्रवेश करने से पहले घंटा बजाते हैं।",
+      "visualObjective": "A devotee ringing a bell with enthusiasm.",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: wide pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell",
+        "ringing"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        3
+      ],
+      "start": 13.023,
+      "end": 16.589,
+      "narration": "यह घंटा आरती और पूजा के दौरान भी बजता है।",
+      "visualObjective": "A group performing aarti with bells ringing.",
+      "subject": "Aarav (ring bell)",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": "swing",
+      "cast": [
+        {
+          "role": "lead",
+          "action": "ring_bell"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: ring_bell; scene: swing; camera: medium punch",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell",
+        "ringing"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        4
+      ],
+      "start": 16.589,
+      "end": 20.512,
+      "narration": "घंटे आमतौर पर कांस्य या पीतल से बनाए जाते हैं।",
+      "visualObjective": "A craftsman skillfully casting a bronze bell.",
+      "subject": "bell",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "high",
+        "move": "track"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A craftsman skillfully casting a bronze bell at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": "generated-images/S06.png",
+      "assets3d": null,
+      "animation": "camera: high track",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "bell"
+      ],
+      "spaceView": null,
+      "focus": "bell"
+    },
+    {
+      "id": "S07",
+      "lines": [
+        5
+      ],
+      "start": 20.512,
+      "end": 24.97,
+      "narration": "कुछ घंटे पंचधातु से बने होते हैं, एक पारंपरिक धातु मिश्रण।",
+      "visualObjective": "Close-up of a bell made of panchdhatu.",
+      "subject": "Aarav (explain)",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "close-up of a bell made of panchdhatu at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S07.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: explain; camera: medium push",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S08",
+      "lines": [
+        6
+      ],
+      "start": 24.97,
+      "end": 27.992,
+      "narration": "घंटे की ध्वनि भक्त को सूचित करती है।",
+      "visualObjective": "A devotee entering the temple, hearing the bell.",
+      "subject": "Aarav (point)",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "point"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "A devotee entering the Indian Hindu temple, hearing the bell, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S08.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: point; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S09",
+      "lines": [
+        7
+      ],
+      "start": 27.992,
+      "end": 30.511,
+      "narration": "यह मन को भटकने से रोकता है।",
+      "visualObjective": "A devotee focused on the deity inside the temple.",
+      "subject": "Aarav (talk)",
+      "environment": "temple",
+      "objects": [],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "talk"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "orbit"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "A devotee focused on the deity inside the Indian Hindu temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S09.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: talk; camera: medium orbit",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S10",
+      "lines": [
+        8
+      ],
+      "start": 30.511,
+      "end": 34.134,
+      "narration": "माना जाता है कि घंटा सात सेकंड तक गूंजता है।",
+      "visualObjective": "Animation showing the sound of the bell echoing.",
+      "subject": "bell",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "pan"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "the sound of the bell echoing at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": "generated-images/S10.png",
+      "assets3d": null,
+      "animation": "camera: wide pan",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "bell"
+      ],
+      "spaceView": null,
+      "focus": "bell"
+    },
+    {
+      "id": "S11",
+      "lines": [
+        9
+      ],
+      "start": 34.134,
+      "end": 36.361,
+      "narration": "यह बाएं और दाएं मस्तिष्क को संतुलित करता है, ऐसा माना जाता है। (part 1/2)",
+      "visualObjective": "Simplified illustration of the brain.",
+      "subject": "Aarav (point)",
+      "environment": "temple",
+      "objects": [
+        "brain"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "point"
+        }
+      ],
+      "camera": {
+        "angle": "close",
+        "move": "punch"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "simplified the brain at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S11.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "brain"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: point; camera: close punch",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "brain"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S12",
+      "lines": [
+        9
+      ],
+      "start": 36.361,
+      "end": 38.888,
+      "narration": "यह बाएं और दाएं मस्तिष्क को संतुलित करता है, ऐसा माना जाता है। (part 2/2)",
+      "visualObjective": "Simplified illustration of the brain.",
+      "subject": "brain",
+      "environment": "temple",
+      "objects": [
+        "brain"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "low",
+        "move": "track"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "simplified the brain at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "image": "generated-images/S12.png",
+      "assets3d": null,
+      "animation": "camera: low track",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "brain"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S13",
+      "lines": [
+        10
+      ],
+      "start": 38.888,
+      "end": 43.105,
+      "narration": "यह शरीर के चक्रों को सक्रिय करता है, यह भी माना जाता है।",
+      "visualObjective": "Illustration of chakras, simplified.",
+      "subject": "Aarav (explain)",
+      "environment": "lab",
+      "objects": [
+        "dna"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "medium",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "chakras, simplified at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S13.png",
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "dna"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: explain; camera: medium crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "body"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S14",
+      "lines": [
+        11
+      ],
+      "start": 43.105,
+      "end": 47.04,
+      "narration": "घंटे की गूंज मंदिर की एक परंपरा है।",
+      "visualObjective": "Final shot of the temple bell with a serene background.",
+      "subject": "Aarav (celebrate)",
+      "environment": "temple",
+      "objects": [
+        "bell"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "celebrate"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "crane"
+      },
+      "lighting": "bright midday sun outside, warm bulbs inside, pink sunset for endings",
+      "visualStyle": "Tall Tale 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "final shot of the Indian Hindu temple bell with a serene background, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negativePrompt": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S14.png",
+      "assets3d": {
+        "environment": "temple",
+        "props": [
+          "bell"
+        ],
+        "actors": [
+          "curious_student"
+        ]
+      },
+      "animation": "Aarav: celebrate; camera: wide crane",
+      "overlay": null,
+      "transition": "whip",
+      "concepts": [
+        "temple",
+        "bell"
+      ],
+      "spaceView": null
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 1
+}

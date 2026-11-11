@@ -1,0 +1,224 @@
+{
+  "shots": {
+    "S01": {
+      "file": "generated-images/S01.png",
+      "prompt": "close-up shot of an Indian Hindu temple bell hanging near the entrance, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 1625385147,
+      "key": "88e27fc421c351d3",
+      "cached": false,
+      "seconds": 29.6,
+      "exposure": {
+        "seed": 1625385147,
+        "avg": 106.439,
+        "low": 63,
+        "high": 164,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:17:31.391Z"
+    },
+    "S03": {
+      "file": "generated-images/S03.png",
+      "prompt": "wide shot of an Indian Hindu temple complex with bells visible, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "seed": 136141500,
+      "key": "dc2082db0f35f7a1",
+      "cached": false,
+      "seconds": 23.4,
+      "exposure": {
+        "seed": 136141500,
+        "avg": 111.426,
+        "low": 58,
+        "high": 179,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:17:55.084Z"
+    },
+    "S06": {
+      "file": "generated-images/S06.png",
+      "prompt": "A craftsman skillfully casting a bronze bell at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "seed": 57481645,
+      "key": "ab181d042402ee0f",
+      "cached": false,
+      "seconds": 24.8,
+      "exposure": {
+        "seed": 57481645,
+        "avg": 90.6878,
+        "low": 32,
+        "high": 169,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:18:20.149Z"
+    },
+    "S07": {
+      "file": "generated-images/S07.png",
+      "prompt": "close-up of a bell made of panchdhatu at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 2564842124,
+      "key": "f44aef99a260f81f",
+      "cached": false,
+      "seconds": 25.8,
+      "exposure": {
+        "seed": 2564842124,
+        "avg": 130.68,
+        "low": 77,
+        "high": 186,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:18:46.177Z"
+    },
+    "S08": {
+      "file": "generated-images/S08.png",
+      "prompt": "A devotee entering the Indian Hindu temple, hearing the bell, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 408033731,
+      "key": "08e5c8771e25028b",
+      "cached": false,
+      "seconds": 26.6,
+      "exposure": {
+        "seed": 408033731,
+        "avg": 106.761,
+        "low": 60,
+        "high": 176,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:19:13.019Z"
+    },
+    "S09": {
+      "file": "generated-images/S09.png",
+      "prompt": "A devotee focused on the deity inside the Indian Hindu temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 1254853071,
+      "key": "534c912b61a44a35",
+      "cached": false,
+      "seconds": 26.5,
+      "exposure": {
+        "seed": 1254853071,
+        "avg": 119.572,
+        "low": 71,
+        "high": 192,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:19:39.814Z"
+    },
+    "S10": {
+      "file": "generated-images/S10.png",
+      "prompt": "the sound of the bell echoing at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "seed": 1668641237,
+      "key": "61a6f8510f4f9bef",
+      "cached": false,
+      "seconds": 26.5,
+      "exposure": {
+        "seed": 1668641237,
+        "avg": 117.678,
+        "low": 69,
+        "high": 196,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:20:06.646Z"
+    },
+    "S11": {
+      "file": "generated-images/S11.png",
+      "prompt": "simplified the brain at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 2128879523,
+      "key": "a77408b1bc009b19",
+      "cached": false,
+      "seconds": 26.7,
+      "exposure": {
+        "seed": 2128879523,
+        "avg": 113.457,
+        "low": 64,
+        "high": 188,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:20:33.599Z"
+    },
+    "S12": {
+      "file": "generated-images/S12.png",
+      "prompt": "simplified the brain at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw",
+      "seed": 2106364045,
+      "key": "e6e53069993fc98c",
+      "cached": false,
+      "seconds": 27,
+      "exposure": {
+        "seed": 2106364045,
+        "avg": 112.965,
+        "low": 48,
+        "high": 168,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:21:00.881Z"
+    },
+    "S13": {
+      "file": "generated-images/S13.png",
+      "prompt": "chakras, simplified at an Indian temple, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 4059451732,
+      "key": "196cd3792efb5fff",
+      "cached": false,
+      "seconds": 27.6,
+      "exposure": {
+        "seed": 4059451732,
+        "avg": 122.687,
+        "low": 94,
+        "high": 168,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:21:28.717Z"
+    },
+    "S14": {
+      "file": "generated-images/S14.png",
+      "prompt": "final shot of the Indian Hindu temple bell with a serene background, stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition, empty background plate",
+      "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "seed": 674034151,
+      "key": "6591ee9daf25403e",
+      "cached": false,
+      "seconds": 28.6,
+      "exposure": {
+        "seed": 674034151,
+        "avg": 121.279,
+        "low": 64,
+        "high": 190,
+        "problem": null
+      },
+      "attempts": 1,
+      "rejected": false,
+      "approved": false,
+      "createdAt": "2026-11-11T16:21:57.657Z"
+    }
+  }
+}

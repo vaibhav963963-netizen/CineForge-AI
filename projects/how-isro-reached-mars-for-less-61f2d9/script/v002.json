@@ -1,0 +1,305 @@
+{
+  "title": "Mars Mission Miracle",
+  "lines": [
+    {
+      "text": "सूनो, एकदम अप्रत्याशित कहानी है!।",
+      "visual": "A rocket launching from Sriharikota, flames and smoke.",
+      "onScreen": "5 नवंबर 2013"
+    },
+    {
+      "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ।",
+      "visual": "Close-up shot of the PSLV rocket.",
+      "onScreen": "₹450 crore"
+    },
+    {
+      "text": "फ़िल्म ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था।",
+      "visual": "A poster of the movie Gravity.",
+      "onScreen": "10 करोड़ डॉलर"
+    },
+    {
+      "text": "भारतीय वैज्ञानिकों ने मार्स तक पहुँचने का मिशन लिया।",
+      "visual": "Satellite orbiting Earth.",
+      "onScreen": "2013"
+    },
+    {
+      "text": "उन्होंने एक महीना पृथ्वी के चारों ओर चक्कर लगाया।",
+      "visual": "Animated diagram of Earth and a satellite in orbit.",
+      "onScreen": "1 महीना"
+    },
+    {
+      "text": "फिर धीरे-धीरे उन्होंने अपना ऑर्बिट बढ़ाया।",
+      "visual": "Satellite gradually increasing its orbital altitude.",
+      "onScreen": "ऑर्बिट बढ़ाना"
+    },
+    {
+      "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली।",
+      "visual": "The spacecraft leaving Earth's orbit.",
+      "onScreen": "1 दिसंबर 2013"
+    },
+    {
+      "text": "मार्स तक यात्रा 298 दिनों की थी।",
+      "visual": "A timeline showing 298 days.",
+      "onScreen": "298 दिन"
+    },
+    {
+      "text": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा।",
+      "visual": "The spacecraft entering Mars orbit.",
+      "onScreen": "24 सितंबर 2014"
+    },
+    {
+      "text": "सिर्फ़ 7.4 करोड़ डॉलर में मार्स मिशन पूरा!।",
+      "visual": "A graphic showing the Mars orbiter in orbit around Mars.",
+      "onScreen": "7.4 करोड़ डॉलर"
+    },
+    {
+      "text": "ऑर्बिटर ने मार्स की कक्षा में 8 साल तक काम किया।",
+      "visual": "A graphic showing the mission timeline of 8 years.",
+      "onScreen": "8 साल"
+    },
+    {
+      "text": "एकदम कमाल है, ना?।",
+      "visual": "A wide shot of Mars from space.",
+      "onScreen": "मार्स"
+    }
+  ],
+  "version": 2,
+  "meta": {
+    "version": 2,
+    "createdAt": "2026-11-11T17:04:42.315Z",
+    "source": "edited",
+    "baseVersion": 1,
+    "fingerprint": "ca17e8bea4b4",
+    "configHash": "6d12a436037c3800",
+    "wordCount": 97,
+    "estimatedSeconds": 43.8,
+    "language": "hi-conversational",
+    "personality": "mumbai-conversational",
+    "targetSeconds": 40,
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L1-1",
+          "line": 1,
+          "text": "सूनो, एकदम अप्रत्याशित कहानी है!। · 5 नवंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L1-2",
+          "line": 1,
+          "text": "सूनो, एकदम अप्रत्याशित कहानी है!। · 5 नवंबर 2013",
+          "kind": "number",
+          "value": "5",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-1",
+          "line": 2,
+          "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ। · ₹450 crore",
+          "kind": "number",
+          "value": "₹450 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L2-2",
+          "line": 2,
+          "text": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ। · ₹450 crore",
+          "kind": "number",
+          "value": "₹450 crore",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-1",
+          "line": 3,
+          "text": "फ़िल्म ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था। · 10 करोड़ डॉलर",
+          "kind": "number",
+          "value": "10 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L3-2",
+          "line": 3,
+          "text": "फ़िल्म ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था। · 10 करोड़ डॉलर",
+          "kind": "number",
+          "value": "10 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L4-1",
+          "line": 4,
+          "text": "भारतीय वैज्ञानिकों ने मार्स तक पहुँचने का मिशन लिया। · 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-1",
+          "line": 5,
+          "text": "उन्होंने 1 महीना पृथ्वी के चारों ओर चक्कर लगाया। · 1 महीना",
+          "kind": "number",
+          "value": "1 महीना",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L5-2",
+          "line": 5,
+          "text": "उन्होंने 1 महीना पृथ्वी के चारों ओर चक्कर लगाया। · 1 महीना",
+          "kind": "number",
+          "value": "1 महीना",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-1",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-2",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "year",
+          "value": "2013",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-3",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "number",
+          "value": "1",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L7-4",
+          "line": 7,
+          "text": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली। · 1 दिसंबर 2013",
+          "kind": "number",
+          "value": "1",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-1",
+          "line": 8,
+          "text": "मार्स तक यात्रा 298 दिनों की थी। · 298 दिन",
+          "kind": "number",
+          "value": "298 दिन",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L8-2",
+          "line": 8,
+          "text": "मार्स तक यात्रा 298 दिनों की थी। · 298 दिन",
+          "kind": "number",
+          "value": "298 दिन",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-1",
+          "line": 9,
+          "text": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा। · 24 सितंबर 2014",
+          "kind": "year",
+          "value": "2014",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-2",
+          "line": 9,
+          "text": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा। · 24 सितंबर 2014",
+          "kind": "year",
+          "value": "2014",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-3",
+          "line": 9,
+          "text": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा। · 24 सितंबर 2014",
+          "kind": "number",
+          "value": "24",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L9-4",
+          "line": 9,
+          "text": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा। · 24 सितंबर 2014",
+          "kind": "number",
+          "value": "24",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-1",
+          "line": 10,
+          "text": "सिर्फ़ 7.4 करोड़ डॉलर में मार्स मिशन पूरा!। · 7.4 करोड़ डॉलर",
+          "kind": "number",
+          "value": "7.4 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L10-2",
+          "line": 10,
+          "text": "सिर्फ़ 7.4 करोड़ डॉलर में मार्स मिशन पूरा!। · 7.4 करोड़ डॉलर",
+          "kind": "number",
+          "value": "7.4 करोड़",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-1",
+          "line": 11,
+          "text": "ऑर्बिटर ने मार्स की कक्षा में 8 साल तक काम किया। · 8 साल",
+          "kind": "number",
+          "value": "8 साल",
+          "status": "supported",
+          "note": null
+        },
+        {
+          "id": "L11-2",
+          "line": 11,
+          "text": "ऑर्बिटर ने मार्स की कक्षा में 8 साल तक काम किया। · 8 साल",
+          "kind": "number",
+          "value": "8 साल",
+          "status": "supported",
+          "note": null
+        }
+      ],
+      "summary": {
+        "factFile": "facts/isro-mars-orbiter.json",
+        "userFacts": false,
+        "total": 23,
+        "supported": 23,
+        "unverified": 0,
+        "contradicted": 0,
+        "needsAttribution": 0,
+        "needsReview": 0
+      }
+    },
+    "factFile": "facts/isro-mars-orbiter.json",
+    "claimsApproved": true,
+    "confirmedClaims": [],
+    "claimsApprovedAt": "2026-11-11T17:04:42.332Z",
+    "claimsApprovedBy": "author (approveClaims)"
+  }
+}

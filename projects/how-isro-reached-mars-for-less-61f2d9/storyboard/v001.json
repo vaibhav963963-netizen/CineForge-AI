@@ -1,0 +1,538 @@
+{
+  "title": "Mars Mission Miracle",
+  "planner": "rules+lexicon v2",
+  "createdAt": "2026-11-11T17:06:15.247Z",
+  "durationSeconds": 43.178,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 3.231,
+      "narration": "सूनो, एकदम अप्रत्याशित कहानी है!।",
+      "visualObjective": "A rocket launching from Sriharikota, flames and smoke.",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "5",
+        "label": "नवंबर 2013"
+      },
+      "transition": "black",
+      "concepts": [
+        "launch"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 3.231,
+      "end": 6.951,
+      "narration": "इसरो ने मिशन शुरू किया, ₹450 करोड़ बजट के साथ।",
+      "visualObjective": "Close-up shot of the PSLV rocket.",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket",
+        "coins"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket",
+          "coins"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide orbit",
+      "overlay": {
+        "type": "number",
+        "value": "₹450 crore",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "launch",
+        "space",
+        "money"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 6.951,
+      "end": 10.414,
+      "narration": "फ़िल्म ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था।",
+      "visualObjective": "A poster of the movie Gravity.",
+      "subject": "Bunty (talk)",
+      "environment": "studio",
+      "objects": [
+        "film",
+        "camera",
+        "coins"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "talk"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "hybrid",
+      "renderMethod": "Local AI image backdrop + live 3D character (parallax)",
+      "imagePrompt": "a spacecraft orbiting the red planet Mars, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition, empty background plate",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S03.png",
+      "assets3d": {
+        "environment": "studio",
+        "props": [
+          "film",
+          "camera",
+          "coins"
+        ],
+        "actors": [
+          "desi_hero"
+        ]
+      },
+      "animation": "Bunty: talk; camera: wide drift",
+      "overlay": {
+        "type": "number",
+        "value": "10 करोड़",
+        "label": "डॉलर"
+      },
+      "transition": "flash",
+      "concepts": [
+        "money",
+        "movie"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3
+      ],
+      "start": 10.414,
+      "end": 14.141,
+      "narration": "भारतीय वैज्ञानिकों ने मार्स तक पहुँचने का मिशन लिया।",
+      "visualObjective": "Satellite orbiting Earth.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "dolly"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "satellite orbiting Earth, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S04.png",
+      "assets3d": null,
+      "animation": "camera: wide dolly",
+      "overlay": {
+        "type": "date",
+        "text": "2013"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit",
+        "science",
+        "people"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S05",
+      "lines": [
+        4
+      ],
+      "start": 14.141,
+      "end": 17.632,
+      "narration": "उन्होंने एक महीना पृथ्वी के चारों ओर चक्कर लगाया।",
+      "visualObjective": "Animated diagram of Earth and a satellite in orbit.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "earth and a satellite in orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S05.png",
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "1",
+        "label": "महीना"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ],
+      "spaceView": "earth"
+    },
+    {
+      "id": "S06",
+      "lines": [
+        5
+      ],
+      "start": 17.632,
+      "end": 20.649,
+      "narration": "फिर धीरे-धीरे उन्होंने अपना ऑर्बिट बढ़ाया।",
+      "visualObjective": "Satellite gradually increasing its orbital altitude.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "satellite gradually increasing its orbital altitude, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S06.png",
+      "assets3d": null,
+      "animation": "camera: wide orbit",
+      "overlay": {
+        "type": "label",
+        "text": "ऑर्बिट बढ़ाना"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S07",
+      "lines": [
+        6
+      ],
+      "start": 20.649,
+      "end": 24.413,
+      "narration": "1 दिसंबर 2013 को उन्होंने मार्स के लिए चली।",
+      "visualObjective": "The spacecraft leaving Earth's orbit.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "the spacecraft leaving Earth's orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S07.png",
+      "assets3d": null,
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "number",
+        "value": "1",
+        "label": "दिसंबर 2013"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ],
+      "spaceView": "earth"
+    },
+    {
+      "id": "S08",
+      "lines": [
+        7
+      ],
+      "start": 24.413,
+      "end": 27.404,
+      "narration": "मार्स तक यात्रा 298 दिनों की थी।",
+      "visualObjective": "A timeline showing 298 days.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "dolly"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "a wide view of the place in space, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S08.png",
+      "assets3d": null,
+      "animation": "camera: wide dolly",
+      "overlay": {
+        "type": "number",
+        "value": "298 दिन",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "journey"
+      ],
+      "spaceView": "transfer"
+    },
+    {
+      "id": "S09",
+      "lines": [
+        8
+      ],
+      "start": 27.404,
+      "end": 32.036,
+      "narration": "24 सितंबर 2014 को मंगलयान मार्स की कक्षा में पहुँचा।",
+      "visualObjective": "The spacecraft entering Mars orbit.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "the spacecraft entering Mars orbit, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S09.png",
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "24",
+        "label": "सितंबर 2014"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S10",
+      "lines": [
+        9
+      ],
+      "start": 32.036,
+      "end": 36.344,
+      "narration": "सिर्फ़ 7.4 करोड़ डॉलर में मार्स मिशन पूरा!।",
+      "visualObjective": "A graphic showing the Mars orbiter in orbit around Mars.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "the Mars orbiter in orbit around Mars, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S10.png",
+      "assets3d": null,
+      "animation": "camera: wide orbit",
+      "overlay": {
+        "type": "number",
+        "value": "7.4 करोड़",
+        "label": "डॉलर"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit",
+        "money"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S11",
+      "lines": [
+        10
+      ],
+      "start": 36.344,
+      "end": 39.869,
+      "narration": "ऑर्बिटर ने मार्स की कक्षा में 8 साल तक काम किया।",
+      "visualObjective": "A graphic showing the mission timeline of 8 years.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "a wide view of the place in space, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S08.png",
+      "assets3d": null,
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "number",
+        "value": "8 साल",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "orbit"
+      ],
+      "spaceView": "mars",
+      "imageReuse": "S08"
+    },
+    {
+      "id": "S12",
+      "lines": [
+        11
+      ],
+      "start": 39.869,
+      "end": 43.178,
+      "narration": "एकदम कमाल है, ना?।",
+      "visualObjective": "A wide shot of Mars from space.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "A wide shot of Mars from space, stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
+      "negativePrompt": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon",
+      "image": "generated-images/S12.png",
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "label",
+        "text": "मार्स"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space"
+      ],
+      "spaceView": "mars"
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 2
+}

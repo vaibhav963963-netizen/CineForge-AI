@@ -1,0 +1,560 @@
+{
+  "title": "Mars Mission: Budget vs Gravity",
+  "planner": "rules+lexicon v2",
+  "createdAt": "2026-11-11T15:44:26.759Z",
+  "durationSeconds": 41.15,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 4.129,
+      "narration": "एक मिनट, सुनो! क्या आप जानते हैं इसरो ने मंगल तक पहुँचा?",
+      "visualObjective": "Close-up shot of a smiling ISRO engineer, pointing to a rocket.",
+      "subject": "rocket",
+      "environment": "space",
+      "objects": [
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "rocket"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "5",
+        "label": "नवंबर 2013"
+      },
+      "transition": "black",
+      "concepts": [
+        "launch",
+        "space",
+        "time",
+        "question"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 4.129,
+      "end": 8.63,
+      "narration": "मंगलयान, इसरो का मिशन, 5 नवंबर 2013 को शुरू हुआ था।",
+      "visualObjective": "Wide shot of the PSLV rocket launching from Sriharikota.",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket",
+        "satellite"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket",
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide orbit",
+      "overlay": {
+        "type": "label",
+        "text": "PSLV Rocket"
+      },
+      "transition": "flash",
+      "concepts": [
+        "launch",
+        "space",
+        "satellite"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 8.63,
+      "end": 11.586,
+      "narration": "यह श्रीहरिकोटा से लॉन्च हुआ, आप जानते हैं।",
+      "visualObjective": "Drone shot of Sriharikota launch site.",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: medium drift",
+      "overlay": {
+        "type": "label",
+        "text": "Sriharikota"
+      },
+      "transition": "flash",
+      "concepts": [
+        "launch"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3
+      ],
+      "start": 11.586,
+      "end": 15.623,
+      "narration": "लगभग ₹450 करोड़ में, इसरो ने मंगल की उड़ान भरी।",
+      "visualObjective": "Graphic showing ₹450 crore amount.",
+      "subject": "coins",
+      "environment": "office",
+      "objects": [
+        "coins",
+        "rocket"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "dolly"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "office",
+        "props": [
+          "coins",
+          "rocket"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide dolly",
+      "overlay": {
+        "type": "number",
+        "value": "₹450 Crore",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "launch",
+        "space",
+        "money"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        4
+      ],
+      "start": 15.623,
+      "end": 18.864,
+      "narration": "फिल्मग्रेविटी का बजट लगभग ₹100 करोड़ था।",
+      "visualObjective": "Movie poster of the film Gravity.",
+      "subject": "Bunty (point)",
+      "environment": "studio",
+      "objects": [
+        "film",
+        "camera",
+        "coins"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "point"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "studio",
+        "props": [
+          "film",
+          "camera",
+          "coins"
+        ],
+        "actors": [
+          "desi_hero"
+        ]
+      },
+      "animation": "Bunty: point; camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "₹100 Crore",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "money",
+        "movie"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        5
+      ],
+      "start": 18.864,
+      "end": 21.986,
+      "narration": "यह एक बड़ी बात है, है ना? कम पैसे में कमाल!",
+      "visualObjective": "Split screen: Rocket launch vs. Gravity movie scene.",
+      "subject": "rocket",
+      "environment": "launchpad",
+      "objects": [
+        "rocket",
+        "film",
+        "camera"
+      ],
+      "action": "launch",
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "launchpad",
+        "props": [
+          "rocket",
+          "film",
+          "camera"
+        ],
+        "actors": []
+      },
+      "animation": "scene: launch; camera: wide orbit",
+      "overlay": {
+        "type": "label",
+        "text": "Mars vs. Earth"
+      },
+      "transition": "flash",
+      "concepts": [
+        "launch",
+        "money",
+        "movie"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S07",
+      "lines": [
+        6
+      ],
+      "start": 21.986,
+      "end": 26.345,
+      "narration": "मिशन शुरू होने से पहले, यह पृथ्वी के चारों ओर एक महीने रहा।",
+      "visualObjective": "Animation showing the spacecraft orbiting Earth.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "label",
+        "text": "Orbiting Earth"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite",
+        "orbit"
+      ],
+      "spaceView": "earth"
+    },
+    {
+      "id": "S08",
+      "lines": [
+        7
+      ],
+      "start": 26.345,
+      "end": 30.622,
+      "narration": "फिर, 1 दिसंबर 2013 को, यह मंगल के लिए रवाना हुआ।",
+      "visualObjective": "Shot of the spacecraft leaving Earth’s atmosphere.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "dolly"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide dolly",
+      "overlay": {
+        "type": "label",
+        "text": "Departure from Earth"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "satellite"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S09",
+      "lines": [
+        8
+      ],
+      "start": 30.622,
+      "end": 33.741,
+      "narration": "यह यात्रा लगभग 298 दिन की थी।",
+      "visualObjective": "Timeline showing the 298-day journey to Mars.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "camera: medium push",
+      "overlay": {
+        "type": "number",
+        "value": "298 Days",
+        "label": null
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "journey"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S10",
+      "lines": [
+        9
+      ],
+      "start": 33.741,
+      "end": 36.951,
+      "narration": "भारत, पहला देश, मंगल ग्रह की कक्षा में पहुंचा।",
+      "visualObjective": "Map of the solar system highlighting Mars' orbit.",
+      "subject": "satellite",
+      "environment": "space",
+      "objects": [
+        "satellite"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "orbit"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "space",
+        "props": [
+          "satellite"
+        ],
+        "actors": []
+      },
+      "animation": "camera: wide orbit",
+      "overlay": {
+        "type": "label",
+        "text": "First Asian Nation"
+      },
+      "transition": "flash",
+      "concepts": [
+        "space",
+        "orbit",
+        "india"
+      ],
+      "spaceView": "mars"
+    },
+    {
+      "id": "S11",
+      "lines": [
+        10
+      ],
+      "start": 36.951,
+      "end": 41.15,
+      "narration": "वैज्ञानिकों का मानना है, यह अद्भुत उपलब्धि है।",
+      "visualObjective": "Close-up shot of a scientist working on a computer.",
+      "subject": "Bunty (celebrate)",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "laptop"
+      ],
+      "action": null,
+      "cast": [
+        {
+          "role": "lead",
+          "action": "celebrate"
+        },
+        {
+          "role": "extra",
+          "action": "explain"
+        }
+      ],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "warm low sun in the real world, cyan glow for x-ray and inside views",
+      "visualStyle": "Deep Dive 3D",
+      "method": "scene3d",
+      "renderMethod": "3D environment + animated 3D character/props (Three.js)",
+      "imagePrompt": null,
+      "negativePrompt": null,
+      "image": null,
+      "assets3d": {
+        "environment": "lab",
+        "props": [
+          "atom",
+          "laptop"
+        ],
+        "actors": [
+          "desi_hero",
+          "generic extra"
+        ]
+      },
+      "animation": "Bunty: celebrate; extra: explain; camera: wide push",
+      "overlay": {
+        "type": "label",
+        "text": "Scientists Think"
+      },
+      "transition": "flash",
+      "concepts": [
+        "science",
+        "tech",
+        "people"
+      ],
+      "spaceView": null
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 1
+}

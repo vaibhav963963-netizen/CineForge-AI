@@ -171,3 +171,6 @@ desktop.ini
 # ------------------------------------------------------------------------------
 !projects/.gitkeep
 !youtube/queue/.gitkeep
+
+# Local AI image cache (regenerated on demand)
+models/image-generation/cache/

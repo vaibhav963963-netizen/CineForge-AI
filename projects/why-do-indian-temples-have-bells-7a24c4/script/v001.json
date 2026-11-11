@@ -1,0 +1,121 @@
+{
+  "title": "Temple Bells: A Mystical Tradition",
+  "lines": [
+    {
+      "text": "क्या आपको पता है, मंदिरों में लगे घंटे का क्या मतलब है?।",
+      "visual": "Close-up shot of a temple bell hanging near the entrance."
+    },
+    {
+      "text": "भारत में, लगभग हर हिंदू मंदिर में घंटा लटका होता है।",
+      "visual": "Wide shot of a temple complex with bells visible."
+    },
+    {
+      "text": "भक्त मंदिर में प्रवेश करने से पहले घंटा बजाते हैं।",
+      "visual": "A devotee ringing a bell with enthusiasm."
+    },
+    {
+      "text": "यह घंटा आरती और पूजा के दौरान भी बजता है।",
+      "visual": "A group performing aarti with bells ringing."
+    },
+    {
+      "text": "घंटे आमतौर पर कांस्य या पीतल से बनाए जाते हैं।",
+      "visual": "A craftsman skillfully casting a bronze bell."
+    },
+    {
+      "text": "कुछ घंटे पंचधातु से बने होते हैं, एक पारंपरिक धातु मिश्रण।",
+      "visual": "Close-up of a bell made of panchdhatu."
+    },
+    {
+      "text": "घंटे की ध्वनि भक्त को सूचित करती है।",
+      "visual": "A devotee entering the temple, hearing the bell."
+    },
+    {
+      "text": "यह मन को भटकने से रोकता है।",
+      "visual": "A devotee focused on the deity inside the temple."
+    },
+    {
+      "text": "माना जाता है कि घंटा सात सेकंड तक गूंजता है।",
+      "visual": "Animation showing the sound of the bell echoing."
+    },
+    {
+      "text": "यह बाएं और दाएं मस्तिष्क को संतुलित करता है, ऐसा माना जाता है।",
+      "visual": "Simplified illustration of the brain."
+    },
+    {
+      "text": "यह शरीर के चक्रों को सक्रिय करता है, यह भी माना जाता है।",
+      "visual": "Illustration of chakras, simplified."
+    },
+    {
+      "text": "घंटे की गूंज मंदिर की एक परंपरा है।",
+      "visual": "Final shot of the temple bell with a serene background."
+    }
+  ],
+  "version": 1,
+  "meta": {
+    "version": 1,
+    "createdAt": "2026-11-11T16:13:51.641Z",
+    "factsProvided": false,
+    "factFile": "facts/temple-bells.json",
+    "claimReview": {
+      "claims": [
+        {
+          "id": "L9-1",
+          "line": 9,
+          "text": "माना जाता है कि घंटा 7 सेकंड तक गूंजता है।",
+          "kind": "number",
+          "value": "7",
+          "status": "supported",
+          "note": null
+        }
+      ],
+      "summary": {
+        "factFile": "facts/temple-bells.json",
+        "userFacts": false,
+        "total": 1,
+        "supported": 1,
+        "unverified": 0,
+        "contradicted": 0,
+        "needsAttribution": 0,
+        "needsReview": 0
+      }
+    },
+    "claimsApproved": true,
+    "claimsToVerify": [
+      {
+        "line": 6,
+        "text": "कुछ घंटे पंचधातु से बने होते हैं, एक पारंपरिक धातु मिश्रण।",
+        "check": [
+          "quantity \"एक\""
+        ]
+      },
+      {
+        "line": 9,
+        "text": "माना जाता है कि घंटा सात सेकंड तक गूंजता है।",
+        "check": [
+          "quantity \"सात\""
+        ]
+      },
+      {
+        "line": 12,
+        "text": "घंटे की गूंज मंदिर की एक परंपरा है।",
+        "check": [
+          "quantity \"एक\""
+        ]
+      }
+    ],
+    "source": "llm",
+    "fingerprint": "89295d31be54",
+    "configHash": "238bc860e37213b8",
+    "model": {
+      "name": "Gemma 3 4B Instruct (Q4_K_M GGUF)",
+      "file": "google_gemma-3-4b-it-Q4_K_M.gguf",
+      "license": "Gemma Terms of Use (https://ai.google.dev/gemma/terms) + Gemma Prohibited Use Policy",
+      "runtime": "llama.cpp (Vulkan)"
+    },
+    "wordCount": 123,
+    "estimatedSeconds": 51.3,
+    "language": "hi-conversational",
+    "personality": "educational",
+    "targetSeconds": 45
+  }
+}

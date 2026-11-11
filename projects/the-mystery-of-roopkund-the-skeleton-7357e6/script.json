@@ -1,0 +1,38 @@
+{
+  "title": "Skeleton Lake Mystery",
+  "language": "en",
+  "voice": "bm_george",
+  "speed": 0.98,
+  "lead": 0.35,
+  "outro": 1.1,
+  "gap": 0.32,
+  "lines": [
+    {
+      "text": "Roopkund: a Himalayan glacial lake waits."
+    },
+    {
+      "text": "It’s known as Skeleton Lake, sadly."
+    },
+    {
+      "text": "Madhwal found remains in 1942, you know."
+    },
+    {
+      "text": "The lake freezes, bones appear slowly."
+    },
+    {
+      "text": "Ancient DNA reveals separate deaths now."
+    },
+    {
+      "text": "Groups died centuries, a long time ago."
+    },
+    {
+      "text": "South Asian ancestry died around 800 CE."
+    },
+    {
+      "text": "Mediterranean group died around 1800 CE."
+    },
+    {
+      "text": "Why? A mystery still unsolved, sadly."
+    }
+  ]
+}

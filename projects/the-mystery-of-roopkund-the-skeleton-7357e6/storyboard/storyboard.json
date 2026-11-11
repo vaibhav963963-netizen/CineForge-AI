@@ -1,0 +1,364 @@
+{
+  "title": "Skeleton Lake Mystery",
+  "planner": "rules+lexicon v2",
+  "createdAt": "2026-11-11T15:55:35.112Z",
+  "durationSeconds": 31.07,
+  "shots": [
+    {
+      "id": "S01",
+      "lines": [
+        0
+      ],
+      "start": 0,
+      "end": 3.266,
+      "narration": "Roopkund: a Himalayan glacial lake waits.",
+      "visualObjective": "Drone shot of the high-altitude lake in the mountains.",
+      "subject": "snowy Himalayan mountains and a frozen lake",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "drone shot of the high-altitude lake in the mountains, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S01.png",
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": {
+        "type": "number",
+        "value": "5,020",
+        "label": "meters"
+      },
+      "transition": "black",
+      "concepts": [
+        "mountains"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S02",
+      "lines": [
+        1
+      ],
+      "start": 3.266,
+      "end": 5.893,
+      "narration": "It’s known as Skeleton Lake, sadly.",
+      "visualObjective": "Close-up of exposed bones in the snow.",
+      "subject": "skull",
+      "environment": "mountains",
+      "objects": [
+        "skull"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "close-up of exposed bones in the snow, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S02.png",
+      "assets3d": null,
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "number",
+        "value": "300",
+        "label": "-800"
+      },
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "skeleton"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S03",
+      "lines": [
+        2
+      ],
+      "start": 5.893,
+      "end": 10.125,
+      "narration": "Madhwal found remains in 1942, you know.",
+      "visualObjective": "Old photo of a forest ranger examining the lake.",
+      "subject": "skull",
+      "environment": "nature",
+      "objects": [
+        "skull"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "close",
+        "move": "dolly"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "a man in a forest ranger uniform examining the lake, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S03.png",
+      "assets3d": null,
+      "animation": "camera: close dolly",
+      "overlay": {
+        "type": "date",
+        "text": "1942"
+      },
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "nature",
+        "skeleton"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S04",
+      "lines": [
+        3
+      ],
+      "start": 10.125,
+      "end": 12.908,
+      "narration": "The lake freezes, bones appear slowly.",
+      "visualObjective": "Time-lapse of snow melting, revealing bones.",
+      "subject": "clock",
+      "environment": "mountains",
+      "objects": [
+        "clock",
+        "skull"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "low",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "snow melting, revealing bones, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw, people, person, man, woman, boy, girl, face, portrait, figure, animal",
+      "image": "generated-images/S04.png",
+      "assets3d": null,
+      "animation": "camera: low push",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "skeleton",
+        "time"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S05",
+      "lines": [
+        4
+      ],
+      "start": 12.908,
+      "end": 15.995,
+      "narration": "Ancient DNA reveals separate deaths now.",
+      "visualObjective": "Scientist analyzing a bone fragment.",
+      "subject": "atom",
+      "environment": "lab",
+      "objects": [
+        "atom",
+        "skull",
+        "crown"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "drift"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "scientist analyzing a bone fragment in the snowy Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S05.png",
+      "assets3d": null,
+      "animation": "camera: medium drift",
+      "overlay": {
+        "type": "date",
+        "text": "2019"
+      },
+      "transition": "black",
+      "concepts": [
+        "history",
+        "science",
+        "body",
+        "skeleton"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S06",
+      "lines": [
+        5
+      ],
+      "start": 15.995,
+      "end": 19.049,
+      "narration": "Groups died centuries, a long time ago.",
+      "visualObjective": "Timeline graphic showing group deaths.",
+      "subject": "clock",
+      "environment": "mountains",
+      "objects": [
+        "clock"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "high",
+        "move": "dolly"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "pilgrims walking along a narrow snowy trail high in the Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S06.png",
+      "assets3d": null,
+      "animation": "camera: high dolly",
+      "overlay": {
+        "type": "number",
+        "value": "1,000 years",
+        "label": null
+      },
+      "transition": "black",
+      "concepts": [
+        "time"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S07",
+      "lines": [
+        6
+      ],
+      "start": 19.049,
+      "end": 22.898,
+      "narration": "South Asian ancestry died around 800 CE.",
+      "visualObjective": "Artist's depiction of the South Asian group.",
+      "subject": "mountains",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "medium",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "artist's depiction of the South Asian group in the snowy Himalayas, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S07.png",
+      "assets3d": null,
+      "animation": "camera: medium push",
+      "overlay": {
+        "type": "number",
+        "value": "800",
+        "label": "CE"
+      },
+      "transition": "black",
+      "concepts": [],
+      "spaceView": null
+    },
+    {
+      "id": "S08",
+      "lines": [
+        7
+      ],
+      "start": 22.898,
+      "end": 27.151,
+      "narration": "Mediterranean group died around 1800 CE.",
+      "visualObjective": "Panoramic view of the lake and mountains.",
+      "subject": "snowy Himalayan mountains and a frozen lake",
+      "environment": "mountains",
+      "objects": [],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "drift"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "panoramic view of the lake and mountains, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S08.png",
+      "assets3d": null,
+      "animation": "camera: wide drift",
+      "overlay": {
+        "type": "date",
+        "text": "1800 CE"
+      },
+      "transition": "black",
+      "concepts": [
+        "mountains"
+      ],
+      "spaceView": null
+    },
+    {
+      "id": "S09",
+      "lines": [
+        8
+      ],
+      "start": 27.151,
+      "end": 31.07,
+      "narration": "Why? A mystery still unsolved, sadly.",
+      "visualObjective": "Close-up of the frozen lake surface.",
+      "subject": "question",
+      "environment": "mountains",
+      "objects": [
+        "question"
+      ],
+      "action": null,
+      "cast": [],
+      "camera": {
+        "angle": "wide",
+        "move": "push"
+      },
+      "lighting": "one hard light per scene, everything else falls into darkness, thin red rim on the subject",
+      "visualStyle": "Night File 3D",
+      "method": "image",
+      "renderMethod": "Local AI image (ComfyUI) + camera move",
+      "imagePrompt": "close-up of the frozen lake surface, dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
+      "negativePrompt": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw",
+      "image": "generated-images/S09.png",
+      "assets3d": null,
+      "animation": "camera: wide push",
+      "overlay": null,
+      "transition": "black",
+      "concepts": [
+        "mountains",
+        "mystery",
+        "question"
+      ],
+      "spaceView": null
+    }
+  ],
+  "version": 1,
+  "scriptVersion": 1
+}
