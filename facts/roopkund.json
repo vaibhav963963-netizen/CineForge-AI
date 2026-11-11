@@ -1,0 +1,39 @@
+{
+  "id": "roopkund",
+  "title": "Roopkund (Skeleton Lake)",
+  "match": ["roopkund", "rupkund", "skeleton lake", "रूपकुंड"],
+  "aliases": ["Roopkund", "Skeleton Lake", "Mystery Lake", "Himalayas", "Himalaya", "Uttarakhand", "Chamoli", "Trishul", "Nanda Devi", "India"],
+  "sources": [
+    "Harney et al., 'Ancient DNA from the skeletons of Roopkund Lake reveals Mediterranean migrants in India', Nature Communications 10, 3670 (2019)",
+    "Uttarakhand Tourism / Wikipedia 'Roopkund' (altitude, location, 1942 rediscovery)"
+  ],
+  "verified": [
+    { "text": "Roopkund is a high-altitude glacial lake in the Chamoli district of Uttarakhand, India, in the Himalayas near the Trishul massif.", "keys": ["glacial lake", "chamoli", "uttarakhand", "himalaya", "trishul"] },
+    { "text": "The lake lies at an altitude of about 5,020 metres (about 16,470 feet).", "keys": ["5020", "5 020", "16470", "16 470", "altitude"] },
+    { "text": "It is called Skeleton Lake because the remains of several hundred people, estimated at between 300 and 800, lie in and around it.", "keys": ["skeleton lake", "several hundred", "hundreds"] },
+    { "text": "The remains became widely known in 1942, when a forest ranger, H. K. Madhwal, came across them.", "keys": ["1942", "ranger", "madhwal"] },
+    { "text": "The lake is frozen for most of the year; the bones become visible when the snow and ice melt.", "keys": ["frozen", "snow", "ice", "melt"] },
+    { "text": "A 2019 study in the journal Nature Communications analysed ancient DNA from 38 of the skeletons.", "keys": ["2019", "dna", "38", "nature communications", "study"] },
+    { "text": "The study found that the people belonged to genetically distinct groups who died in separate events about 1,000 years apart, not all at once.", "keys": ["distinct groups", "separate", "1000 years", "1 000 years"] },
+    { "text": "One group had South Asian ancestry and died around 800 CE (between the 7th and 10th centuries).", "keys": ["800", "7th", "10th", "south asian"] },
+    { "text": "Another group had Eastern Mediterranean ancestry, similar to people from present-day Greece and Crete, and died around 1800 CE.", "keys": ["mediterranean", "greece", "crete", "1800"] },
+    { "text": "Roopkund lies on the route of the Nanda Devi Raj Jat pilgrimage, which is held about once every 12 years.", "keys": ["raj jat", "pilgrimage", "12 years", "pilgrims"] }
+  ],
+  "theories": [
+    { "text": "Many of the people may have been killed by a sudden, severe hailstorm: a 2004 analysis reported head injuries consistent with blows from large hailstones.", "keys": ["hail", "hailstorm", "hailstones", "storm", "ओले", "ओलों", "तूफ़ान", "तूफान"] },
+    { "text": "Why the Eastern Mediterranean group was in the Himalayas around 1800 CE is unknown.", "keys": ["why they were there"] }
+  ],
+  "legends": [
+    { "text": "Local folklore says the goddess Nanda Devi sent a deadly hailstorm to punish King Jasdhaval of Kannauj and his royal pilgrimage party for disrespecting her shrine.", "keys": ["king", "royal", "procession", "jasdhaval", "kannauj", "goddess", "curse", "cursed", "wrath", "dancers", "राजा", "देवी", "श्राप"] }
+  ],
+  "knownErrors": [
+    { "text": "Roopkund is in Panna National Park", "keys": ["panna"], "correction": "Roopkund is in the Chamoli district of Uttarakhand (Panna National Park is in Madhya Pradesh)." },
+    { "text": "The skeletons were discovered in 1999", "keys": ["1999"], "correction": "They became widely known in 1942." },
+    { "text": "The lake is at 7,288 metres", "keys": ["7288", "7 288"], "correction": "About 5,020 metres." },
+    { "text": "A plane crash killed the people", "keys": ["plane crash", "aircraft", "airplane"], "correction": "There is no plane crash; the remains are centuries old." },
+    { "text": "They were Japanese soldiers from World War II", "keys": ["japanese soldiers", "world war"], "correction": "An early wartime guess, disproved by dating: the remains are centuries old." },
+    { "text": "Police found the skeletons", "keys": ["police"], "correction": "A forest ranger (H. K. Madhwal) reported them in 1942." },
+    { "text": "All the people died in a single event", "keys": ["single event", "all at once", "same day", "same night"], "correction": "DNA and dating show separate events about 1,000 years apart." }
+  ],
+  "uncertain": "Nobody knows for certain what killed every group, or why the Mediterranean group was there. Exact numbers of people are estimates."
+}

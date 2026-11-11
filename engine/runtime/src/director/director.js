@@ -121,7 +121,9 @@ export async function buildDirector({ scene, E, three }) {
       let groundSlot = 0;
       objects.forEach((kind, k) => {
         const p = S3.makeProp3D(kind); if (!p) return;
-        if (style.id === 'night-file') p.traverse((o) => { if (o.material && o.material.emissiveIntensity) { o.material = o.material.clone(); o.material.emissiveIntensity *= 0.2; } });
+        // night-file: props get the same night darkening as the set — a near-white prop under this grade's strong
+        // bloom (0.8, threshold 0.55) washed the whole frame out (shot QA: luma 154 vs the video's 45)
+        if (style.id === 'night-file') p.traverse((o) => { if (o.material) { o.material = o.material.clone(); if (o.material.emissiveIntensity) o.material.emissiveIntensity *= 0.2; if (o.material.color) o.material.color.multiplyScalar(0.5); } });
         if (kind === 'bat' && lead) { p.rotation.set(Math.PI, 0, 0); p.position.set(0, -0.05, 0.02); attach.push([lead.armR.hand, p]); return; }
         if (HAND_PROPS.has(kind) && lead && kind !== 'ball') { p.position.set(0, -0.06, 0.05); attach.push([lead.armL.hand, p]); return; }
         if (kind === 'rocket') { const rp = A.rocket || [leadPos[0] - 3, 0, leadPos[2] - 4]; p.position.set(...rp); if (!A.rocket) p.scale.setScalar(0.35); set.add(p); props.push({ kind, p, base: p.position.clone() }); return; }
@@ -167,7 +169,11 @@ export async function buildDirector({ scene, E, three }) {
         }
         if (env.bell) env.bell.rotation.z = (leadCast?.action === 'ring_bell' || sh.action === 'swing') ? Math.sin(t * 7) * 0.32 : Math.sin(t * 1.5) * 0.03;
         if (env.update) env.update(t);
-        const [f, base] = focusFor(), dist = S3.cameraAt(cam, camSpec, f, lt, d, style, i, base, ENV_AZ_SCALE[sh.environment] ?? 1);
+        const [f, base] = focusFor();
+        let dist = S3.cameraAt(cam, camSpec, f, lt, d, style, i, base, ENV_AZ_SCALE[sh.environment] ?? 1);
+        // occlusion guard: nothing may sit between the lens and the subject (a camera behind or inside a boulder
+        // rendered a frame-filling dark disc). Move the camera in front of the nearest occluder.
+        dist = S3.clearView(cam, f, env.scene, [lead?.root, ...props.map((x) => x.p)].filter(Boolean)) ?? dist;
         // a presenting character turns toward the lens (never shows the viewer the back of their head); directional
         // actions keep the scene's facing, bell-ringing gets a three-quarter view between the bell and the camera
         if (lead && leadCast.facing === undefined && !['bat_swing', 'bowl', 'walk', 'run'].includes(leadCast.action)) {
@@ -187,6 +193,15 @@ export async function buildDirector({ scene, E, three }) {
         drawCover(img, lt, d, camSpec.move === 'pan' || camSpec.move === 'tilt' ? camSpec.move : camSpec.move === 'pull' ? 'pull' : camSpec.move === 'punch' ? 'punch' : 'push', style.camera.intensity ?? 1, i);
         if (method === 'hybrid' && leadCast && !TEST.hideLead) figure2d(S2, { x: 300, y: 1880, h: 900, dir: 1, colors: figColors, accessory: C.accessory, action: leadCast.action || 'explain', t, talk: true, hold: objects.includes('bat') ? 'bat' : null });
         if (!is3d) frame2d(style); else grade2d(style, t, 1);
+      };
+    }
+    // ── infographic over a defocused local AI image (AI-image mode) ─────────────────────────────────
+    else if (method === 'infographic' && images.has(sh.id)) {
+      const img = images.get(sh.id);
+      drawCore = (lt, d, t) => {
+        const ctx = lib.ctx; ctx.save(); ctx.filter = 'blur(9px) brightness(0.8)';
+        drawCover(img, lt, d, 'push', 0.4 * (style.camera.intensity ?? 1), i); ctx.restore();
+        if (is3d) grade2d(style, t, 1);   // 2D styles are graded once in draw()
       };
     }
     // ── 2D scenes (2D styles) ───────────────────────────────────────────────────────────────────────────

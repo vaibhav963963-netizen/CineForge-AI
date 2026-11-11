@@ -147,3 +147,149 @@ test('storyboard: no lead character in space, and none at all when "No Lead Char
   const none = planStoryboard({ script: { title: 't', lines }, timing, words: [], config: V({ style: 'deep-dive', character: 'none' }).config, style, topic: 'isro' });
   assert.ok(none.shots.every((s) => !s.cast.some((c) => c.role === 'lead')));
 });
+
+test('script review: checkable claims (years, numbers, quantities, names) are listed for verification', async () => {
+  const { extractClaims } = await import('../dashboard/lib/scriptgen.js');
+  const c = extractClaims({ lines: [{ text: 'In 1999, skeletons were discovered there.' }, { text: 'Around 45 skeletons were found.' }, { text: 'A sad tale.' }, { text: 'पूरा मिशन साढ़े चार सौ करोड़ में बना।' }] });
+  assert.deepEqual(c.map((x) => x.line), [1, 2, 4]);
+  assert.ok(c[0].check.includes('year 1999') && c[1].check.includes('number 45'));
+});
+
+test('storyboard: placeholder on-screen values ("None", "N/A", "-") never become overlays', () => {
+  const config = V({ style: 'night-file' }).config, style = getCatalog().styles.find((s) => s.id === 'night-file');
+  const lines = [{ text: 'A frozen lake hides a secret.', visual: 'a frozen lake at night', onScreen: 'None' }, { text: 'It was found long ago.', visual: 'a dark shore', onScreen: 'N/A' }];
+  const sb = planStoryboard({ script: { title: 't', lines }, timing: { duration: 7, lines: [{ start: 0.3, end: 3 }, { start: 3.3, end: 6.5 }] }, words: [], config, style, topic: 'lake' });
+  assert.ok(sb.shots.every((s) => !s.overlay || !/none|n\/a/i.test(JSON.stringify(s.overlay))));
+});
+
+// ── visual quality: AI-image coverage, image reuse, exposure verdicts ──────────────────────────────────────────
+test('storyboard: hybrid mode covers every non-action shot with an AI image (no budget cap) and reuses repeats', () => {
+  const config = V({ style: 'night-file', character: 'none', visualMode: 'hybrid-local' }).config, style = getCatalog().styles.find((s) => s.id === 'night-file');
+  const texts = ['A frozen lake hides a secret.', 'Bones lie under the ice.', 'Pilgrims walked this path.', 'A storm came over the peaks.', 'Scientists studied the bones.', 'The DNA told a new story.', 'Two groups died centuries apart.', 'The mystery is still cold.'];
+  const lines = texts.map((t, i) => ({ text: t, visual: i === 7 ? 'a frozen lake at night in the Himalayas' : ['a frozen lake at night in the Himalayas', 'bones under clear ice', 'pilgrims on a snowy trail', 'storm clouds over snowy peaks', 'scientists in a lab with bones', 'a DNA helix glowing', 'two groups of travellers on a mountain trail', 'x'][i] }));
+  const timing = { duration: 8 * 3.2, lines: lines.map((_, i) => ({ start: i * 3.2 + 0.2, end: i * 3.2 + 3 })) };
+  const sb = planStoryboard({ script: { title: 't', lines }, timing, words: [], config, style, topic: 'Roopkund' });
+  const procedural = sb.shots.filter((s) => s.method === 'scene3d' || s.method === 'scene2d');
+  assert.equal(procedural.length, 0, `procedural shots in AI-image mode: ${procedural.map((s) => s.id).join(', ')}`);
+  const last = sb.shots.at(-1);
+  assert.equal(last.imageReuse, sb.shots[0].id, 'identical visual reuses the first image');
+});
+
+test('exposure: near-black, blown-out and flat shots are flagged; normal dim night shots pass', async () => {
+  const { judgeShots, judgeImage } = await import('../dashboard/lib/exposure.js');
+  const fr = (t0, t1, avg, low, high) => Array.from({ length: Math.round((t1 - t0) * 4) }, (_, k) => ({ t: t0 + k / 4, avg, low, high }));
+  const frames = [...fr(0, 3, 45, 6, 120), ...fr(3, 6, 5, 0, 4), ...fr(6, 9, 153, 74, 234), ...fr(9, 12, 30, 3, 59), ...fr(12, 15, 90, 88, 95)];
+  const shots = [0, 3, 6, 9, 12].map((s, i) => ({ id: 'S0' + (i + 1), start: s, end: s + 3 }));
+  const q = judgeShots(frames, shots);
+  assert.deepEqual(q.bad.map((b) => b.id), ['S02', 'S03', 'S05']);
+  assert.match(q.bad[0].problem, /near-black/); assert.match(q.bad[1].problem, /blown out/); assert.match(q.bad[2].problem, /flat/);
+  assert.equal(judgeImage({ avg: 8, low: 0, high: 12 }) !== null, true);
+  assert.equal(judgeImage({ avg: 60, low: 8, high: 140 }), null);
+});
+
+// ── factual accuracy ────────────────────────────────────────────────────────────────────────────────────────
+test('fact check: invented place, legend-as-history and wrong numbers are flagged; known errors block rendering', async () => {
+  const { reviewClaims, findTopicFacts, claimsGate, confirmClaims } = await import('../dashboard/lib/factcheck.js');
+  const tf = findTopicFacts('The Mystery of Roopkund, the Skeleton Lake');
+  assert.equal(tf?.id, 'roopkund');
+  const script = { title: 'Skeleton Lake', lines: [
+    { text: 'Roopkund lies in Uttarakhand’s Panna National Park.' }, { text: 'The skeletons date back to the 11th century.' },
+    { text: 'A royal procession met a sudden storm.' }, { text: 'A 2019 DNA study found distinct groups who died 1,000 years apart.' },
+    { text: 'Legend says a goddess punished a king with hail.' } ] };
+  const r = reviewClaims(script, { topic: 'Roopkund', topicFacts: tf });
+  const by = (line, st) => r.claims.filter((c) => c.line === line && c.status === st);
+  assert.ok(by(1, 'contradicted').length, 'Panna National Park is a known error');
+  assert.ok(by(2, 'unverified').some((c) => c.value === '11th'), '11th century is not in the verified facts');
+  assert.ok(by(3, 'needs-attribution').length, 'royal procession told as fact');
+  assert.equal(r.claims.filter((c) => c.line === 4 && c.status !== 'supported').length, 0, 'verified DNA facts are supported');
+  assert.equal(by(5, 'needs-attribution').length, 0, 'a framed legend is fine');
+  const meta = { claimReview: r };
+  assert.equal(claimsGate(meta).ok, false);
+  assert.throws(() => confirmClaims(meta, 'all'), /Known errors cannot be approved/);
+  const clean = reviewClaims({ title: 't', lines: script.lines.slice(1) }, { topic: 'Roopkund', topicFacts: tf });
+  const m2 = { claimReview: clean, ...confirmClaims({ claimReview: clean }, 'all') };
+  assert.equal(claimsGate(m2).ok, true);
+});
+
+// ── Hinglish captions keep English loanwords in English spelling ──────────────────────────────────────────────
+test('hinglish: English loanwords keep English spelling; Hindi words are transliterated; no false matches', async () => {
+  const { hinglishCaption } = await import('../dashboard/lib/translit.js');
+  assert.equal(hinglishCaption('भारत ने क्रिकेट मैच में विकेट लिया।').text, 'Bharat ne cricket match mein wicket liya.');
+  assert.equal(hinglishCaption('पाकिस्तान के बॉलर ने बाउंसर डाला!', ['bowler', 'bouncer']).text, 'Pakistan ke bowler ne bouncer dala!');
+  assert.equal(hinglishCaption('ISRO ने Mars पर मिशन भेजा', ['mission']).text, 'ISRO ne Mars par mission bheja');
+  assert.doesNotMatch(hinglishCaption('यह काम करना है', ['come', 'car']).text, /come|car\b/);
+});
+
+test('storyboard: comparison keeps unit-only labels readable; AI-image mode puts diagrams over an AI image; abstract visuals become concrete', async () => {
+  const { concreteVisual } = await import('../dashboard/lib/storyboard.js');
+  const config = V({ style: 'night-file', character: 'none', visualMode: 'hybrid-local' }).config, style = getCatalog().styles.find((s) => s.id === 'night-file');
+  const lines = [{ text: 'A frozen lake hides a secret.', visual: 'a frozen lake at night' }, { text: 'Two groups died a thousand years apart.', visual: 'a frozen lake at night', onScreen: '800 CE vs 1800 CE' }, { text: 'Bones lie under the ice.', visual: 'bones under clear ice' }];
+  const sb = planStoryboard({ script: { title: 't', lines }, timing: { duration: 10, lines: [{ start: 0.2, end: 3 }, { start: 3.3, end: 6.5 }, { start: 6.8, end: 9.6 }] }, words: [], config, style, topic: 'Roopkund' });
+  const info = sb.shots.find((s) => s.method === 'infographic');
+  assert.ok(info, 'comparison shot is an infographic');
+  assert.deepEqual(info.overlay.items.map((x) => x.label), ['800 CE', '1800 CE']);
+  assert.ok(info.imageReuse, 'infographic gets an AI image backdrop');
+  assert.match(concreteVisual('Microscopic image of ancient DNA fragments.', 'lab', 'Roopkund skeletons'), /scientist .* bone/);
+  assert.equal(concreteVisual('Time-lapse of the lake freezing over.', 'mountains'), 'the lake freezing over');
+});
+
+test('image prompts: named people become their role, maps become the place, video jargon is dropped; spoken numbers meet the facts', async () => {
+  const { concreteVisual } = await import('../dashboard/lib/storyboard.js');
+  assert.equal(concreteVisual('black and white H. K. Madhwal', 'mountains', 'Roopkund', 'Forest ranger Madhwal found them in 1942.'), 'a man in a forest ranger uniform in the snowy Himalayas');
+  assert.equal(concreteVisual('slow motion of snow melting, exposing bones', 'mountains', 'Roopkund'), 'snow melting, exposing bones');
+  assert.match(concreteVisual('map showing the route of the pilgrimage', 'mountains', 'Roopkund'), /pilgrims walking/);
+  assert.match(concreteVisual('ISRO scientists celebrating in the control room', 'lab', 'How ISRO reached Mars', 'ISRO scientists cheered.'), /^ISRO/);
+  const { reviewClaims, findTopicFacts, spokenNumbersToDigits } = await import('../dashboard/lib/factcheck.js');
+  assert.equal(spokenNumbersToDigits('around eight hundred CE at five thousand twenty metres'), 'around 800 CE at 5020 metres');
+  assert.equal(reviewClaims({ lines: [{ text: 'One group died around eight hundred CE.' }] }, { topic: 'Roopkund', topicFacts: findTopicFacts('Roopkund') }).summary.needsReview, 0);
+});
+
+test('fact check: beliefs must be framed as beliefs (never credited to science); on-screen numbers are checked; units matter', async () => {
+  const { reviewClaims, findTopicFacts } = await import('../dashboard/lib/factcheck.js');
+  const bells = findTopicFacts('Why Do Indian Temples Have Bells?'), isro = findTopicFacts('How ISRO reached Mars for less');
+  const st = (tf, l) => reviewClaims({ lines: [l] }, { topic: 't', topicFacts: tf }).claims;
+  assert.ok(st(bells, { text: 'प्रतिध्वनि सात सेकंड तक रहती है, वैज्ञानिकों का मानना है।' }).some((c) => c.kind === 'belief credited to science'));
+  assert.equal(st(bells, { text: 'नकारात्मक ऊर्जा दूर करती है, ऐसा माना जाता है।' }).length, 0);
+  assert.ok(st(bells, { text: 'हर मंदिर में घंटा है।', onScreen: '90% temples' }).some((c) => c.value === '90%' && c.status === 'unverified'));
+  assert.equal(st(isro, { text: 'फिल्म ग्रेविटी ₹100 करोड़ में बनी है।' }).find((c) => c.kind === 'number').status, 'unverified');
+  assert.equal(st(isro, { text: 'Gravity cost about 100 million dollars.' }).find((c) => c.kind === 'number').status, 'supported');
+  assert.equal(st(isro, { text: 'ऑर्बिटर ने 8 साल काम किया।' }).find((c) => c.kind === 'number').status, 'supported');
+});
+
+test('storyboard lexicon: short English words need a real inflection ("bathed" is not "bat"); video-jargon on-screen text is dropped', async () => {
+  assert.deepEqual(analyze('A serene temple interior, bathed in light.').map((c) => c.id), ['temple']);
+  assert.ok(analyze('He swings the bat and hits a six').some((c) => c.id === 'batting'));
+  const config = V({ style: 'night-file', character: 'none', visualMode: 'hybrid-local' }).config, style = getCatalog().styles.find((s) => s.id === 'night-file');
+  const sb = planStoryboard({ script: { title: 't', lines: [{ text: 'Listen to this.', visual: 'a frozen lake', onScreen: '94 words' }, { text: 'It is old.', visual: 'a frozen lake at night' }] }, timing: { duration: 6, lines: [{ start: 0.2, end: 2.8 }, { start: 3, end: 5.8 }] }, words: [], config, style, topic: 'Roopkund' });
+  assert.ok(sb.shots.every((s) => !s.overlay || !/words/.test(JSON.stringify(s.overlay))));
+});
+
+test('image prompts: text/graphic-design requests and logos never reach the image model', async () => {
+  const { concreteVisual } = await import('../dashboard/lib/storyboard.js');
+  for (const v of ['₹450 crore displayed prominently on screen', 'split screen: ISRO mission vs. Gravity film poster', 'text overlay: 300 days journey']) assert.equal(concreteVisual(v, 'space', 'ISRO', '', 'space'), 'a spacecraft orbiting the red planet Mars');
+  assert.equal(concreteVisual('final shot of Mars with the ISRO logo', 'space', 'ISRO', '', 'space'), 'final shot of Mars');
+});
+
+test('fact check: a hedged verified number with the wrong unit still fails ("लगभग 74 करोड़ डॉलर" for 74 million dollars)', async () => {
+  const { reviewClaims, findTopicFacts } = await import('../dashboard/lib/factcheck.js');
+  const isro = findTopicFacts('How ISRO reached Mars for less'), bells = findTopicFacts('Why Do Indian Temples Have Bells?');
+  const nums = (tf, text) => reviewClaims({ lines: [{ text }] }, { topic: 't', topicFacts: tf }).claims.filter((c) => c.kind === 'number').map((c) => c.status);
+  assert.deepEqual(nums(isro, 'यह मिशन ₹450 करोड़ का था, लगभग 74 करोड़ डॉलर।'), ['supported', 'unverified']);
+  assert.deepEqual(nums(isro, 'ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था।'), ['supported']);
+  assert.deepEqual(nums(bells, 'कुछ मानते हैं ध्वनि सात सेकंड रहती है।'), ['supported']);
+});
+
+test('hindi: half-Latin words the model writes are repaired ("मंगalyaan" → मंगलयान, "पंचदhatu" → पंचधातु)', async () => {
+  const { devanagarizeLatin } = await import('../dashboard/lib/scriptgen.js');
+  assert.equal(devanagarizeLatin('इसरो ने मंगalyaan मिशन शुरू किया।'), 'इसरो ने मंगलयान मिशन शुरू किया।');
+  assert.equal(devanagarizeLatin('कुछ पंचदhatu से बनाई जाती हैं।'), 'कुछ पंचधातु से बनाई जाती हैं।');
+});
+
+test('fact check: a verified number attached to the wrong subject fails ("Gravity\'s budget was ₹450 crore")', async () => {
+  const { reviewClaims, findTopicFacts } = await import('../dashboard/lib/factcheck.js');
+  const isro = findTopicFacts('How ISRO reached Mars for less');
+  const st = (text) => reviewClaims({ lines: [{ text }] }, { topic: 't', topicFacts: isro }).claims.filter((c) => c.kind === 'number').map((c) => c.status);
+  assert.deepEqual(st('हॉलीवुड फिल्म ग्रेविटी का बजट ₹450 करोड़ डॉलर था।'), ['unverified']);
+  assert.deepEqual(st('ग्रेविटी का बजट लगभग 10 करोड़ डॉलर था।'), ['supported']);
+  assert.deepEqual(st('₹450 करोड़ में, इसरो ने कमाल दिखाया!'), ['supported']);
+});

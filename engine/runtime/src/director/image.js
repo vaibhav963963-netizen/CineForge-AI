@@ -11,7 +11,7 @@ export function loadImage(src) {
 const FILTER = {
   'tall-tale': 'saturate(1.18) contrast(1.04)',
   'deep-dive': 'saturate(1.08) contrast(1.1) brightness(0.98)',
-  'night-file': 'grayscale(0.55) contrast(1.35) brightness(0.72)',
+  'night-file': 'grayscale(0.45) contrast(1.15) brightness(1.35)',   // AI noir images are already dark: lift, don't crush
   'inside-out': 'saturate(1.35) contrast(1.2)',
   'stick-story': 'saturate(0.9) contrast(1.08)',
   'paper-atlas': 'sepia(0.45) saturate(0.75) contrast(1.05)',
@@ -22,7 +22,7 @@ export function stylize(img, style) {
   const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
   const g = c.getContext('2d'); g.filter = FILTER[style.id] || 'none'; g.drawImage(img, 0, 0); g.filter = 'none';
   const w = c.width, h = c.height;
-  if (style.id === 'night-file') { g.globalCompositeOperation = 'multiply'; g.fillStyle = '#B9A8A0'; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over'; }
+  if (style.id === 'night-file') { g.globalCompositeOperation = 'multiply'; g.fillStyle = '#E4D8D2'; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over'; }
   if (style.id === 'paper-atlas') {
     g.globalCompositeOperation = 'multiply'; g.fillStyle = '#E9DCBC'; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 60; i++) { g.fillStyle = `rgba(120,90,50,${0.04 + rnd(i) * 0.05})`; g.beginPath(); g.ellipse(rnd(i + 3) * w, rnd(i + 9) * h, 30 + rnd(i) * 120, 20 + rnd(i + 1) * 90, 0, 0, 7); g.fill(); }

@@ -48,13 +48,63 @@ function word(w) {
   return syl.map((s) => s.cons + s.vowel).join('');
 }
 
-// the conventional casual spelling of very common words
-const COMMON = { 'में': 'mein', 'हैं': 'hain', 'है': 'hai', 'नहीं': 'nahi', 'यहाँ': 'yahan', 'वहाँ': 'wahan', 'क्यों': 'kyun', 'मैं': 'main', 'तो': 'toh', 'ये': 'ye', 'वो': 'wo', 'यह': 'yeh', 'वह': 'woh', 'कि': 'ki', 'और': 'aur', 'क्रिकेट': 'cricket', 'मिशन': 'mission', 'बजट': 'budget', 'आउट': 'out', 'विकेट': 'wicket', 'रॉकेट': 'rocket', 'हीरो': 'hero', 'इसरो': 'ISRO', 'मार्स': 'Mars', 'भारत': 'Bharat' };
-export function devanagariToHinglish(text) {
-  const s = String(text).split(/(\s+)/).map((w) => {
-    if (!/[ऀ-ॿ]/.test(w)) return w;
-    const m = w.match(/^([^ऀ-ॿ]*)([ऀ-ॿ]+)([^ऀ-ॿ]*)$/);
-    return m && COMMON[m[2]] ? m[1] + COMMON[m[2]] + m[3] : word(w);
-  }).join('');
-  return s.charAt(0).toUpperCase() + s.slice(1);
+// the conventional casual spelling of very common Hindi words
+const COMMON = { 'में': 'mein', 'हैं': 'hain', 'है': 'hai', 'नहीं': 'nahi', 'यहाँ': 'yahan', 'वहाँ': 'wahan', 'क्यों': 'kyun', 'मैं': 'main', 'तो': 'toh', 'ये': 'ye', 'वो': 'wo', 'यह': 'yeh', 'वह': 'woh', 'कि': 'ki', 'और': 'aur', 'भारत': 'Bharat' };
+// English loanwords as Indians write them in Devanagari → their English spelling (nukta-free keys; see dekey)
+const LOANWORDS = {
+  'क्रिकेट': 'cricket', 'मिशन': 'mission', 'बजट': 'budget', 'आउट': 'out', 'विकेट': 'wicket', 'रॉकेट': 'rocket', 'हीरो': 'hero', 'इसरो': 'ISRO', 'मार्स': 'Mars', 'नासा': 'NASA',
+  'टीम': 'team', 'मैच': 'match', 'रन': 'run', 'रन्स': 'runs', 'ओवर': 'over', 'बॉलर': 'bowler', 'बैट': 'bat', 'बॉल': 'ball', 'कैप्टन': 'captain', 'स्टेडियम': 'stadium', 'वर्ल्ड': 'world', 'कप': 'cup', 'रिकॉर्ड': 'record',
+  'फोन': 'phone', 'मोबाइल': 'mobile', 'इंटरनेट': 'internet', 'यूट्यूब': 'YouTube', 'गूगल': 'Google', 'कंप्यूटर': 'computer', 'टेक्नोलॉजी': 'technology', 'साइंस': 'science', 'साइंटिस्ट': 'scientist', 'साइंटिस्ट्स': 'scientists', 'रिसर्च': 'research', 'डीएनए': 'DNA',
+  'सैटेलाइट': 'satellite', 'ऑर्बिट': 'orbit', 'स्पेस': 'space', 'इंजन': 'engine', 'फ्यूल': 'fuel', 'सिग्नल': 'signal', 'कैमरा': 'camera', 'प्लान': 'plan', 'बिलियन': 'billion', 'मिलियन': 'million', 'डॉलर': 'dollar', 'डॉलर्स': 'dollars',
+  'लाइफ': 'life', 'स्टोरी': 'story', 'फैक्ट': 'fact', 'ट्रिक': 'trick', 'टेस्ट': 'test', 'न्यूज': 'news', 'सीक्रेट': 'secret', 'मिस्ट्री': 'mystery', 'लेक': 'lake', 'स्केलेटन': 'skeleton', 'ग्लेशियर': 'glacier', 'लाइट': 'light',
+  'ग्रेविटी': 'Gravity', 'हॉलीवुड': 'Hollywood', 'बॉलीवुड': 'Bollywood', 'टीवी': 'TV', 'ओके': 'OK', 'बॉस': 'boss', 'एआई': 'AI', 'आईपीएल': 'IPL', 'बीसीसीआई': 'BCCI',
+};
+// frequent native Hindi words: never matched to an English hint (काम "kaam" ≠ "come", कर "kar" ≠ "car")
+const HINDI_NATIVE = new Set('काम कम कर करना करते करती किया कहा कहते कुछ कोई कौन कब कल कभी बात बार बस साल सब सच समय सौ लोग लेकिन लिए लगा लगता मगर मन मत माना पर पहले पानी पता फिर तक तब था थी थे दिन दो देश नाम नया बहुत बड़ा बड़ी रहा रही रात राज राजा जब जो जान जगह आज आप अब एक हर हम हाथ ही भी वहां यहां शायद सिर्फ़ सिर्फ गया गई घर मार मारे मौत मिले मिला खोज झील हड्डियां कंकाल'.split(' '));
+const dekey = (w) => w.normalize('NFC').replace(/\u093C/g, '');   // फ़ोन and फोन are the same word
+const LOAN = Object.fromEntries(Object.entries(LOANWORDS).map(([k, v]) => [dekey(k), v]));
+
+// consonant skeleton of a Roman spelling, so the Devanagari-derived form of an English word ("viket", "kriket",
+// "kanpyootar") meets its English spelling ("wicket", "cricket", "computer"): vowels, y and h-aspiration drop,
+// sound-alike letters merge (w/v, c/k/q, ph/f, z/j, dge/j, tch/ch), doubled letters collapse
+export function skeleton(word) {
+  let s = String(word).toLowerCase().replace(/[^a-z]/g, '');
+  s = s.replace(/tch/g, 'C').replace(/ch/g, 'C').replace(/dg(?=[eiy])/g, 'j').replace(/ph/g, 'f').replace(/ck/g, 'k').replace(/c(?=[eiy])/g, 's').replace(/[cq]/g, 'k')
+    .replace(/x/g, 'ks').replace(/z/g, 'j').replace(/sh/g, 's').replace(/([aeiou])w/g, '$1').replace(/w/g, 'v').replace(/h/g, '').replace(/n(?=[pb])/g, 'm')
+    .replace(/[aeiouy]/g, '').replace(/(.)\1+/g, '$1');
+  return s;
 }
+const lev1 = (a, b) => {   // edit distance ≤ 1
+  if (a === b) return true; if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0, j = 0, e = 0;
+  while (i < a.length && j < b.length) { if (a[i] === b[j]) { i++; j++; continue; } if (++e > 1) return false; if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; } }
+  return e + (a.length - i) + (b.length - j) <= 1;
+};
+
+/**
+ * Word-level, language-aware Hinglish caption from a Devanagari (or mixed) line:
+ *  · Latin words the model wrote stay exactly as written (no Devanagari round trip);
+ *  · a Devanagari word that is one of the English words the model declared for this line ("english") gets that
+ *    English spelling, matched by consonant skeleton (विकेट ↔ wicket);
+ *  · a known loanword gets its English spelling (क्रिकेट → cricket);
+ *  · everything else is Hindi and is transliterated casually (कैसे → kaise).
+ * Returns { text, english: [words kept in English spelling] }.
+ */
+export function hinglishCaption(text, englishHints = []) {
+  const hints = (englishHints || []).map(String).map((h) => h.trim()).filter((h) => /^[A-Za-z][A-Za-z'-]*$/.test(h)).map((h) => ({ h, k: skeleton(h) })).filter((x) => x.k);
+  const kept = [];
+  const out = String(text).split(/(\s+)/).map((w) => {
+    if (!/[ऀ-ॿ]/.test(w)) { if (/[A-Za-z]{2,}/.test(w)) kept.push(w.replace(/[^A-Za-z'-]/g, '')); return w; }
+    const m = w.match(/^([^ऀ-ॿ]*)([ऀ-ॿ]+)([^ऀ-ॿ]*)$/);
+    if (!m) return word(w);
+    const [, pre, core, post] = m, dk = dekey(core);
+    if (COMMON[core]) return pre + COMMON[core] + post;
+    const roman = word(core), key = skeleton(roman);
+    const hit = !HINDI_NATIVE.has(core) && key.length >= 2 && (hints.find((x) => x.k === key) || (key.length >= 4 && hints.find((x) => x.k.length >= 4 && x.k[0] === key[0] && lev1(x.k, key))));
+    if (hit) { kept.push(hit.h); hints.splice(hints.indexOf(hit), 1); return pre + hit.h + post; }
+    if (LOAN[dk]) { kept.push(LOAN[dk]); return pre + LOAN[dk] + post; }
+    return pre + roman + post;
+  }).join('');
+  return { text: out.charAt(0).toUpperCase() + out.slice(1), english: kept };
+}
+export function devanagariToHinglish(text, englishHints = []) { return hinglishCaption(text, englishHints).text; }

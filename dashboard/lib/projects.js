@@ -65,11 +65,28 @@ export function addScriptVersion(id, script, meta) {
     const version = (p.script.versions.reduce((m, v) => Math.max(m, v.version), 0) || 0) + 1;
     const entry = { version, createdAt: now(), ...meta };
     fs.writeFileSync(vfile(id, version), JSON.stringify({ ...script, version, meta: entry }, null, 2));
-    p.script.versions.push(entry);
+    // project.json keeps the claim summary; the full per-claim review lives in the version file
+    p.script.versions.push(entryForProject(entry));
     if (p.status === 'draft') p.status = 'script-ready';
     saved = { version, entry };
   });
   return saved;
+}
+
+function entryForProject(entry) {
+  const { claimReview, ...rest } = entry;
+  return claimReview ? { ...rest, claimSummary: claimReview.summary } : rest;
+}
+
+/** merge fields into a script version's meta (version file + project.json entry) */
+export function updateScriptMeta(id, version, patch) {
+  const f = vfile(id, version);
+  if (!fs.existsSync(f)) throw new Error(`script version ${version} does not exist`);
+  const s = JSON.parse(fs.readFileSync(f, 'utf8'));
+  s.meta = { ...s.meta, ...patch };
+  fs.writeFileSync(f, JSON.stringify(s, null, 2));
+  updateProject(id, (p) => { const i = p.script.versions.findIndex((v) => v.version === version); if (i >= 0) p.script.versions[i] = { ...p.script.versions[i], ...entryForProject(patch) }; });
+  return s;
 }
 
 export function getScriptVersion(id, version) {

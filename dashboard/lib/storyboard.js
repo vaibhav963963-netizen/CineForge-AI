@@ -85,7 +85,9 @@ export function analyze(text) {
     // Devanagari inflection changes the final vowel sign (घंटी → घंटियाँ, बल्ला → बल्ले): match on the stem
     const stem = /[ऀ-ॿ]/.test(ww) ? ww.replace(/[ा-ौँं]+$/u, '') : ww;
     const s = stem.length >= 3 ? stem : ww;
-    return tokens.some((t) => (c.exact ? t === ww : t.startsWith(s)));
+    // short English words match only with an inflection ("bat" → bats/batting, never "bathed")
+    const latinShort = !/[ऀ-ॿ]/.test(s) && s.length < 5;
+    return tokens.some((t) => (c.exact ? t === ww : latinShort ? (t === s || (t.startsWith(s) && /^(s|es|ed|d|ing|ting|ted|ter|ters|sman|smen|ning|ged|ging)$/.test(t.slice(s.length)))) : t.startsWith(s)));
   };
   return CONCEPTS.filter((c) => c.words.some((w) => hit(c, w)));
 }
@@ -108,12 +110,74 @@ export function findNumbers(text) {
   return out;
 }
 
+// on-screen text about the video itself ("94 words", "45 seconds", "Subscribe") is never a fact to show
+const META_ONSCREEN = /\b(words?|seconds?|secs?|shorts?|subscribe|likes?|views?|thumbnail|video|title|शब्द|सेकंड)\b/i;
+const EMPTY_ONSCREEN =/^\s*(none|null|n\/?a|nil|nothing|-+|—|empty|no text|कुछ नहीं|कोई नहीं)?\s*$/i;
+// A still-image model draws concrete things in a place; it cannot draw "a time-lapse of", "a simulation of" or
+// microscopic/abstract science, and returns an unrelated dark frame for them (seen: "microscopic image of ancient DNA"
+// → a silhouetted hand). Strip media words and turn abstract science into the concrete scene that shows it.
+const MEDIA_WORDS = /\b(?:(?:an?\s+)?(?:microscopic\s+|black[- ]and[- ]white\s+|archival\s+|old\s+|vintage\s+)?(?:slow[- ]motion(?:\s+shot)?|time-?lapse|simulation|animation|illustration|infographic|graphic|rendering|reconstruction|footage|video|image|photo(?:graph)?|picture|portrait|visualization|visualisation|diagram)\s+(?:of|showing|depicting|revealing)\s+)/gi;
+const ABSTRACT_SCIENCE = /\b(dna|genetic\w*|genome|chromosom\w*|helix|microscop\w*|molecul\w*|cells?|isotope\w*|carbon dating|radiocarbon|data|chart|graph|statistics|algorithm)\b/i;
+const MAP_RE = /\b(map|maps|route map|timeline|flowchart)\b/i;
+// who a named person is, from the narration ("Forest ranger Madhwal found them") — an image model cannot draw a
+// specific named person and returns an empty frame for "H. K. Madhwal"; it can draw "a forest ranger"
+const ROLE_RE = /\b(forest ranger|ranger|scientists?|researchers?|archaeologists?|king|queen|prince|princess|emperor|soldiers?|pilgrims?|priests?|monks?|explorers?|engineers?|astronauts?|farmers?|villagers?|police officer|doctors?|teacher|student|trekkers?|climbers?|mountaineers?|porters?)\b/i;
+const PERSON_WORDS = /\b(man|woman|men|women|person|people|scientist|ranger|pilgrim|soldier|king|crowd|hiker|trekker|explorer|researcher)s?\b/i;
+// visuals that ask for text/graphic design (the image model draws garbled letters): "₹450 crore displayed on screen",
+// "text overlay: 300 days", "split screen: ISRO vs Gravity poster" — the on-screen card already shows that text
+const META_VISUAL = /\b(smartphone|phone screen|thumbnail|youtube|shorts?|title card|text on screen|screen showing|subscribe|channel logo|video title|text overlay|overlay|on[- ]screen|displayed (?:prominently )?on (?:the )?screen|split[- ]screen|caption|headline|banner|poster|infographic|chart|graph|written|lettering)\b/i;
+const PLACE_RE = /\b(in|at|inside|over|above|near|around|across|on|under|beneath|by)\s|lake|mountain|himalaya|peak|glacier|temple|space|orbit|earth|mars|planet|street|laborator|lab\b|city|sky|forest|trail|village|room|building|stadium|field|launch|desert|sea|ocean|river|snow/i;
+const HOME_SCENE = { mountains: 'a frozen glacial lake among snowy Himalayan peaks', lake: 'a frozen glacial lake among snowy Himalayan peaks', space: 'a spacecraft orbiting the red planet Mars', launchpad: 'a rocket standing on its launch pad at dawn', temple: 'a large bronze bell hanging at the entrance of an Indian temple', cricket: 'a packed cricket stadium under floodlights', palace: 'an old Indian palace at dusk' };
+const SETTING = { mountains: 'in the snowy Himalayas', lake: 'by a frozen mountain lake', temple: 'at an Indian temple', space: 'in space', launchpad: 'at a rocket launch pad', cricket: 'at a cricket stadium', street: 'on an Indian street', palace: 'at an old Indian palace', lab: 'in a laboratory', city: 'in an Indian city', nature: 'in the countryside' };
+export function concreteVisual(vis, env, topic = '', narration = '', homeEnv = null) {
+  let v = String(vis || '').replace(MEDIA_WORDS, '')
+    .replace(/,?\s*\b(?:in|as)\s+(?:an?\s+)?(?:vibrant\s+|colou?rful\s+|stylized\s+|stylised\s+)?(?:animation|illustration|infographic|rendering|graphic|cartoon)\b/gi, '')
+    .replace(/\banimated\s+/gi, '')
+    .replace(/,?\s*\b(?:with|showing|featuring|and)\s+(?:the\s+|an?\s+)?[\w’'.-]+\s+logo\b/gi, '')   // logos are text
+    .replace(/\s{2,}/g, ' ').trim();
+  const bones = /bone|skelet|skull|remains|fossil|कंकाल|हड्डी/i.test(`${v} ${topic}`);
+  if (ABSTRACT_SCIENCE.test(v)) {
+    v = bones ? 'a scientist in a dim laboratory examining an ancient human bone under a desk lamp, sample tubes on the bench'
+      : 'a scientist in a dim laboratory studying samples under a desk lamp';
+  } else if (MAP_RE.test(v)) {
+    // a map cannot be drawn: show the place the map is about
+    v = env === 'mountains' || env === 'lake' ? 'pilgrims walking along a narrow snowy trail high in the Himalayas' : `a wide view of the place ${SETTING[env] || ''}`.trim();
+  }
+  // named people → their role ("H. K. Madhwal" → "a forest ranger in the snowy Himalayas")
+  const role = (String(narration).match(ROLE_RE) || [])[1];
+  const names = [...new Set([...String(narration).matchAll(/\b(?:[A-Z]\.\s*)*[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*/g)].map((m) => m[0]))]
+    .filter((n) => v.includes(n.split(/\s+/).at(-1)) && !new RegExp(`\\b${n}\\b`, 'i').test(topic) && !/^(The|A|An|It|This|In|One|Ancient|Scientists?|Forest)$/.test(n));
+  const initials = /\b(?:[A-Z]\.\s*){1,3}[A-Z][a-z]+/;
+  if (role && (names.length || initials.test(v))) {
+    for (const n of names) v = v.replace(new RegExp(`(?:\\b(?:an?\\s+)?${role}\\s+)?(?:\\b(?:[A-Z]\\.\\s*){0,3})${n.split(/\s+/).at(-1)}`, 'gi'), `a ${role.toLowerCase()}`);
+    v = v.replace(initials, `a ${role.toLowerCase()}`);
+    v = v.replace(/[.,;:\s]+$/, '');
+    const place = SETTING[homeEnv] || SETTING[env];   // the story's home place, not a beat's incidental setting
+    if (!/\bin\b|\bat\b|\bon\b|\bby\b/.test(v) && place) v += ` ${place}`;
+  }
+  // the model sometimes describes the video itself ("a phone showing a YouTube Shorts thumbnail"): show the story
+  if (META_VISUAL.test(v)) v = HOME_SCENE[homeEnv] || HOME_SCENE[env] || `a dramatic wide view ${SETTING[homeEnv] || SETTING[env] || ''}`.trim();
+  v = v.replace(/^(?:black[- ]and[- ]white|archival|vintage)\s+(?=an?\s)/i, '');
+  // no place named: a bare subject ("a hailstorm") came back as a city street — anchor it in the story's place
+  const home = SETTING[homeEnv];
+  if (home && homeEnv !== 'space' && !PLACE_RE.test(v)) v = `${v.replace(/[.,;:\s]+$/, '')} ${home}`;
+  // "temple" alone came back as a Chinese pagoda: Indian topics get an Indian Hindu temple
+  if (/\btemples?\b/i.test(v) && !/\b(indian|hindu|south indian|dravidian)\b/i.test(v)) v = v.replace(/\b(temples?)\b/i, 'Indian Hindu $1').replace(/\ba Indian\b/g, 'an Indian');
+  // uniformed roles read as animals or objects to SD 1.5 ("a forest ranger" → a black wolf): say it is a man in uniform
+  v = v.replace(/\b(?:an?|the)\s+((?:forest\s+)?(?:ranger|guard|soldier|police officer))\b/gi, 'a man in a $1 uniform');
+  // (remains without people are handled in the NEGATIVE prompt — "no people" in a positive prompt draws people)
+  return v.replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase()).replace(/\.$/, '');   // keep acronyms (ISRO)
+}
+
 function overlayFor(line, concepts) {
+  if (line.onScreen && (EMPTY_ONSCREEN.test(line.onScreen) || META_ONSCREEN.test(line.onScreen))) line = { ...line, onScreen: undefined };
   if (line.onScreen) {
     const nums = findNumbers(line.onScreen);
     if (nums.length >= 2 && /vs|बनाम|\||<|>/i.test(line.onScreen)) {
       const parts = line.onScreen.split(/\s+(?:vs\.?|बनाम)\s+|\s*[|<>]\s*/i).filter(Boolean).slice(0, 3);
-      return { type: 'comparison', items: parts.map((p) => { const n = findNumbers(p)[0]; return { label: p.replace(n?.value || '', '').trim() || p, value: n ? n.n : 1, display: n ? n.value : p }; }) };
+      // a label that is only a unit or era ("800 CE vs 1800 CE" → "CE") says nothing: keep the whole item as the label
+      const UNIT_ONLY = /^(ce|bce|ad|bc|ई\.?|ईस्वी|km|kg|m|cm|%|years?|yrs?|साल|वर्ष|crore|lakh|million|billion|करोड़|लाख)\.?$/i;
+      return { type: 'comparison', items: parts.map((p) => { const n = findNumbers(p)[0], rest = p.replace(n?.value || '', '').trim(); return { label: rest && !UNIT_ONLY.test(rest) ? rest : p.trim(), value: n ? n.n : 1, display: n ? (rest && UNIT_ONLY.test(rest) ? p.trim() : n.value) : p }; }) };
     }
     if (nums.length === 1 && nums[0].year) return { type: 'date', text: line.onScreen };
     if (nums.length >= 1) return { type: 'number', value: nums[0].value, label: line.onScreen.replace(nums[0].value, '').trim() || null };
@@ -219,9 +283,13 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
     // rendering method (a diagram replaces the scene only when no character is acting in it)
     let method;
     if (overlay && ['comparison', 'orbit'].includes(overlay.type) && !leadAction) method = 'infographic';
-    else if (physical || cast.some((c) => c.role === 'lead' && PHYSICAL.has(c.action))) method = is3d ? 'scene3d' : 'scene2d';
-    else if (hybrid && (b.part || !leadAction) && imageShots < Math.ceil(beats.length * 0.55)) method = 'image';
-    else if (hybrid && leadAction && !physical && k % 3 === 1) method = 'hybrid';
+    // physical action stays animated when the character performs it (or for a rocket launch); in AI-image mode,
+    // action without the character (pilgrims walking, a storm) is an AI image, not generic procedural extras
+    else if ((physical && (!hybrid || leadAction || shotActionC?.shotAction === 'launch')) || cast.some((c) => c.role === 'lead' && PHYSICAL.has(c.action))) method = is3d ? 'scene3d' : 'scene2d';
+    // AI-image mode: every shot without physical action is a local AI image (no budget cap: a capped budget sent the
+    // rest of the video back to crude procedural geometry); a presenting character stands in front of an AI backdrop
+    else if (hybrid && !leadAction) method = 'image';
+    else if (hybrid && leadAction && !physical) method = 'hybrid';
     else method = is3d ? 'scene3d' : 'scene2d';
     if (method === 'image' || method === 'hybrid') imageShots++;
 
@@ -240,8 +308,12 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
     const subject = leadAction ? `${config.visual.characterName} (${leadAction.replace('_', ' ')})` : objects[0] ? objects[0].replace('_', ' ') : (subjectC ? subjectC.subject : env);
     const vis = visualText.trim() || `${subjectC ? subjectC.subject : env}${objects.length ? ' with ' + objects.join(', ') : ''}`;
     const imagePrompt = method === 'image' || method === 'hybrid'
-      ? `${vis}, ${style.image.prompt}${method === 'hybrid' ? ', empty background plate, no people in the foreground' : ''}`
+      ? `${concreteVisual(vis, env, topic, narration, topicEnv)}, ${style.image.prompt}${method === 'hybrid' ? ', empty background plate' : ''}`
       : null;
+    // shots that must not show people (remains, or a backdrop the live character stands in front of): say so in the
+    // negative prompt — "no people" in the positive prompt made SD draw a hooded figure over "melting snow reveals bones"
+    const noPeople = !!imagePrompt && (method === 'hybrid' || (/\b(bones?|skull|skeletons?|remains)\b/i.test(imagePrompt) && !PERSON_WORDS.test(imagePrompt)));
+    const negativePrompt = imagePrompt ? `${style.image.negative}${noPeople ? ', people, person, man, woman, boy, girl, face, portrait, figure, animal' : ''}` : null;
     const tr = isHook ? 'black' : style.transition.type;
     return {
       id: 'S' + String(k + 1).padStart(2, '0'),
@@ -251,12 +323,32 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
       subject, environment: env, objects, action: shotActionC?.shotAction || null,
       cast, camera, lighting: style.lighting.mood, visualStyle: style.name,
       method, renderMethod: { scene3d: '3D environment + animated 3D character/props (Three.js)', scene2d: `2D ${style.name} drawing + animated figure/props`, image: 'Local AI image (ComfyUI) + camera move', hybrid: is3d ? 'Local AI image backdrop + live 3D character (parallax)' : 'Local AI image + 2D figure', infographic: 'Animated infographic over defocused environment' }[method],
-      imagePrompt, negativePrompt: imagePrompt ? style.image.negative : null, image: null,
+      imagePrompt, negativePrompt, image: null,
       assets3d: is3d && method !== 'image' ? { environment: env, props: objects, actors: cast.map((c) => (c.role === 'lead' ? config.visual.archetype : 'generic extra')) } : null,
       animation: [...cast.map((c) => `${c.role === 'lead' ? config.visual.characterName : 'extra'}: ${c.action}`), ...(shotActionC ? [`scene: ${shotActionC.shotAction}`] : []), `camera: ${camera.angle} ${camera.move}`].join('; '),
       overlay, transition: tr, concepts: concepts.map((c) => c.id), spaceView,
       focus: env === 'temple' && !leadAction && concepts.some((c) => c.id === 'bell' || c.id === 'ringing') ? 'bell' : undefined,
     };
   });
-  return { title: script.title, planner: 'rules+lexicon v1', createdAt: new Date().toISOString(), durationSeconds: dur, shots };
+  // image reuse: the second half of a split line, or any shot whose prompt matches an earlier one, reuses that image
+  // (with its own camera move) instead of generating a near-duplicate
+  const byPrompt = new Map();
+  shots.forEach((s, k) => {
+    if (!s.imagePrompt) return;
+    const prevPart = beats[k].part === 1 && shots[k - 1]?.imagePrompt === s.imagePrompt ? shots[k - 1].id : null;
+    const src = prevPart || byPrompt.get(s.imagePrompt);
+    if (src) s.imageReuse = src; else byPrompt.set(s.imagePrompt, s.id);
+  });
+  // AI-image mode: a diagram/comparison sits over a (defocused) AI image of the same place — the nearest generated
+  // image, preferring the same environment — never over procedural geometry
+  if (hybrid) {
+    const own = shots.filter((s) => s.imagePrompt && !s.imageReuse);
+    for (const [k, s] of shots.entries()) {
+      if (s.method !== 'infographic' || !own.length) continue;
+      const dist = (o) => Math.abs(shots.indexOf(o) - k) + (o.environment === s.environment ? 0 : 100) + (shots.indexOf(o) > k ? 0.5 : 0);
+      s.imageReuse = own.reduce((a, b) => (dist(b) < dist(a) ? b : a)).id;
+      s.renderMethod = 'Animated infographic over a defocused local AI image';
+    }
+  }
+  return { title: script.title, planner: 'rules+lexicon v2', createdAt: new Date().toISOString(), durationSeconds: dur, shots };
 }

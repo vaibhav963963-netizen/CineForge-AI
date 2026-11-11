@@ -76,3 +76,21 @@ select option:disabled { color: #6B7280; }
 #toast.show { transform: translateX(-50%) translateY(0); }
 .fatal { background: #7F1D1D; color: #fff; padding: 12px 18px; }
 @media (max-width: 900px) { .form-row .span-2 { grid-column: auto; } .line-edit .le-row { grid-template-columns: 1fr; } }
+
+/* fact check: claims to verify (Script Studio) and topic facts hint (Create) */
+.facts-hint { margin-top: 6px; font-size: 12.5px; color: #6EE7B7; }
+.facts-input { margin-top: 6px; font-size: 13px; } .facts-input summary { cursor: pointer; color: var(--text-muted); }
+.facts-input textarea { width: 100%; margin-top: 6px; background: rgba(0,0,0,0.25); color: var(--text-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 8px; font: inherit; resize: vertical; }
+.claims-card .claims-sum { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 8px; }
+.claim-badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.claim-badge.supported { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+.claim-badge.unverified { background: rgba(245,158,11,0.15); color: #FCD34D; }
+.claim-badge.needs-attribution { background: rgba(147,197,253,0.15); color: #93C5FD; }
+.claim-badge.contradicted { background: rgba(239,68,68,0.18); color: #FCA5A5; }
+.claim-list { display: grid; gap: 6px; max-height: 340px; overflow: auto; }
+.claim { display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: start; font-size: 12.5px; line-height: 1.4; }
+.claim input { margin-top: 3px; } .claim .cv { font-weight: 600; color: var(--text-main); } .claim .cn { color: var(--text-dim); }
+.claim.contradicted .cv { color: #FCA5A5; }
+.claims-state { margin-top: 8px; font-size: 12.5px; } .claims-state.ok { color: #6EE7B7; } .claims-state.block { color: #FCD34D; }
+.facts-groups details { margin-top: 6px; font-size: 12.5px; } .facts-groups summary { cursor: pointer; font-weight: 600; }
+.facts-groups ul { margin: 4px 0 0 16px; padding: 0; } .facts-groups li { margin: 2px 0; color: var(--text-muted); }

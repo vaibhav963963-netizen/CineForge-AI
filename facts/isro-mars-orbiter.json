@@ -1,0 +1,154 @@
+{
+  "id": "isro-mars-orbiter",
+  "title": "ISRO Mars Orbiter Mission (Mangalyaan)",
+  "match": [
+    "isro",
+    "mangalyaan",
+    "mars orbiter",
+    "mars mission",
+    "इसरो",
+    "मंगलयान"
+  ],
+  "aliases": [
+    "ISRO",
+    "Mangalyaan",
+    "Mars Orbiter Mission",
+    "MOM",
+    "Mars",
+    "Earth",
+    "India",
+    "PSLV",
+    "Sriharikota",
+    "Bengaluru",
+    "NASA",
+    "Hollywood",
+    "Gravity",
+    "Asia",
+    "Asian"
+  ],
+  "sources": [
+    "ISRO mission pages for the Mars Orbiter Mission",
+    "Wikipedia 'Mars Orbiter Mission'"
+  ],
+  "verified": [
+    {
+      "text": "The Mars Orbiter Mission, also called Mangalyaan, was launched by ISRO on 5 November 2013 on a PSLV rocket from Sriharikota.",
+      "keys": [
+        "launched",
+        "pslv",
+        "sriharikota",
+        "2013",
+        "5 november"
+      ]
+    },
+    {
+      "text": "It entered orbit around Mars on 24 September 2014.",
+      "keys": [
+        "24 september",
+        "2014",
+        "orbit",
+        "reached mars",
+        "entered"
+      ]
+    },
+    {
+      "text": "India became the first country to reach Mars orbit on its first attempt, and the first Asian nation to reach Mars orbit.",
+      "keys": [
+        "first attempt",
+        "first asian",
+        "first country"
+      ]
+    },
+    {
+      "text": "The mission cost about ₹450 crore, roughly 74 million US dollars (in Hindi: लगभग 7.4 करोड़ डॉलर).",
+      "keys": [
+        "450",
+        "74",
+        "crore",
+        "cost"
+      ]
+    },
+    {
+      "text": "That was less than the reported budget of the Hollywood film Gravity, about 100 million US dollars (in Hindi: लगभग 10 करोड़ डॉलर).",
+      "keys": [
+        "gravity",
+        "hollywood",
+        "100",
+        "10 करोड़ डॉलर",
+        "ग्रेविटी"
+      ]
+    },
+    {
+      "text": "The spacecraft first circled Earth for about a month, raising its orbit step by step, before leaving for Mars on 1 December 2013.",
+      "keys": [
+        "circled earth",
+        "raising",
+        "1 december",
+        "orbit raising",
+        "slingshot"
+      ]
+    },
+    {
+      "text": "The journey to Mars took about 300 days (298 days).",
+      "keys": [
+        "300 days",
+        "298",
+        "journey"
+      ]
+    },
+    {
+      "text": "Designed to last six months, the orbiter worked for about eight years, until contact was lost in 2022.",
+      "keys": [
+        "six months",
+        "eight years",
+        "2022",
+        "lost contact"
+      ]
+    },
+    {
+      "text": "ISRO, the Indian Space Research Organisation, is headquartered in Bengaluru.",
+      "keys": [
+        "bengaluru",
+        "headquarters"
+      ]
+    }
+  ],
+  "theories": [],
+  "legends": [],
+  "knownErrors": [
+    {
+      "text": "Mangalyaan landed on Mars",
+      "keys": [
+        "landed on mars",
+        "landing on mars",
+        "मंगल पर उतरा"
+      ],
+      "correction": "It was an orbiter: it circled Mars, it never landed."
+    },
+    {
+      "text": "Mangalyaan launched in 2014",
+      "keys": [
+        "launched in 2014"
+      ],
+      "correction": "Launched 5 November 2013; reached Mars orbit 24 September 2014."
+    },
+    {
+      "text": "Gravity was made for ₹100 crore",
+      "keys": [
+        "100 करोड़",
+        "100 crore",
+        "₹100"
+      ],
+      "correction": "Gravity cost about 100 million US dollars (roughly ₹600+ crore at the time); Mangalyaan cost about ₹450 crore (about 74 million dollars)."
+    },
+    {
+      "text": "Mangalyaan cost 74 crore dollars",
+      "keys": [
+        "74 करोड़ डॉलर",
+        "74 crore dollars"
+      ],
+      "correction": "74 million US dollars = about 7.4 crore dollars (₹450 crore)."
+    }
+  ],
+  "uncertain": "Cost comparisons are approximate and depend on exchange rates."
+}

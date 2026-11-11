@@ -9,7 +9,8 @@ import { PATHS, ROOT, STUDIO_CONFIG, ensureDirs, rel, CHROME } from './lib/works
 import { publicCatalog, getCatalog } from './lib/catalog.js';
 import { validateGenerationConfig, scriptFingerprint, configHash } from './lib/validate.js';
 import { JobManager } from './lib/jobs.js';
-import { createProject, loadProject, updateProject, listProjects, addScriptVersion, getScriptVersion, approveScriptVersion, projectDir } from './lib/projects.js';
+import { createProject, loadProject, updateProject, listProjects, addScriptVersion, getScriptVersion, approveScriptVersion, updateScriptMeta, projectDir } from './lib/projects.js';
+import { reviewClaims, findTopicFacts, listFactFiles, claimsGate, confirmClaims, pendingClaims } from './lib/factcheck.js';
 import { runScriptJob, runRenderJob, renderPlan, scriptPlan, inputFromConfig } from './lib/pipeline.js';
 import { checkLanguage, estimateSeconds } from './lib/scriptgen.js';
 import { generateImage, seedFor, readImageIndex, writeImageIndex, freeVram } from './lib/imagegen.js';
@@ -76,7 +77,8 @@ function media(req, res, p) {
 }
 
 // ── job submission helpers ───────────────────────────────────────────────────────────────────────────────
-function submitScriptJob({ input, projectId, requestKey }) {
+function submitScriptJob({ input, projectId, requestKey, facts }) {
+  facts = typeof facts === 'string' && facts.trim() ? facts.trim().slice(0, 4000) : null;
   const v = validateGenerationConfig(input, { purpose: 'script' });
   if (!v.ok) throw new HttpError(422, 'Invalid selection', { errors: v.errors });
   let project = projectId ? loadProject(projectId) : null;
@@ -86,11 +88,11 @@ function submitScriptJob({ input, projectId, requestKey }) {
   const dup = jobs.findActiveDuplicate({ requestKey, configHash: 'script:' + configHash(v.config), projectId: project.id });
   if (dup) return { job: dup, project, deduplicated: true, warnings: v.warnings };
   const job = jobs.submit({ kind: 'script', projectId: project.id, title: v.config.topic, config: v.config, plan: scriptPlan(), requestKey, configHash: 'script:' + configHash(v.config) },
-    (j) => runScriptJob(j, { projectId: project.id, config: v.config }));
+    (j) => runScriptJob(j, { projectId: project.id, config: v.config, facts }));
   return { job, project, deduplicated: false, warnings: v.warnings };
 }
 
-function submitRenderJob({ input, projectId, scriptVersion, requestKey }) {
+function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUnverifiedClaims = false }) {
   const v = validateGenerationConfig(input, { purpose: 'render', hasApprovedScript: !!scriptVersion });
   if (!v.ok) throw new HttpError(422, 'Invalid selection', { errors: v.errors });
   let project = projectId ? loadProject(projectId) : null;
@@ -99,6 +101,9 @@ function submitRenderJob({ input, projectId, scriptVersion, requestKey }) {
     const s = project.script.versions.find((x) => x.version === +scriptVersion);
     if (!s) throw new HttpError(404, `script v${scriptVersion} not found`);
     if (s.fingerprint !== scriptFingerprint(v.config)) throw new HttpError(409, `Script v${scriptVersion} was written for a different topic, language, personality or duration. Regenerate the preview for the current selection.`, { stale: true });
+    // factual claims must be reviewed (or supported by the topic's fact file) before a render starts
+    const gate = claimsGate((getScriptVersion(project.id, +scriptVersion) || {}).meta);
+    if (!gate.ok) throw new HttpError(409, gate.message, { factCheck: true, pending: gate.pending, contradicted: gate.contradicted || [] });
     if (project.script.approvedVersion !== +scriptVersion) approveScriptVersion(project.id, +scriptVersion);
   }
   if (!project) project = createProject({ topic: v.config.topic, config: v.config, configHash: configHash(v.config) });
@@ -107,7 +112,7 @@ function submitRenderJob({ input, projectId, scriptVersion, requestKey }) {
   if (dup) return { job: dup, project, deduplicated: true, warnings: v.warnings };
   updateProject(project.id, (p) => { p.config = v.config; p.configHash = configHash(v.config); });
   const job = jobs.submit({ kind: 'render', projectId: project.id, title: v.config.topic, config: v.config, plan: renderPlan({ approved: !!scriptVersion, hybrid: v.config.visual.visualMode === 'hybrid-local' }), requestKey, configHash: hash },
-    (j) => runRenderJob(j, { projectId: project.id, config: v.config, scriptVersion: scriptVersion ? +scriptVersion : null }));
+    (j) => runRenderJob(j, { projectId: project.id, config: v.config, scriptVersion: scriptVersion ? +scriptVersion : null, acceptUnverifiedClaims: acceptUnverifiedClaims === true }));
   return { job, project, deduplicated: false, warnings: v.warnings };
 }
 
@@ -142,9 +147,28 @@ async function api(req, res, url) {
     if (problems.length) throw new HttpError(422, `Script does not match ${pr.config.language.name}: ${problems.join('; ')}`);
     const est = estimateSeconds(script, pr.config);
     const saved = addScriptVersion(pr.id, script, { source: b.baseVersion ? 'edited' : 'manual', baseVersion: b.baseVersion || null, fingerprint: scriptFingerprint(pr.config), configHash: configHash(pr.config), wordCount: est.words, estimatedSeconds: est.seconds, language: pr.config.language.id, personality: pr.config.narration.personality, targetSeconds: pr.config.durationSeconds });
+    // hand-written and edited scripts get the same fact review as model scripts
+    const tf = findTopicFacts(pr.config.topic), review = reviewClaims(script, { topic: pr.config.topic, topicFacts: tf });
+    let meta = updateScriptMeta(pr.id, saved.version, { claimReview: review, factFile: tf?.file || null, claimsApproved: review.summary.needsReview === 0 }).meta;
+    if (b.approveClaims) {
+      let patch; try { patch = confirmClaims(meta, 'all'); } catch (e) { throw new HttpError(e.status || 409, e.message, { factCheck: true, claimReview: review, version: saved.version }); }
+      meta = updateScriptMeta(pr.id, saved.version, { ...patch, claimsApprovedBy: 'author (approveClaims)' }).meta;
+    }
     if (b.approve) approveScriptVersion(pr.id, saved.version);
-    return send(res, 201, { version: saved.version, estimate: est, approved: !!b.approve });
+    return send(res, 201, { version: saved.version, estimate: est, approved: !!b.approve, claimSummary: review.summary, claimsApproved: !!meta.claimsApproved, pendingClaims: pendingClaims(meta) });
   }
+  if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/scripts\/(\d+)\/claims$/))) {
+    const sv = getScriptVersion(r[1], +r[2]); if (!sv) throw new HttpError(404, 'script version not found');
+    if (method === 'GET') return send(res, 200, { review: sv.meta.claimReview || null, confirmedClaims: sv.meta.confirmedClaims || [], claimsApproved: !!sv.meta.claimsApproved, pending: pendingClaims(sv.meta), gate: claimsGate(sv.meta), factFile: sv.meta.factFile || null });
+    if (method === 'POST') {   // the user confirms flagged claims: { confirm: [claimId, …] | 'all' }
+      const b = await readBody(req);
+      let patch; try { patch = confirmClaims(sv.meta, b.confirm === 'all' ? 'all' : Array.isArray(b.confirm) ? b.confirm.map(String) : []); } catch (e) { throw new HttpError(e.status || 409, e.message, { factCheck: true }); }
+      const meta = updateScriptMeta(r[1], +r[2], { ...patch, ...(patch.claimsApproved ? { claimsApprovedBy: 'user (Script Studio)' } : {}) }).meta;
+      return send(res, 200, { confirmedClaims: meta.confirmedClaims, claimsApproved: !!meta.claimsApproved, pending: pendingClaims(meta), gate: claimsGate(meta) });
+    }
+  }
+  if (p === '/api/facts' && method === 'GET') return send(res, 200, listFactFiles().map(({ id, title, file, match, verified, theories, legends, knownErrors }) => ({ id, title, file, match, counts: { verified: (verified || []).length, theories: (theories || []).length, legends: (legends || []).length, knownErrors: (knownErrors || []).length } })));
+  if (p === '/api/facts/match' && method === 'GET') { const tf = findTopicFacts(url.searchParams.get('topic') || ''); return send(res, 200, tf ? { id: tf.id, title: tf.title, file: tf.file, verified: tf.verified, theories: tf.theories, legends: tf.legends, knownErrors: tf.knownErrors, uncertain: tf.uncertain || null, sources: tf.sources || [] } : null); }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/scripts\/(\d+)\/approve$/)) && method === 'POST') { return send(res, 200, approveScriptVersion(r[1], +r[2]).script); }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/storyboard$/))) { const f = path.join(projectDir(r[1]), 'storyboard', 'storyboard.json'); if (!fs.existsSync(f)) throw new HttpError(404, 'no storyboard yet'); return send(res, 200, JSON.parse(fs.readFileSync(f, 'utf8'))); }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/images$/))) return send(res, 200, readImageIndex(projectDir(r[1])));

@@ -92,7 +92,7 @@ async function getScript(name, input, report) {
   if (SOURCE === 'fixture') {
     const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', `test-${name.toLowerCase()}.json`), 'utf8'));
     const p = await api('/api/projects', { input }); if (p.status !== 201) throw new Error(JSON.stringify(p.body));
-    const s = await api(`/api/projects/${p.body.project.id}/scripts`, { ...fx, approve: true }); if (s.status !== 201) throw new Error(JSON.stringify(s.body));
+    const s = await api(`/api/projects/${p.body.project.id}/scripts`, { ...fx, approve: true, approveClaims: true }); if (s.status !== 201) throw new Error(JSON.stringify(s.body));
     report.script = { source: 'fixture (hand-written, approved)', version: s.body.version, estimate: s.body.estimate };
     return { projectId: p.body.project.id, version: s.body.version };
   }
@@ -103,8 +103,28 @@ async function getScript(name, input, report) {
   if (final.status !== 'completed') throw new Error(`script generation ${final.status}: ${final.error}`);
   const ap = await api(`/api/projects/${pv.body.projectId}/scripts/${final.result.version}/approve`, {});
   if (ap.status !== 200) throw new Error(JSON.stringify(ap.body));
-  report.script = { source: 'local LLM preview, then approved', version: final.result.version, estimate: final.result.estimate, model: final.result.meta?.model };
-  return { projectId: pv.body.projectId, version: final.result.version };
+  report.script = { source: 'local LLM preview, then approved', version: final.result.version, estimate: final.result.estimate, model: final.result.meta?.model, attempts: final.result.meta?.attempts };
+  // fact check: the review must exist; a render must be refused while claims are pending; the harness then plays the
+  // reviewer and confirms the flagged claims (listed in the evidence for a human check). Known errors are never confirmed.
+  const pid = pv.body.projectId, ver = final.result.version;
+  const cl = (await api(`/api/projects/${pid}/scripts/${ver}/claims`)).body;
+  report.factCheck = { factFile: cl.factFile, summary: cl.review?.summary, flagged: (cl.review?.claims || []).filter((c) => c.status !== 'supported').map((c) => ({ id: c.id, line: c.line, status: c.status, kind: c.kind, value: c.value, text: c.text })) };
+  report.checks.fact_review_present = !!cl.review;
+  report.checks.no_known_errors = !!cl.review && cl.review.summary.contradicted === 0;
+  report.checks.no_legend_or_theory_as_fact = !!cl.review && cl.review.summary.needsAttribution === 0;
+  // with a topic fact file, every year/number (narration and on-screen) must come from it — the harness may confirm
+  // names and quantities as a reviewer would, but an invented number is a factual failure, not something to confirm
+  report.checks.numbers_from_verified_facts = !cl.factFile || (cl.review?.claims || []).filter((c) => (c.kind === 'year' || c.kind === 'number') && c.status !== 'supported').length === 0;
+  if (cl.pending.length) {
+    const blocked = await api('/api/jobs', { input, projectId: pid, scriptVersion: ver, requestKey: `e2e-${name}-blocked-${Date.now()}` });
+    report.checks.render_blocked_until_claims_reviewed = blocked.status === 409 && blocked.body.factCheck === true;
+    if (cl.review.summary.contradicted === 0) {
+      const ok = await api(`/api/projects/${pid}/scripts/${ver}/claims`, { confirm: cl.pending.map((c) => c.id) });
+      report.factCheck.confirmedByHarness = ok.body.confirmedClaims;
+      if (!ok.body.claimsApproved) throw new Error('claims could not be approved: ' + JSON.stringify(ok.body));
+    }
+  } else report.checks.render_blocked_until_claims_reviewed = true;   // nothing to review
+  return { projectId: pid, version: ver };
 }
 
 async function runCase(name) {
@@ -141,7 +161,7 @@ async function runCase(name) {
     if (input.visualMode === 'hybrid-local') {
       const idx = JSON.parse(fs.readFileSync(path.join(P, 'generated-images', 'index.json'), 'utf8')), need = scene.shots.filter((s) => s.method === 'image' || s.method === 'hybrid');
       report.images = idx;
-      C.images_generated = final.stages.find((s) => s.id === 'images').status === 'done' && need.length > 0 && need.every((s) => idx.shots[s.id] && fs.existsSync(path.join(P, idx.shots[s.id].file)) && fs.statSync(path.join(P, idx.shots[s.id].file)).size > 20000);
+      C.images_generated = final.stages.find((s) => s.id === 'images').status === 'done' && need.length > 0 && need.every((s) => { const own = idx.shots[s.id] || idx.shots[s.imageReuse]; const file = own && path.join(P, own.file); return !!s.image && !!file && fs.existsSync(file) && fs.statSync(file).size > 20000; });   // reused images (imageReuse) count as present
     }
     const onScreen = sv.lines.map((l) => l.onScreen || '').join(' | ') + ' ' + text;
     C.overlays_match_script = scene.shots.every((s) => !s.overlay || (s.overlay.type === 'comparison' ? s.overlay.items.every((it) => onScreen.includes(it.display)) : s.overlay.type === 'number' ? onScreen.includes(s.overlay.value) : s.overlay.type === 'date' ? onScreen.includes(s.overlay.text) : true));
@@ -175,7 +195,7 @@ async function progressAcceptance() {
   const R = { startedAt: now(), checks: {} }, C = R.checks;
   const input = { ...CASES.B.input, topic: 'Progress acceptance: The Mystery of Roopkund Lake', durationSeconds: 30 };
   const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'test-b.json'), 'utf8'));
-  const mk = async (inp, script) => { const p = await api('/api/projects', { input: inp }); await api(`/api/projects/${p.body.project.id}/scripts`, { ...script, approve: true }); return p.body.project.id; };
+  const mk = async (inp, script) => { const p = await api('/api/projects', { input: inp }); await api(`/api/projects/${p.body.project.id}/scripts`, { ...script, approve: true, approveClaims: true }); return p.body.project.id; };
   // 1 · real job with duplicate click + refresh + full event capture
   const pid = await mk(input, fx), key = `progress-acceptance-${Date.now()}`;
   const first = await api('/api/jobs', { input, projectId: pid, scriptVersion: 1, requestKey: key });

@@ -351,13 +351,49 @@ export function cameraAt(cam, shotCam, focus, lt, d, style, seed = 0, base = nul
   return cam.position.distanceTo(f);
 }
 
+// occlusion guard: cast a ray from the subject to the lens; if a solid mesh (not the subject, not the ground, not
+// fog/sky) is in the way, move the camera to just in front of it. Returns the new distance, or null when the view
+// was already clear (or cannot be cleared without crowding the subject).
+const _ray = new THREE.Raycaster(), _dir = new THREE.Vector3();
+export function clearView(cam, focus, scene, subjects = []) {
+  const dist = cam.position.distanceTo(focus); if (dist < 0.5) return null;
+  _dir.subVectors(cam.position, focus).normalize();
+  _ray.set(focus, _dir); _ray.near = 0.25; _ray.far = dist + 0.2;
+  const isSubject = (o) => { for (let p = o; p; p = p.parent) if (subjects.includes(p)) return true; return false; };
+  const hit = _ray.intersectObject(scene, true).find((h) => {
+    const o = h.object;
+    if (!o.isMesh || !o.visible || isSubject(o) || o.userData.ground) return false;
+    for (let p = o; p; p = p.parent) if (p.visible === false) return false;
+    const g = o.geometry; if (g && (g.type === 'PlaneGeometry' || g.type === 'CircleGeometry') && Math.abs(h.face?.normal ? h.face.normal.clone().transformDirection(o.matrixWorld).y : 0) > 0.7) return false;   // floors/water
+    if (o.material && (o.material.transparent && o.material.opacity < 0.5)) return false;
+    return true;
+  });
+  if (!hit) return null;
+  const nd = hit.distance - 0.35;
+  if (nd < 1.0) return null;
+  cam.position.copy(focus).addScaledVector(_dir, nd);
+  cam.lookAt(focus);
+  return nd;
+}
+
 export class Stage3D {
   constructor(E, style) { this.E = E; this.style = style; this.envs = new Map(); }
   env(kind) {
     if (!ENV3D[kind]) kind = 'studio';
     if (!this.envs.has(kind)) {
       const e = ENV3D[kind](this.style);
-      if (this.style.id === 'night-file' && kind !== 'space' && kind !== 'night') nightify(e.root);
+      if (this.style.id === 'night-file' && kind !== 'space' && kind !== 'night') {
+        nightify(e.root);
+        // shot QA (Nov 11): the white-walled lab blew out under the noir spotlight + bloom (luma 145–158 vs 55) and
+        // the temple fell to near-black in the fog (90th percentile 21). Darken the lab further; light the temple
+        // with a warm oil-lamp glow so its shapes read.
+        if (kind === 'lab' || kind === 'classroom') e.root.traverse((o) => { if (o.isMesh && o.material?.color) o.material.color.multiplyScalar(0.45); });
+        if (kind === 'temple') {
+          const f = e.anchors?.focus || [0, 1.5, 0], lamp = new THREE.PointLight('#FFB060', 60, 30, 1.4);
+          lamp.position.set(f[0] + 1.5, f[1] + 3, f[2] + 4); e.scene.add(lamp);
+          e.scene.add(new THREE.HemisphereLight('#7A6A58', '#1A1410', 0.6));
+        }
+      }
       e.kind = kind; e.lead = null; this.envs.set(kind, e);
     }
     return this.envs.get(kind);

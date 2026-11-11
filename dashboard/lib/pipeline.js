@@ -12,6 +12,8 @@ import { planStoryboard } from './storyboard.js';
 import { scaffoldRuntime, characterSpec, writeRuntimeScript, writeScene } from './scene.js';
 import { generateImage, seedFor, freeVram, readImageIndex, writeImageIndex } from './imagegen.js';
 import { stopServer as stopLLM } from './llm.js';
+import { imageStats, judgeImage, judgeShots, autoLevel } from './exposure.js';
+import { claimsGate } from './factcheck.js';
 import { run } from './proc.js';
 
 // Stage weights: proportional to measured wall-clock time on the reference machine (i5-12450H + RTX 3050 6 GB)
@@ -54,7 +56,7 @@ async function ffprobe(job, stage, file) {
 }
 
 // ── SCRIPT PREVIEW JOB ──────────────────────────────────────────────────────────────────────────────────────
-export async function runScriptJob(job, { projectId, config }) {
+export async function runScriptJob(job, { projectId, config, facts = null }) {
   job.startStage('validate', 'Checking the selected options against installed models');
   const v = validateGenerationConfig(inputFromConfig(config), { purpose: 'script' });
   if (!v.ok) throw new Error(v.errors.map((e) => e.message).join(' '));
@@ -63,7 +65,7 @@ export async function runScriptJob(job, { projectId, config }) {
   job.startStage('script', `Writing a ${config.language.name} script with the local model`);
   const ac = new AbortController(); const cancelPoll = setInterval(() => { if (job.cancelRequested) ac.abort(); }, 300);
   let res;
-  try { res = await generateScript(config, { signal: ac.signal, onProgress: (p) => job.stageProgress('script', p) }); }
+  try { res = await generateScript(config, { facts, signal: ac.signal, onProgress: (p) => job.stageProgress('script', p) }); }
   catch (e) { if (job.cancelRequested) throw Object.assign(new Error('Job cancelled by user'), { cancelled: true }); throw e; }
   finally { clearInterval(cancelPoll); }
   job.completeStage('script', `${res.meta.lineCount} lines, ${res.meta.wordCount} words (${res.meta.tokens} tokens, ${res.meta.attempts} attempt${res.meta.attempts > 1 ? 's' : ''})`);
@@ -72,13 +74,13 @@ export async function runScriptJob(job, { projectId, config }) {
   const problems = checkLanguage(res.script, config);
   if (problems.length) throw new Error(problems.join('; '));
   const est = estimateSeconds(res.script, config);
-  const saved = addScriptVersion(projectId, res.script, { source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
+  const saved = addScriptVersion(projectId, res.script, { factsProvided: !!facts, factFile: res.meta.factFile, claimReview: res.meta.claimReview, claimsApproved: res.meta.claimReview.summary.needsReview === 0, claimsToVerify: res.meta.claimsToVerify, source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
   job.completeStage('prepare', `≈${est.seconds} s estimated for a ${config.durationSeconds} s target`);
   job.complete({ projectId, version: saved.version, script: res.script, estimate: est, meta: res.meta }, `Script v${saved.version} ready for review`);
 }
 
 // ── RENDER JOB ──────────────────────────────────────────────────────────────────────────────────────────────
-export async function runRenderJob(job, { projectId, config, scriptVersion }) {
+export async function runRenderJob(job, { projectId, config, scriptVersion, acceptUnverifiedClaims = false }) {
   const dir = projectDir(projectId), cat = getCatalog(true), style = cat.styles.find((s) => s.id === config.visual.style);
   const env = childEnv({ FFMPEG: PATHS.ffmpeg, FPS: String(config.fps) });
   const rec = (fn) => updateProject(projectId, fn);
@@ -100,14 +102,24 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
     const s = getScriptVersion(projectId, scriptVersion);
     if (!s) throw new Error(`approved script v${scriptVersion} not found`);
     if (s.meta.fingerprint !== scriptFingerprint(config)) throw new Error(`script v${scriptVersion} was written for a different topic/language/personality/duration; regenerate the preview`);
+    const gate = claimsGate(s.meta);
+    if (!gate.ok) throw new Error(gate.message);
     script = { title: s.title, lines: s.lines };
-    job.completeStage('script', `approved v${scriptVersion}: ${script.lines.length} lines`);
+    job.completeStage('script', `approved v${scriptVersion}: ${script.lines.length} lines${s.meta.claimReview ? ` · facts: ${s.meta.claimReview.summary.supported} supported, ${(s.meta.confirmedClaims || []).length} confirmed by you` : ''}`);
   } else {
     job.startStage('script', `Writing a ${config.language.name} script with the local model`);
     const res = await generateScript(config, { onProgress: (p) => job.stageProgress('script', p) });
     script = res.script;
-    const saved = addScriptVersion(projectId, script, { source: 'llm-at-render', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: res.meta.wordCount, estimatedSeconds: res.meta.estimatedSeconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
-    approveScriptVersion(projectId, saved.version); version = saved.version;
+    // one-click render: no preview to review, so flagged claims need an explicit acceptance in the request; a known
+    // factual error is never rendered
+    const rv = res.meta.claimReview, contradicted = rv.claims.filter((c) => c.status === 'contradicted');
+    const acceptance = rv.summary.needsReview && !contradicted.length && acceptUnverifiedClaims ? { claimsApproved: true, claimsApprovedAt: new Date().toISOString(), claimsApprovedBy: 'render request (acceptUnverifiedClaims)' } : { claimsApproved: rv.summary.needsReview === 0 };
+    const saved = addScriptVersion(projectId, script, { claimReview: rv, factFile: res.meta.factFile, ...acceptance, source: 'llm-at-render', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: res.meta.wordCount, estimatedSeconds: res.meta.estimatedSeconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
+    version = saved.version;
+    if (contradicted.length) throw new Error(`Script v${version} repeats ${contradicted.length} known factual error(s): ${contradicted.map((c) => `line ${c.line}: ${c.note}`).join('; ')}. Edit it in Script Studio.`);
+    if (!acceptance.claimsApproved) throw new Error(`Script v${version} has ${rv.summary.needsReview} factual claim(s) to review. Open it in Script Studio, confirm the claims, then render.`);
+    for (const c of rv.claims.filter((x) => x.status !== 'supported')) job.warn(`Unverified claim accepted by the render request: line ${c.line} ${c.kind} "${c.value}"`);
+    approveScriptVersion(projectId, saved.version);
     job.completeStage('script', `generated v${version}: ${script.lines.length} lines, ${res.meta.wordCount} words`);
   }
   stopLLM();   // free the GPU for TTS/ComfyUI/WebGL
@@ -129,17 +141,22 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
   };
   job.startStage('tts', `Synthesizing ${config.language.name} narration with ${config.narration.voice} (${config.narration.ttsLang})`);
   let narr = await tts(config.narration.speed, 'pass 1'), speedUsed = config.narration.speed;
+  // learn the real speaking rate from every first pass, including scripts that then fail the length check
+  recordVoiceRate(config.narration.voice, script.lines.reduce((a, l) => a + countWords(l.say || l.text), 0), narr.speechSeconds, config.narration.speed);
   if (Math.abs(narr.duration - T) > tol * T) {
-    const fixed = narr.duration - narr.speechSeconds, need = speedUsed * narr.speechSeconds / Math.max(1, T - fixed);
-    const s2 = Math.round(need * 100) / 100, base = config.narration.delivery.speed;
-    if (s2 >= Math.max(0.8, base - 0.15) && s2 <= Math.min(1.25, base + 0.18)) {
+    // aim for the exact target, but clamp to the personality's speed range: landing anywhere inside ±tol is a pass
+    const fixed = narr.duration - narr.speechSeconds, base = config.narration.delivery.speed;
+    const lo = Math.max(0.8, base - 0.15), hi = Math.min(1.25, base + 0.18);
+    const need = speedUsed * narr.speechSeconds / Math.max(1, T - fixed);
+    const s2 = Math.round(Math.min(hi, Math.max(lo, need)) * 100) / 100;
+    const predicted = fixed + narr.speechSeconds * speedUsed / s2;
+    if (Math.abs(predicted - T) <= tol * T) {
       job.warn(`Narration was ${narr.duration.toFixed(1)} s for a ${T} s target; re-synthesizing at speed ${s2} (personality default ${base}) to fit ±${Math.round(tol * 100)}%`);
       job.stageProgress('tts', { indeterminate: true, message: `Re-synthesizing at speed ${s2} to fit ${T} s` });
       narr = await tts(s2, 'pass 2'); speedUsed = s2;
     }
     if (Math.abs(narr.duration - T) > tol * T) throw new Error(`the narration reads ${narr.duration.toFixed(1)} s at a natural pace, outside ${T} s ±${Math.round(tol * 100)}%. Shorten/lengthen the script (≈${Math.round(est.words * T / narr.duration)} words) or change the target duration.`);
   }
-  recordVoiceRate(config.narration.voice, script.lines.reduce((a, l) => a + countWords(l.say || l.text), 0), narr.speechSeconds, speedUsed);
   rec((p) => { p.voice = { id: config.narration.voice, ttsLang: config.narration.ttsLang, speed: speedUsed, narrationSeconds: narr.duration, speechSeconds: narr.speechSeconds, model: 'Kokoro-82M v1.0 ONNX', synthSeconds: narr.synthSeconds }; });
   job.completeStage('tts', `${narr.duration.toFixed(2)} s narration (${narr.sentences} sentences, voice ${config.narration.voice}, speed ${speedUsed})`);
 
@@ -164,25 +181,43 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
   job.completeStage('storyboard', `${sb.shots.length} shots · ${Object.entries(methods).map(([k, n]) => `${n} ${k}`).join(', ')}`);
 
   // 7 · images ──────────────────────────────────────────────────────────────────────────────────────────────
-  const imageShots = sb.shots.filter((s) => s.imagePrompt);
+  const imageShots = sb.shots.filter((s) => s.imagePrompt && !s.imageReuse);
   if (config.visual.visualMode === 'hybrid-local' && imageShots.length) {
-    job.startStage('images', `Generating ${imageShots.length} images locally with ComfyUI`);
+    const reused = sb.shots.filter((s) => s.imageReuse).length;
+    job.startStage('images', `Generating ${imageShots.length} images locally with ComfyUI${reused ? ` (${reused} shots reuse one of them)` : ''}`);
     const idx = readImageIndex(dir), inventory = [];
     for (const [k, sh] of imageShots.entries()) {
       job.throwIfCancelled();
       const prev = idx.shots[sh.id], file = path.join(dir, 'generated-images', `${sh.id}.png`);
-      const seed = prev && prev.prompt === sh.imagePrompt ? prev.seed : seedFor(sh.imagePrompt, 0);
-      job.stageProgress('images', { current: k, total: imageShots.length, message: `Generating image ${k + 1} of ${imageShots.length} (${sh.id})` });
-      const meta = await generateImage({ positive: sh.imagePrompt, negative: sh.negativePrompt, seed, outFile: file, prefix: `studio/${projectId}/${sh.id}`, isCancelled: () => job.cancelRequested,
-        onStep: ({ current, total }) => job.stageProgress('images', { fraction: (k + current / total) / imageShots.length, message: `Generating image ${k + 1} of ${imageShots.length}: step ${current}/${total}` }) });
+      let seed = prev && prev.prompt === sh.imagePrompt && !prev.rejected ? prev.seed : seedFor(sh.imagePrompt, 0), meta, problem = null, attempts = [];
+      // exposure gate: a near-black, blown-out or flat image is regenerated locally with a new seed (and, for a
+      // too-dark result, a lighting hint) — up to 3 attempts; the best attempt is kept and reported if none passes
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const positive = attempt && /near-black/.test(problem || '') ? sh.imagePrompt + ', clearly visible subject, dramatic rim light, readable details' : sh.imagePrompt;
+        job.stageProgress('images', { current: k, total: imageShots.length, message: `Generating image ${k + 1} of ${imageShots.length} (${sh.id})${attempt ? ` · retry ${attempt}` : ''}` });
+        meta = await generateImage({ positive, negative: sh.negativePrompt, seed, outFile: file, prefix: `studio/${projectId}/${sh.id}`, isCancelled: () => job.cancelRequested,
+          onStep: ({ current, total }) => job.stageProgress('images', { fraction: (k + current / total) / imageShots.length, message: `Generating image ${k + 1} of ${imageShots.length}: step ${current}/${total}` }) });
+        const st = imageStats(file); problem = judgeImage(st); attempts.push({ seed, ...st, problem });
+        if (!problem) break;
+        job.log(`  ${sh.id}: image rejected (${problem}), regenerating`);
+        seed = seedFor(sh.imagePrompt, attempt + 1);
+      }
+      if (problem) {
+        const best = attempts.reduce((x, y) => (Math.min(y.high, 255 - y.low) > Math.min(x.high, 255 - x.low) ? y : x));
+        if (best.seed !== seed) meta = await generateImage({ positive: sh.imagePrompt, negative: sh.negativePrompt, seed: best.seed, outFile: file, prefix: `studio/${projectId}/${sh.id}`, isCancelled: () => job.cancelRequested });
+        seed = best.seed;
+        if (autoLevel(file)) { const st = imageStats(file), p2 = judgeImage(st); attempts.push({ seed, ...st, problem: p2, autoLevel: true }); job.log(`  ${sh.id}: auto-levelled locally → ${p2 || 'ok'} (luma ${Math.round(st.avg)}/${st.low}–${st.high})`); problem = p2; }
+        if (problem) job.warn(`Image ${sh.id} still ${problem} after 3 attempts; shot QA will judge the rendered frame`);
+      }
       sh.image = `generated-images/${sh.id}.png`;
-      idx.shots[sh.id] = { file: sh.image, prompt: sh.imagePrompt, negative: sh.negativePrompt, seed, key: meta.key, cached: meta.cached, seconds: meta.seconds, approved: prev?.approved && prev.prompt === sh.imagePrompt ? true : false, createdAt: new Date().toISOString() };
+      idx.shots[sh.id] = { file: sh.image, prompt: sh.imagePrompt, negative: sh.negativePrompt, seed, key: meta.key, cached: meta.cached, seconds: meta.seconds, exposure: attempts.at(-1), attempts: attempts.length, rejected: !!problem, approved: prev?.approved && prev.prompt === sh.imagePrompt ? true : false, createdAt: new Date().toISOString() };
       inventory.push({ shot: sh.id, ...idx.shots[sh.id] });
-      job.log(`  ${sh.id}: ${meta.cached ? 'reused cached image' : `generated in ${meta.seconds} s`} (seed ${seed})`);
+      job.log(`  ${sh.id}: ${meta.cached ? 'reused cached image' : `generated in ${meta.seconds} s`} (seed ${seed}, luma ${attempts.at(-1).avg}/${attempts.at(-1).low}–${attempts.at(-1).high})`);
     }
+    for (const sh of sb.shots) if (sh.imageReuse) { sh.image = sb.shots.find((x) => x.id === sh.imageReuse).image; job.log(`  ${sh.id}: reuses ${sh.imageReuse}'s image`); }
     writeImageIndex(dir, idx); writeSB(); await freeVram();
-    rec((p) => { p.assets.images = inventory.map(({ shot, file, seed, cached, seconds }) => ({ shot, file, seed, cached, seconds })); p.models.imageGeneration = { engine: 'ComfyUI', checkpoint: cat._internal.comfy.checkpoint, license: cat._internal.comfy.license }; });
-    job.completeStage('images', `${imageShots.length} images (${inventory.filter((i) => i.cached).length} from cache)`);
+    rec((p) => { p.assets.images = inventory.map(({ shot, file, seed, cached, seconds, attempts, rejected }) => ({ shot, file, seed, cached, seconds, attempts, rejected })); p.assets.imageReuse = sb.shots.filter((s) => s.imageReuse).map((s) => ({ shot: s.id, from: s.imageReuse })); p.models.imageGeneration = { engine: 'ComfyUI', checkpoint: cat._internal.comfy.checkpoint, license: cat._internal.comfy.license }; });
+    job.completeStage('images', `${imageShots.length} images (${inventory.filter((i) => i.cached).length} from cache, ${inventory.filter((i) => i.attempts > 1).length} regenerated)`);
   } else if (job.stage('images').status !== 'skipped') job.skipStage('images', 'no shots need AI images');
 
   // 8 · scene construction ─────────────────────────────────────────────────────────────────────────────────
@@ -228,8 +263,16 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
   // visible content: per-frame mean luma at 2 fps. Grainy near-black frames defeat blackdetect, so measure brightness
   // directly (calibrated: a night video where nothing is visible had 71% of frames < 25 and mean 27.5; a space video
   // with visible subjects had 24% and mean 64.5).
-  const yav = [];
-  await run(job, 'qa', PATHS.ffmpeg, ['-hide_banner', '-i', final, '-vf', 'fps=2,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-', '-an', '-f', 'null', '-'], { env, quiet: true, onLine: (l) => { const m = l.match(/YAVG=([\d.]+)/); if (m) yav.push(+m[1]); } });
+  // 4 fps luma (mean + 10th/90th percentile) → whole-video visibility and per-shot exposure verdicts
+  const frames = []; let fcur = null;
+  await run(job, 'qa', PATHS.ffmpeg, ['-hide_banner', '-i', final, '-vf', 'fps=4,signalstats,metadata=print:file=-', '-an', '-f', 'null', '-'], { env, quiet: true, onLine: (l) => {
+    let m = l.match(/pts_time:([\d.]+)/); if (m) { fcur = { t: +m[1] }; frames.push(fcur); return; }
+    m = l.match(/signalstats\.(YAVG|YLOW|YHIGH)=([\d.]+)/); if (m && fcur) fcur[{ YAVG: 'avg', YLOW: 'low', YHIGH: 'high' }[m[1]]] = +m[2];
+  } });
+  const yav = frames.map((f) => f.avg).filter(Number.isFinite);
+  const shotQA = judgeShots(frames, sb.shots);
+  fs.writeFileSync(path.join(dir, 'review', 'shot_exposure.json'), JSON.stringify(shotQA, null, 2));
+  for (const b of shotQA.bad) job.log(`  QA: shot ${b.id} (${b.start.toFixed(1)}–${b.end.toFixed(1)} s) ${b.problem}`);
   const darkShare = yav.length ? yav.filter((y) => y < 25).length / yav.length : 1, meanLuma = yav.length ? yav.reduce((a, b) => a + b, 0) / yav.length : 0;
   const freezes = [...fz.matchAll(/freeze_duration:\s*([\d.]+)/g)].map((m) => +m[1]);
   const blacks = [...bl.matchAll(/black_start:\s*([\d.]+)\s+black_end:\s*([\d.]+)/g)].map((m) => [+m[1], +m[2]]).filter(([s, e]) => s > 0.6 && e < timing.duration - 0.6);
@@ -239,9 +282,10 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
     duration_within_tolerance: Math.abs(info.duration - T) <= tol * T, video_matches_narration: Math.abs(info.duration - timing.duration) < 0.25,
     no_long_freezes: freezes.every((d) => d < 4), no_black_gaps: blacks.length === 0,
     visible_content: darkShare <= 0.45 && meanLuma >= 32,
+    shot_exposure: shotQA.bad.length === 0,
   };
   if (!checks.visible_content) job.log(`  QA: video too dark to see: ${Math.round(darkShare * 100)}% of frames below luma 25, mean luma ${meanLuma.toFixed(1)}`);
-  const mandatory = ['mp4_readable', 'resolution_1080x1920', 'fps_matches', 'video_h264', 'audio_aac', 'audio_not_silent', 'duration_within_tolerance', 'video_matches_narration', 'visible_content'];
+  const mandatory = ['mp4_readable', 'resolution_1080x1920', 'fps_matches', 'video_h264', 'audio_aac', 'audio_not_silent', 'duration_within_tolerance', 'video_matches_narration', 'visible_content', 'shot_exposure'];
   const failed = mandatory.filter((k) => !checks[k]);
   for (const k of ['no_long_freezes', 'no_black_gaps']) if (!checks[k]) job.warn(`QA: ${k.replace(/_/g, ' ')} failed (${k === 'no_long_freezes' ? freezes.map((d) => d.toFixed(1) + ' s').join(', ') : blacks.map(([s, e]) => `${s.toFixed(1)}–${e.toFixed(1)} s`).join(', ')})`);
   job.stageProgress('qa', { current: 3, total: 6, message: 'Rendering cover and contact sheet' });
@@ -249,7 +293,7 @@ export async function runRenderJob(job, { projectId, config, scriptVersion }) {
   await run(job, 'qa', node, ['tools/capture.mjs', 'frames', 'review/frames', String(coverT.toFixed(2))], { cwd: dir, env, quiet: true });
   const fr = fs.readdirSync(path.join(dir, 'review', 'frames')).find((f) => f.endsWith('.jpg')); if (fr) fs.copyFileSync(path.join(dir, 'review', 'frames', fr), path.join(dir, 'review', 'cover.jpg'));
   await run(job, 'qa', node, ['tools/capture.mjs', 'sheet', 'review/sheet.jpg', '1', '8'], { cwd: dir, env, quiet: true });
-  const report = { project: projectId, video: rel(final), status: failed.length ? 'FAIL' : Object.values(checks).every(Boolean) ? 'PASS' : 'PASS_WITH_WARNINGS', metrics: { ...info, meanVolumeDb: meanDb, meanLuma: +meanLuma.toFixed(1), darkFrameShare: +darkShare.toFixed(3), freezes, blackGaps: blacks, targetSeconds: T, tolerance: tol, narrationSeconds: timing.duration }, checks, failed, checkedAt: new Date().toISOString() };
+  const report = { project: projectId, video: rel(final), status: failed.length ? 'FAIL' : Object.values(checks).every(Boolean) ? 'PASS' : 'PASS_WITH_WARNINGS', metrics: { ...info, meanVolumeDb: meanDb, meanLuma: +meanLuma.toFixed(1), darkFrameShare: +darkShare.toFixed(3), freezes, blackGaps: blacks, badShots: shotQA.bad, targetSeconds: T, tolerance: tol, narrationSeconds: timing.duration }, checks, failed, checkedAt: new Date().toISOString() };
   fs.writeFileSync(path.join(dir, 'review', 'qa_report.json'), JSON.stringify(report, null, 2));
   if (failed.length) { rec((p) => { p.qa = report; p.status = 'failed'; }); throw new Error(`QA failed: ${failed.join(', ')}`); }
   job.stageProgress('qa', { current: 5, total: 6, message: 'Exporting to the workspace exports folder' });

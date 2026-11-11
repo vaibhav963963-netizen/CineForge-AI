@@ -1,0 +1,116 @@
+{
+  "id": "temple-bells",
+  "title": "Bells in Indian (Hindu) temples",
+  "match": [
+    "temple bell",
+    "temple bells",
+    "temples have bells",
+    "मंदिर",
+    "घंटी",
+    "घंटा",
+    "ghanti",
+    "ghanta"
+  ],
+  "aliases": [
+    "India",
+    "Hindu",
+    "Indian"
+  ],
+  "sources": [
+    "General references on Hindu temple worship (puja/aarti practice); no peer-reviewed evidence exists for the health/brain claims"
+  ],
+  "verified": [
+    {
+      "text": "Most Hindu temples in India hang a bell (ghanta) near the entrance or in front of the sanctum.",
+      "keys": [
+        "entrance",
+        "ghanta",
+        "घंटा",
+        "घंटी",
+        "द्वार",
+        "प्रवेश"
+      ]
+    },
+    {
+      "text": "Devotees traditionally ring the bell when they enter the temple, before they pray.",
+      "keys": [
+        "ring",
+        "enter",
+        "बजाते",
+        "बजाना",
+        "प्रवेश"
+      ]
+    },
+    {
+      "text": "Bells are also rung during aarti and puja, the worship ceremonies.",
+      "keys": [
+        "aarti",
+        "puja",
+        "आरती",
+        "पूजा"
+      ]
+    },
+    {
+      "text": "Temple bells are usually cast from bronze or brass; some are made of panchdhatu, a traditional alloy of five metals.",
+      "keys": [
+        "bronze",
+        "brass",
+        "panchdhatu",
+        "पंचधातु",
+        "पीतल",
+        "कांसा",
+        "धातु"
+      ]
+    },
+    {
+      "text": "In tradition, the bell's sound announces the devotee and draws attention away from worldly thoughts toward the deity.",
+      "keys": [
+        "attention",
+        "ध्यान",
+        "भगवान",
+        "देवता"
+      ]
+    }
+  ],
+  "theories": [
+    {
+      "text": "It is popularly claimed that the bell's echo lasts about seven seconds and balances the left and right sides of the brain or activates chakras. There is no scientific evidence for this; present it as a belief.",
+      "keys": [
+        "seven seconds",
+        "7 seconds",
+        "सात सेकंड",
+        "brain",
+        "दिमाग",
+        "मस्तिष्क",
+        "chakra",
+        "चक्र",
+        "hemisphere"
+      ],
+      "belief": true
+    },
+    {
+      "text": "Many people believe the sound drives away negative energy or evil spirits. This is a religious belief, not a scientific finding.",
+      "keys": [
+        "negative energy",
+        "evil",
+        "नकारात्मक",
+        "बुरी",
+        "ऊर्जा"
+      ],
+      "belief": true
+    }
+  ],
+  "legends": [],
+  "knownErrors": [
+    {
+      "text": "Science has proved that temple bells heal the body",
+      "keys": [
+        "science has proved",
+        "scientifically proven",
+        "विज्ञान ने साबित"
+      ],
+      "correction": "No scientific study shows this; it is a belief."
+    }
+  ],
+  "uncertain": "Health and brain effects of bell sounds are beliefs; present them with 'it is believed' / 'माना जाता है'."
+}

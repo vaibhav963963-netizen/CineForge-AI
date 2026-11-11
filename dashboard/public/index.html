@@ -65,6 +65,10 @@
                 <label for="f-topic">Short topic or question</label>
                 <div class="input-with-button"><input type="text" id="f-topic" maxlength="220" placeholder="e.g. How ISRO reached Mars for less than the budget of Gravity"><button type="button" class="btn btn-secondary" id="btn-random">🎲 Idea</button></div>
                 <span class="field-error"></span>
+                <div class="facts-hint" id="facts-hint" hidden></div>
+                <details class="facts-input"><summary>Verified facts for this video (optional)</summary>
+                  <textarea id="f-facts" rows="3" maxlength="4000" placeholder="One fact per line, from a source you trust. The script will use only these numbers, dates and names."></textarea>
+                </details>
               </div>
               <div class="form-row three-col">
                 <div class="form-group" data-field="language"><label for="f-language">Language &amp; dialect <span class="tip" title="Hindi options write the script in Devanagari and use Kokoro's Hindi voices. Hinglish shows Roman-script captions while the Hindi voice reads a Devanagari version.">?</span></label><select id="f-language"></select><span class="field-error"></span></div>
@@ -129,7 +133,7 @@
             <div class="panel-header"><h3>How lines become shots</h3></div>
             <div class="rules-card"><h4>Narration</h4><p>• <b>Text</b> is spoken and captioned, in the project's language.</p><p>• Hinglish lines also need <b>Say</b>: the same sentence in Devanagari for the Hindi voice.</p></div>
             <div class="rules-card"><h4>Visuals</h4><p>• <b>Visual</b> (English) describes what to show; the storyboard planner turns it into a scene, props and actions.</p><p>• <b>On screen</b> adds a number, year or comparison (e.g. <code>Gravity $100M vs Mangalyaan $74M</code>).</p></div>
-            <div class="rules-card"><h4>Facts</h4><p>The local model can be wrong. Check names, dates and numbers before rendering.</p></div>
+            <div class="rules-card claims-card" id="script-claims"><h4>Fact check</h4><p class="muted">Open a script to see its claims.</p></div>
             <div class="rules-card" id="script-config-card"></div>
           </div>
         </div>

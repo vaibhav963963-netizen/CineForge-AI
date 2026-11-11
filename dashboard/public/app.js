@@ -58,8 +58,20 @@ function onLanguageChange(saved) {
   onFormChange();
 }
 
+// local topic fact file hint (Create screen): which verified facts will ground the script
+let factsT, factsTopic = null;
+function updateFactsHint(topic) {
+  clearTimeout(factsT);
+  factsT = setTimeout(async () => {
+    if (topic === factsTopic) return; factsTopic = topic;
+    const el = $('#facts-hint'); if (!el) return;
+    const f = topic.trim() ? await api(`/api/facts/match?topic=${encodeURIComponent(topic)}`).catch(() => null) : null;
+    el.hidden = !f;
+    if (f) el.textContent = `✔ Local fact file "${f.title}" will ground the script: ${f.verified.length} verified facts, ${f.theories.length} theories, ${f.legends.length} legends, ${f.knownErrors.length} known errors to avoid.`;
+  }, 400);
+}
 function onFormChange() {
-  const i = formInput(); store.set('studio.form', i);
+  const i = formInput(); store.set('studio.form', i); updateFactsHint(i.topic);
   $('#duration-val').textContent = `${i.durationSeconds}s`;
   $('#duration-hint').textContent = `Final video must be ${(i.durationSeconds * (1 - S.catalog.duration.tolerance)).toFixed(0)}–${(i.durationSeconds * (1 + S.catalog.duration.tolerance)).toFixed(0)} s (±${Math.round(S.catalog.duration.tolerance * 100)}%)`;
   const st = S.catalog.styles.find((s) => s.id === i.style); $('#style-hint').textContent = st ? st.summary : '';
@@ -126,10 +138,13 @@ async function submit(kind) {
   if (S.submitting) return;
   const input = formInput();
   let body = { input, requestKey: uid() }, url = '/api/jobs';
-  if (kind === 'preview') { url = '/api/scripts/preview'; if (S.preview) body.projectId = S.preview.projectId; }
-  else if (S.preview) {
-    if (previewIsFresh()) Object.assign(body, { projectId: S.preview.projectId, scriptVersion: S.preview.version });
-    else if (!confirm(`Your selection changed after script v${S.preview.version} was previewed.\n\nRender anyway with a NEW script written for the current selection?`)) return;
+  if (kind === 'preview') { url = '/api/scripts/preview'; if (S.preview) body.projectId = S.preview.projectId; const facts = $('#f-facts')?.value.trim(); if (facts) body.facts = facts; }
+  else if (S.preview && previewIsFresh()) Object.assign(body, { projectId: S.preview.projectId, scriptVersion: S.preview.version });
+  else {
+    // no reviewed script: the studio writes one during the render, so its factual claims cannot be reviewed first
+    const why = S.preview ? `Your selection changed after script v${S.preview.version} was previewed. ` : '';
+    if (!confirm(`${why}The studio will write a NEW script during the render, so you will not be able to review its facts first.\n\nKnown factual errors still stop the render; other unverified claims will be accepted and logged.\n\nRecommended: "Generate script preview" and review the fact check in Script Studio.\n\nRender without fact review?`)) return;
+    body.acceptUnverifiedClaims = true;
   }
   S.submitting = true; updateButtons();
   try {
@@ -139,6 +154,7 @@ async function submit(kind) {
   } catch (e) {
     const errs = e.data?.errors?.map((x) => x.message) || [e.message];
     $('#form-errors').hidden = false; $('#form-errors').innerHTML = errs.map((m) => `<div>✖ ${esc(m)}</div>`).join('');
+    if (e.data?.factCheck && S.preview) { toast('Review the flagged facts in Script Studio first'); loadScript(S.preview.projectId, S.preview.version).then(() => go('scripts')); }
   } finally { S.submitting = false; updateButtons(); }
 }
 
@@ -225,7 +241,45 @@ async function loadScript(projectId, version) {
   $('#script-editor').innerHTML = s.lines.map((l, i) => lineEditor(l, i, hing)).join('');
   $('#script-config-card').innerHTML = `<h4>Written for</h4><p>${esc(p.config.language.name)}<br>${esc(p.config.narration.personalityName)}<br>${p.config.durationSeconds} s target</p>`;
   ['#btn-add-line', '#btn-save-version'].forEach((b) => ($(b).disabled = false));
+  S.script.linesKey = JSON.stringify(editedLines());
+  renderClaims(s, p);
   updateStats(); updateButtons();
+}
+
+// ── fact check panel: every flagged claim must be confirmed (or the line edited) before rendering ────────────
+const CLAIM_LABEL = { supported: 'Supported', unverified: 'Check', 'needs-attribution': 'Legend/theory told as fact', contradicted: 'Known error' };
+async function renderClaims(s, p) {
+  const box = $('#script-claims'); if (!box) return;
+  const rv = s.meta.claimReview, confirmed = new Set(s.meta.confirmedClaims || []);
+  const facts = await api(`/api/facts/match?topic=${encodeURIComponent(p.config.topic)}`).catch(() => null);
+  const group = (title, arr, open) => arr && arr.length ? `<details ${open ? 'open' : ''}><summary>${title} (${arr.length})</summary><ul>${arr.map((x) => `<li>${esc(typeof x === 'string' ? x : x.text)}${x.correction ? ` <span class="muted">→ ${esc(x.correction)}</span>` : ''}</li>`).join('')}</ul></details>` : '';
+  const factsHtml = facts ? `<div class="facts-groups"><p class="muted">Local fact file: <code>${esc(facts.file)}</code></p>${group('Verified facts', facts.verified)}${group('Theories (unproven)', facts.theories)}${group('Legends (folklore)', facts.legends)}${group('Known errors', facts.knownErrors)}</div>`
+    : `<p class="muted">No local fact file matches this topic. Add one in <code>facts/</code>, or paste verified facts on the Create screen.</p>`;
+  if (!rv) { box.innerHTML = `<h4>Fact check</h4><p class="muted">This script version has no fact review (created before fact checking).</p>${factsHtml}`; return; }
+  const flagged = rv.claims.filter((c) => c.status !== 'supported'), sm = rv.summary;
+  const badge = (st, n) => n ? `<span class="claim-badge ${st}">${n} ${CLAIM_LABEL[st]}</span>` : '';
+  box.innerHTML = `<h4>Fact check</h4>
+    <div class="claims-sum">${badge('supported', sm.supported)}${badge('unverified', sm.unverified)}${badge('needs-attribution', sm.needsAttribution)}${badge('contradicted', sm.contradicted)}</div>
+    ${flagged.length ? `<p class="muted">Tick each claim after checking it against a source, or edit the line and save a new version.</p>` : ''}
+    <div class="claim-list">${flagged.map((c) => `<label class="claim ${c.status}"><input type="checkbox" class="claim-ok" value="${esc(c.id)}" ${confirmed.has(c.id) ? 'checked' : ''} ${c.status === 'contradicted' ? 'disabled' : ''}>
+      <span><span class="claim-badge ${c.status}">${CLAIM_LABEL[c.status]}</span> line ${c.line} · ${esc(c.kind)}: <span class="cv">${esc(c.value)}</span>${c.note ? `<br><span class="cn">${esc(c.note)}</span>` : ''}</span></label>`).join('')}</div>
+    <div class="claims-state" id="claims-state"></div>${factsHtml}`;
+  const state = () => {
+    const ticks = $$('.claim-ok'), done = ticks.filter((t) => t.checked).length, contradicted = flagged.filter((c) => c.status === 'contradicted').length;
+    const el = $('#claims-state');
+    if (contradicted) { el.className = 'claims-state block'; el.textContent = `✖ ${contradicted} known error${contradicted > 1 ? 's' : ''}: edit ${contradicted > 1 ? 'those lines' : 'that line'} before rendering.`; }
+    else if (done < ticks.length) { el.className = 'claims-state block'; el.textContent = `${ticks.length - done} claim${ticks.length - done > 1 ? 's' : ''} still to confirm before rendering.`; }
+    else { el.className = 'claims-state ok'; el.textContent = flagged.length ? '✔ All flagged claims confirmed.' : '✔ Every checkable claim is supported by the verified facts.'; }
+  };
+  $$('.claim-ok').forEach((t) => t.addEventListener('change', async () => {
+    state();
+    try { await api(`/api/projects/${p.id}/scripts/${s.version}/claims`, { method: 'POST', body: { confirm: $$('.claim-ok').filter((x) => x.checked).map((x) => x.value) } }); } catch (e) { toast(e.message); }
+  }));
+  state();
+}
+function claimsReady() {
+  const ticks = $$('.claim-ok'), contradicted = $$('.claim.contradicted').length;
+  return { ok: !contradicted && ticks.every((t) => t.checked), contradicted, open: ticks.filter((t) => !t.checked).length };
 }
 const lineEditor = (l, i, hing) => `<div class="line-edit" data-i="${i}"><div class="ln">${i + 1}</div><div class="lf">
   <textarea class="le-text" rows="2" placeholder="Narration text">${esc(l.text)}</textarea>
@@ -241,10 +295,10 @@ function updateStats() {
   const tol = c.durationTolerance, ok = Math.abs(est - c.durationSeconds) <= c.durationSeconds * (tol + 0.05);
   $('#script-stats').innerHTML = `<span>${lines.length} lines</span><span>${words} words</span><span class="${ok ? 'good' : 'bad'}">≈${est.toFixed(1)} s estimated (target ${c.durationSeconds} s)</span><span class="muted">Final timing is measured from the real narration; Kokoro speed may be adjusted within the personality's range to fit.</span>`;
 }
-async function saveVersion(approve) {
+async function saveVersion(approve, approveClaims = false) {
   const p = S.script.project, errBox = $('#script-errors');
   try {
-    const r = await api(`/api/projects/${p.id}/scripts`, { method: 'POST', body: { title: $('#script-title').textContent, lines: editedLines(), baseVersion: S.script.version, approve } });
+    const r = await api(`/api/projects/${p.id}/scripts`, { method: 'POST', body: { title: $('#script-title').textContent, lines: editedLines(), baseVersion: S.script.version, approve, approveClaims } });
     errBox.hidden = true; await loadScript(p.id, r.version);
     S.preview = { projectId: p.id, version: r.version, fingerprint: fingerprintOf(inputFromConfig(p.config)) }; store.set('studio.preview', S.preview);
     return r.version;
@@ -367,7 +421,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#btn-save-version').onclick = () => saveVersion(false);
   $('#btn-regenerate').onclick = () => { loadFormFromConfig(S.script.project.config); S.preview = { projectId: S.script.project.id, version: S.script.version, fingerprint: fingerprintOf(inputFromConfig(S.script.project.config)) }; submit('preview'); };
   $('#btn-approve-render').onclick = async () => {
-    const v = await saveVersion(true); if (!v) return;
+    // facts first: unchanged lines → the confirmed claims carry over; edited lines → save, show the new review, stop
+    const edited = JSON.stringify(editedLines()) !== S.script.linesKey, cr = claimsReady();
+    if (!edited && !cr.ok) { $('#script-errors').hidden = false; $('#script-errors').textContent = cr.contradicted ? '✖ This script repeats a known factual error. Edit the line marked "Known error", then approve.' : `✖ Confirm the ${cr.open} flagged claim${cr.open > 1 ? 's' : ''} in the Fact check panel (or edit those lines) before rendering.`; return; }
+    if (edited) { const nv = await saveVersion(false); if (nv) toast(`Saved v${nv}. Review its fact check, then approve & render.`); return; }
+    const v = await saveVersion(true, true); if (!v) return;
     loadFormFromConfig(S.script.project.config); S.preview = { projectId: S.script.project.id, version: v, fingerprint: fingerprintOf(inputFromConfig(S.script.project.config)) }; store.set('studio.preview', S.preview);
     go('create'); setTimeout(() => submit('render'), 400);
   };
