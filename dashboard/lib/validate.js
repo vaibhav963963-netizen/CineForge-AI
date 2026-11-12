@@ -67,12 +67,14 @@ export function validateGenerationConfig(input = {}, { purpose = 'render', hasAp
     else if (!style.available) errors.push(err('style', `Style "${style.name}" template is incomplete: ${style.reason}.`, cat.styles.filter((s) => s.available).map((s) => s.id)));
   }
 
-  // lead character ('none' is an explicit, valid choice)
+  // lead character ('none' is an explicit, valid choice); optional appearance (look) of that character
+  let look = null;
   let character = null;
   if (req('character')) {
     character = cat.characters.find((c) => c.id === input.character);
     if (!character) errors.push(err('character', `Unknown character "${input.character}".`, cat.characters.filter((c) => c.available).map((c) => c.id)));
     else if (!character.available) errors.push(err('character', `Character "${character.name}" cannot be rendered: ${character.reason}.`, cat.characters.filter((c) => c.available).map((c) => c.id)));
+    else if (character.looks?.length) { look = character.looks.find((l) => l.id === (input.look || character.looks[0].id)); if (!look) errors.push(err('look', `Unknown appearance "${input.look}" for ${character.name}.`, character.looks.map((l) => l.id))); }
   }
 
   // duration
@@ -127,6 +129,7 @@ export function validateGenerationConfig(input = {}, { purpose = 'render', hasAp
       style: style.id, styleName: style.name, dimension: style.dimension, renderer: style.renderer,
       character: character.id, characterName: character.name, archetype: character.archetype,
       characterMode: character.id === 'none' ? 'none' : style.characterMode,
+      ...(look ? { look: look.id, lookName: look.name, lookOverrides: look.overrides || null } : {}),
       visualMode: visualMode.id,
     },
     durationSeconds, durationTolerance: tolerance,

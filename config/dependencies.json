@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "about": "Single source of truth for everything CineForge AI needs on a machine. Read by dashboard/lib/setup (scanner, installer, download manager, UI) and by bootstrap.ps1 (Node pin). Paths use {placeholders} resolved from config/studio-config.json, so model/runtime locations live in one place. checksumSource: official = published by the source; tofu = recorded from a verified install because the source publishes none.",
+  "trustedHosts": [
+    "huggingface.co", "cdn-lfs.huggingface.co", "cdn-lfs.hf.co", "cdn-lfs-us-1.hf.co", "us.aws.cdn.hf.co", "cas-bridge.xethub.hf.co", "transfer.xethub.hf.co",
+    "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "codeload.github.com", "raw.githubusercontent.com",
+    "download.pytorch.org", "download-r2.pytorch.org",
+    "nodejs.org",
+    "www.gyan.dev",
+    "api.nuget.org", "globalcdn.nuget.org"
+  ],
+  "categories": {
+    "core": "Core system requirements", "runtimes": "Programming runtimes", "python": "Python dependencies", "node": "Node.js dependencies",
+    "inference": "AI inference runtimes", "models": "AI models and weights", "audio": "Audio processing", "video": "Video processing",
+    "image": "Image generation", "rendering": "Browser and rendering", "assets": "Fonts and visual assets", "tools": "Supporting tools", "optional": "Optional enhancements"
+  },
+  "hardwareProfiles": [
+    { "id": "auto", "name": "Automatic", "description": "Chosen from the detected hardware: NVIDIA GPU accelerated when a CUDA-capable NVIDIA driver is present, otherwise CPU-only." },
+    { "id": "nvidia-cuda", "name": "NVIDIA GPU accelerated", "description": "CUDA 12.6 PyTorch for ComfyUI, llama.cpp Vulkan with all layers on the GPU.", "requires": { "nvidiaDriverMin": "527.41", "vramGBMin": 4 } },
+    { "id": "cpu", "name": "CPU only", "description": "CPU PyTorch for ComfyUI (--cpu, very slow: minutes per image), llama.cpp CPU build. Everything works, image generation is impractical.", "requires": {} },
+    { "id": "low-memory", "name": "Low memory", "description": "GPU where available, but the script model runs with a 4096-token context and ComfyUI uses --lowvram. For 4 GB GPUs or under 12 GB RAM.", "requires": {} }
+  ],
+  "features": [
+    { "id": "dashboard", "name": "Dashboard and job server", "requires": ["node", "studio-files"] },
+    { "id": "script-generation", "name": "Script generation (local LLM)", "requires": ["llama-cpp", "gemma-3-4b"] },
+    { "id": "fact-check", "name": "Fact check panel", "requires": ["studio-files"], "note": "Pure JavaScript with facts/*.json; no model needed." },
+    { "id": "tts", "name": "Voice narration (Kokoro)", "requires": ["python-venv", "python-packages", "kokoro-model", "kokoro-voices"] },
+    { "id": "align-english", "name": "Word timing — English", "requires": ["python-venv", "python-packages", "whisper-small-en", "ffmpeg"] },
+    { "id": "align-hindi", "name": "Word timing — Hindi / Hinglish", "requires": ["python-venv", "python-packages", "whisper-small", "ffmpeg"] },
+    { "id": "hindi-captions", "name": "Devanagari captions", "requires": ["font-devanagari"] },
+    { "id": "procedural-visuals", "name": "3D / 2D procedural visuals", "requires": ["browser", "studio-files"] },
+    { "id": "ai-images", "name": "Hybrid mode: local AI images", "requires": ["comfyui", "comfyui-venv", "comfyui-torch", "comfyui-requirements", "dreamshaper-8"] },
+    { "id": "audio-mix", "name": "Sound cues, music and mix", "requires": ["python-venv", "python-packages", "ffmpeg"] },
+    { "id": "video-export", "name": "Frame capture, encoding and QA", "requires": ["browser", "ffmpeg"] }
+  ],
+  "components": [
+    {
+      "id": "os", "name": "Windows 10 1803+ / 11 (x64)", "category": "core", "level": "required", "scope": "system",
+      "description": "Provides tar.exe (zip extraction) and PowerShell used by the bootstrap.",
+      "detect": { "type": "os", "platform": "win32", "arch": ["x64"], "minBuild": 17134 },
+      "install": { "type": "manual", "instructions": "CineForge AI supports 64-bit Windows 10 version 1803 (build 17134) or newer." }
+    },
+    {
+      "id": "node", "name": "Node.js", "category": "runtimes", "level": "required", "scope": "workspace",
+      "description": "Runs the dashboard, job server, frame capture and tests. No npm packages are used.",
+      "version": "22.23.2", "minVersion": "22.0.0", "license": "MIT", "homepage": "https://nodejs.org/",
+      "location": "{root}/runtime/node (portable, from the bootstrap) or a system install",
+      "detect": { "type": "node" },
+      "install": { "type": "bootstrap", "instructions": "Installed by CineForge-Setup.bat before the dashboard can start (portable zip from nodejs.org, SHA-256 checked against SHASUMS256.txt, no PATH change).",
+        "artifact": { "url": "https://nodejs.org/dist/v22.23.2/node-v22.23.2-win-x64.zip", "size": 35683585, "sha256": "1177b4137ba5adaa56354ae40f1080c7450e8ae09cecb47da459d1c52ac99f97", "checksumSource": "official" } }
+    },
+    {
+      "id": "npm-packages", "name": "Node.js packages", "category": "node", "level": "required", "scope": "workspace",
+      "description": "The dashboard has zero npm dependencies (Node built-ins only), so there is nothing to install. three.js r170 is vendored in engine/styles.",
+      "detect": { "type": "npm-none", "packageJson": "{root}/dashboard/package.json" },
+      "install": { "type": "none" }
+    },
+    {
+      "id": "tar", "name": "tar.exe (Windows built-in)", "category": "core", "level": "required", "scope": "system",
+      "description": "Extracts the FFmpeg, llama.cpp, Python and ComfyUI archives.",
+      "detect": { "type": "exec", "exe": "{system32}/tar.exe", "args": ["--version"], "regex": "bsdtar ([\\d.]+)" },
+      "install": { "type": "manual", "instructions": "Part of Windows 10 1803 and newer (C:\\Windows\\System32\\tar.exe)." }
+    },
+    {
+      "id": "powershell", "name": "Windows PowerShell", "category": "core", "level": "required", "scope": "system",
+      "description": "Used only by the bootstrap and for read-only hardware queries (CIM).",
+      "detect": { "type": "exec", "exe": "system:powershell", "args": ["-NoProfile", "-Command", "$PSVersionTable.PSVersion.ToString()"], "regex": "([\\d.]+)" },
+      "install": { "type": "manual", "instructions": "Included with Windows." }
+    },
+    {
+      "id": "python-base", "name": "Python 3.12 (base interpreter)", "category": "runtimes", "level": "required", "scope": "workspace",
+      "description": "Creates the two isolated environments. An existing Python 3.12 (py launcher) is reused; otherwise the official python.org NuGet package is unpacked into runtime/python312 — no installer, no registry or PATH change.",
+      "version": "3.12.10", "minVersion": "3.12.0", "license": "PSF-2.0", "homepage": "https://www.python.org/",
+      "location": "{root}/runtime/python312",
+      "detect": { "type": "python-base", "portable": "{root}/runtime/python312/python.exe", "major": 3, "minor": 12 },
+      "install": { "steps": [
+        { "op": "download", "url": "https://api.nuget.org/v3-flatcontainer/python/3.12.10/python.3.12.10.nupkg", "to": "{tmp}/python.3.12.10.nupkg", "size": 14515433, "sha512b64": "u9pNz2iKlCEbYtUJaKkbOPMF0LjR7NkCafdKhvigpPzrt8oWKgdTpHaR6z3wyWQAm9PYGUxv0Zr66NX9AeHMDw==", "checksumSource": "official" },
+        { "op": "extract", "archive": "{tmp}/python.3.12.10.nupkg", "fromDir": "tools/", "toDir": "{root}/runtime/python312" },
+        { "op": "delete-temp", "path": "{tmp}/python.3.12.10.nupkg" }
+      ] },
+      "diskBytes": 110000000
+    },
+    {
+      "id": "python-venv", "name": "Studio Python environment", "category": "python", "level": "required", "scope": "workspace",
+      "description": "runtime/python-venv: isolated environment for Kokoro, faster-whisper and the audio mixer.",
+      "location": "{runtime.pythonVenv}", "dependsOn": ["python-base"],
+      "detect": { "type": "python-version", "python": "{python.venv}", "major": 3, "minor": 12 },
+      "install": { "steps": [ { "op": "venv", "base": "{python.base}", "target": "{runtime.pythonVenv}" }, { "op": "pip", "python": "{python.venv}", "args": ["install", "--upgrade", "pip"] } ] },
+      "diskBytes": 30000000
+    },
+    {
+      "id": "python-packages", "name": "Studio Python packages", "category": "python", "level": "required", "scope": "workspace",
+      "description": "Exact pins from config/requirements.txt: numpy, scipy, kokoro-onnx, onnxruntime, faster-whisper, ctranslate2, phonemizer, espeakng-loader (bundles espeak-ng), soundfile, tokenizers, huggingface_hub, PyYAML, tqdm, anyio, colorama.",
+      "location": "{runtime.pythonVenv}/Lib/site-packages", "dependsOn": ["python-venv"],
+      "detect": { "type": "pip-pins", "python": "{python.venv}", "requirements": "{root}/config/requirements.txt", "imports": ["numpy", "scipy.signal", "scipy.io.wavfile", "kokoro_onnx", "faster_whisper", "soundfile", "espeakng_loader"] },
+      "install": { "steps": [ { "op": "pip", "python": "{python.venv}", "args": ["install", "--disable-pip-version-check", "-r", "{root}/config/requirements.txt"] } ] },
+      "features": ["tts", "align-english", "align-hindi", "audio-mix"], "diskBytes": 470000000
+    },
+    {
+      "id": "ffmpeg", "name": "FFmpeg + FFprobe 9.0.2", "category": "video", "level": "required", "scope": "workspace",
+      "description": "Encoding (libx264/AAC), muxing, loudness and freeze/black QA, audio decoding for Whisper. Portable gyan.dev essentials build.",
+      "version": "9.0.2", "minVersion": "6.0", "license": "GPL-3.0", "homepage": "https://www.gyan.dev/ffmpeg/builds/",
+      "location": "{runtime.ffmpegBin}",
+      "detect": { "type": "ffmpeg", "ffmpeg": "{runtime.ffmpegBin}/ffmpeg.exe", "ffprobe": "{runtime.ffmpegBin}/ffprobe.exe", "encoders": ["libx264", "aac"], "filters": ["freezedetect", "blackdetect", "signalstats"] },
+      "install": { "steps": [
+        { "op": "download", "url": "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-9.0.2-essentials_build.zip", "to": "{tmp}/ffmpeg-9.0.2-essentials_build.zip", "size": 114768076, "sha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba", "checksumSource": "official" },
+        { "op": "extract", "archive": "{tmp}/ffmpeg-9.0.2-essentials_build.zip", "files": { "ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe": "{runtime.ffmpegBin}/ffmpeg.exe", "ffmpeg-9.0.2-essentials_build/bin/ffprobe.exe": "{runtime.ffmpegBin}/ffprobe.exe", "ffmpeg-9.0.2-essentials_build/LICENSE": "{runtime.ffmpegBin}/../LICENSE" } },
+        { "op": "delete-temp", "path": "{tmp}/ffmpeg-9.0.2-essentials_build.zip" }
+      ] },
+      "features": ["video-export", "audio-mix", "align-english", "align-hindi"], "diskBytes": 300000000
+    },
+    {
+      "id": "browser", "name": "Chrome or Edge (headless WebGL)", "category": "rendering", "level": "required", "scope": "system",
+      "description": "Frame-exact capture through the Chrome DevTools Protocol with hardware WebGL (ANGLE). Microsoft Edge ships with Windows 11 and works. Set CHROME=path to choose another Chromium.",
+      "homepage": "https://www.google.com/chrome/",
+      "detect": { "type": "browser" },
+      "install": { "type": "manual", "instructions": "Install Google Chrome from https://www.google.com/chrome/ or keep Microsoft Edge. This is a system-wide program, so CineForge AI does not install it for you." },
+      "features": ["procedural-visuals", "video-export"]
+    },
+    {
+      "id": "studio-files", "name": "Studio engine files", "category": "assets", "level": "required", "scope": "workspace",
+      "description": "Render runtime, six styles with vendored three.js r170 and fonts, ComfyUI workflow, characters — all shipped in Git.",
+      "detect": { "type": "files", "base": "{root}", "files": [
+        { "path": "engine/runtime/src/main.js" }, { "path": "engine/runtime/tools/capture.mjs" }, { "path": "engine/runtime/tools/mix.py" },
+        { "path": "engine/scripts/voice.py" }, { "path": "engine/scripts/words.py" }, { "path": "config/characters.json" },
+        { "path": "engine/comfy-workflows/sd15-txt2img.json" },
+        { "path": "engine/styles/deep-dive/example/vendor/three.module.js" }, { "path": "engine/styles/night-file/example/vendor/three.module.js" },
+        { "path": "engine/styles/deep-dive/profile.json" }, { "path": "engine/styles/inside-out/profile.json" }, { "path": "engine/styles/night-file/profile.json" },
+        { "path": "engine/styles/paper-atlas/profile.json" }, { "path": "engine/styles/stick-story/profile.json" }, { "path": "engine/styles/tall-tale/profile.json" },
+        { "path": "engine/styles/deep-dive/example/fonts/Inter-Black.otf" }, { "path": "engine/styles/paper-atlas/example/fonts/Caladea-Bold.ttf" }, { "path": "engine/styles/night-file/example/fonts/FreeMonoBold.ttf" }
+      ] },
+      "install": { "type": "manual", "instructions": "These files come with the repository. Restore them with: git checkout -- engine config" },
+      "features": ["dashboard", "procedural-visuals"]
+    },
+    {
+      "id": "font-devanagari", "name": "Noto Sans Devanagari", "category": "assets", "level": "recommended", "scope": "workspace", "license": "SIL OFL 1.1",
+      "description": "Caption font for Hindi and Hinglish videos.",
+      "detect": { "type": "files", "base": "{paths.fonts}", "files": [ { "path": "NotoSansDevanagari-Variable.ttf", "size": 641944, "sha256": "14ec4af41f27482216d1c2229f417ff9b1425e1babb014e57d1d40d03229853e", "checksumSource": "tofu",
+        "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth%2Cwght%5D.ttf" } ] },
+      "install": { "type": "files" }, "features": ["hindi-captions"]
+    },
+    {
+      "id": "kokoro-model", "name": "Kokoro-82M v1.0 (ONNX)", "category": "models", "level": "required", "scope": "workspace",
+      "description": "Text-to-speech model for all narration.", "provider": "hexgrad / thewh1teagle kokoro-onnx", "format": "ONNX", "quantization": "fp32",
+      "version": "1.0", "license": "Apache-2.0", "homepage": "https://github.com/thewh1teagle/kokoro-onnx",
+      "detect": { "type": "files", "base": "{models.kokoro}", "files": [ { "path": "kokoro-v1.0.onnx", "size": 325532387, "sha256": "7d5df8ecf7d4b1878015a32686053fd0eebe2bc377234608764cc0ef3636a6c5", "checksumSource": "tofu",
+        "url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx" } ] },
+      "install": { "type": "files" }, "features": ["tts"], "hardware": { "ramGBMin": 2 }
+    },
+    {
+      "id": "kokoro-voices", "name": "Kokoro voice pack v1.0", "category": "models", "level": "required", "scope": "workspace",
+      "description": "Voice embeddings (English and Hindi voices) read by the catalog and voice.py.", "provider": "hexgrad / thewh1teagle kokoro-onnx", "format": "NumPy npz", "version": "1.0", "license": "Apache-2.0",
+      "detect": { "type": "files", "base": "{models.kokoro}", "files": [ { "path": "voices-v1.0.bin", "size": 28214398, "sha256": "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d", "checksumSource": "tofu",
+        "url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin" } ] },
+      "install": { "type": "files" }, "features": ["tts"]
+    },
+    {
+      "id": "whisper-small-en", "name": "faster-whisper small.en", "category": "models", "level": "required", "scope": "workspace",
+      "description": "English word alignment.", "provider": "Systran (OpenAI Whisper, CTranslate2 conversion)", "format": "CTranslate2", "quantization": "fp16 weights, int8 at runtime", "license": "MIT",
+      "homepage": "https://huggingface.co/Systran/faster-whisper-small.en",
+      "detect": { "type": "files", "base": "{models.whisperEnglish}", "files": [
+        { "path": "model.bin", "size": 483545366, "sha256": "62b2a45b05ee59acb4a5341b33ee35e041395d378d418a18acfe4c9e768ee37a", "checksumSource": "official", "url": "https://huggingface.co/Systran/faster-whisper-small.en/resolve/main/model.bin" },
+        { "path": "config.json", "size": 2657, "url": "https://huggingface.co/Systran/faster-whisper-small.en/resolve/main/config.json" },
+        { "path": "tokenizer.json", "size": 2128466, "url": "https://huggingface.co/Systran/faster-whisper-small.en/resolve/main/tokenizer.json" },
+        { "path": "vocabulary.txt", "size": 422309, "url": "https://huggingface.co/Systran/faster-whisper-small.en/resolve/main/vocabulary.txt" } ] },
+      "install": { "type": "files" }, "features": ["align-english"], "hardware": { "ramGBMin": 2 }
+    },
+    {
+      "id": "whisper-small", "name": "faster-whisper small (multilingual)", "category": "models", "level": "recommended", "scope": "workspace",
+      "description": "Hindi / Hinglish word alignment and language identification.", "provider": "Systran (OpenAI Whisper, CTranslate2 conversion)", "format": "CTranslate2", "license": "MIT",
+      "homepage": "https://huggingface.co/Systran/faster-whisper-small",
+      "detect": { "type": "files", "base": "{models.whisperMultilingual}", "files": [
+        { "path": "model.bin", "size": 483546902, "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671", "checksumSource": "official", "url": "https://huggingface.co/Systran/faster-whisper-small/resolve/main/model.bin" },
+        { "path": "config.json", "size": 2370, "url": "https://huggingface.co/Systran/faster-whisper-small/resolve/main/config.json" },
+        { "path": "tokenizer.json", "size": 2203239, "url": "https://huggingface.co/Systran/faster-whisper-small/resolve/main/tokenizer.json" },
+        { "path": "vocabulary.txt", "size": 459861, "url": "https://huggingface.co/Systran/faster-whisper-small/resolve/main/vocabulary.txt" } ] },
+      "install": { "type": "files" }, "features": ["align-hindi"]
+    },
+    {
+      "id": "llama-cpp", "name": "llama.cpp server b12244", "category": "inference", "level": "recommended", "scope": "workspace",
+      "description": "Local inference server for the script model, started on demand on 127.0.0.1.", "version": "12244", "minVersion": "12244", "license": "MIT", "homepage": "https://github.com/ggml-org/llama.cpp",
+      "location": "{runtime.llamaCpp}",
+      "detect": { "type": "exec", "exe": "{runtime.llamaCpp}/llama-server.exe", "args": ["--version"], "regex": "build (\\d+)" },
+      "install": { "variants": {
+        "gpu": { "steps": [
+          { "op": "download", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b12244/llama-b12244-bin-win-vulkan-x64.zip", "to": "{tmp}/llama-b12244-vulkan.zip", "size": 37891837, "sha256": "501d17fc5d29e69bf16b473c8bf714a8bbee32f52e634a531128313a9d135853", "checksumSource": "official" },
+          { "op": "extract", "archive": "{tmp}/llama-b12244-vulkan.zip", "fromDir": "", "toDir": "{runtime.llamaCpp}" },
+          { "op": "delete-temp", "path": "{tmp}/llama-b12244-vulkan.zip" } ] },
+        "cpu": { "steps": [
+          { "op": "download", "url": "https://github.com/ggml-org/llama.cpp/releases/download/b12244/llama-b12244-bin-win-cpu-x64.zip", "to": "{tmp}/llama-b12244-cpu.zip", "size": 24930349, "sha256": "318f11fadcbc3a86541ec55d9930cc76646c6b8d2ff18798c8477e9ff0dc452a", "checksumSource": "official" },
+          { "op": "extract", "archive": "{tmp}/llama-b12244-cpu.zip", "fromDir": "", "toDir": "{runtime.llamaCpp}" },
+          { "op": "delete-temp", "path": "{tmp}/llama-b12244-cpu.zip" } ] } } },
+      "features": ["script-generation"], "diskBytes": 110000000
+    },
+    {
+      "id": "gemma-3-4b", "name": "Gemma 3 4B Instruct Q4_K_M", "category": "models", "level": "recommended", "scope": "workspace",
+      "description": "Writes scripts in Hindi, Hinglish and English.", "provider": "Google (GGUF quantization by bartowski)", "format": "GGUF", "quantization": "Q4_K_M", "version": "gemma-3-4b-it",
+      "license": "Gemma Terms of Use + Prohibited Use Policy", "homepage": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF",
+      "dependsOn": ["llama-cpp"],
+      "detect": { "type": "files", "base": "{models.llm}", "files": [ { "path": "google_gemma-3-4b-it-Q4_K_M.gguf", "size": 2489758112, "sha256": "4996030242583a40aa151ff93f49ed787ac8c25e4120c3ae4588b2e2a7d1ae94", "checksumSource": "official",
+        "url": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF/resolve/main/google_gemma-3-4b-it-Q4_K_M.gguf" } ] },
+      "install": { "type": "files" }, "features": ["script-generation"], "hardware": { "vramGBRecommended": 4, "ramGBMin": 8 }
+    },
+    {
+      "id": "git", "name": "Git", "category": "tools", "level": "optional", "scope": "system",
+      "description": "Used to fetch ComfyUI at its pinned commit (verifies every object). Without Git the commit's source archive is downloaded instead.",
+      "homepage": "https://git-scm.com/download/win",
+      "detect": { "type": "exec", "exe": "system:git", "args": ["--version"], "regex": "git version (\\d+\\.\\d+\\.\\d+)" },
+      "install": { "type": "manual", "instructions": "Optional. Install Git for Windows from https://git-scm.com/download/win (system-wide program)." }
+    },
+    {
+      "id": "nvidia-driver", "name": "NVIDIA driver (CUDA 12.6 capable)", "category": "core", "level": "optional", "scope": "system",
+      "description": "Needed only for GPU image generation. Without it the CPU profile is used.", "minVersion": "527.41", "homepage": "https://www.nvidia.com/Download/index.aspx",
+      "detect": { "type": "nvidia" },
+      "install": { "type": "manual", "instructions": "Install or update the driver from https://www.nvidia.com/Download/index.aspx. CineForge AI never changes drivers." }
+    },
+    {
+      "id": "comfyui", "name": "ComfyUI (pinned commit bbd810e6)", "category": "image", "level": "optional", "scope": "workspace",
+      "description": "Local image generation server for Hybrid mode; started on demand with custom nodes disabled.", "version": "bbd810e647c64da8212b0d4ab94f1354c9d523f6", "license": "GPL-3.0",
+      "homepage": "https://github.com/comfyanonymous/ComfyUI", "location": "{runtime.comfyui}", "dependsOn": ["python-base"],
+      "detect": { "type": "files", "base": "{runtime.comfyui}", "files": [ { "path": "main.py" }, { "path": "requirements.txt" }, { "path": "comfy/sd.py" } ] },
+      "install": { "steps": [ { "op": "git-or-archive", "repo": "https://github.com/comfyanonymous/ComfyUI", "commit": "bbd810e647c64da8212b0d4ab94f1354c9d523f6",
+        "archive": "https://github.com/comfyanonymous/ComfyUI/archive/bbd810e647c64da8212b0d4ab94f1354c9d523f6.zip", "archiveRoot": "ComfyUI-bbd810e647c64da8212b0d4ab94f1354c9d523f6/", "toDir": "{runtime.comfyui}" } ] },
+      "features": ["ai-images"], "diskBytes": 60000000
+    },
+    {
+      "id": "comfyui-venv", "name": "ComfyUI Python environment", "category": "image", "level": "optional", "scope": "workspace",
+      "description": "runtime/comfyui/venv, separate from the studio environment so PyTorch never touches it.", "dependsOn": ["comfyui", "python-base"],
+      "detect": { "type": "python-version", "python": "{python.comfy}", "major": 3, "minor": 12 },
+      "install": { "steps": [ { "op": "venv", "base": "{python.base}", "target": "{runtime.comfyui}/venv" }, { "op": "pip", "python": "{python.comfy}", "args": ["install", "--upgrade", "pip"] } ] },
+      "features": ["ai-images"], "diskBytes": 30000000
+    },
+    {
+      "id": "comfyui-torch", "name": "PyTorch 2.14.1 + torchvision 0.29.1", "category": "image", "level": "optional", "scope": "workspace",
+      "description": "CUDA 12.6 build on NVIDIA GPUs, CPU build otherwise. Never upgraded automatically.", "version": "2.14.1", "license": "BSD-3-Clause", "homepage": "https://pytorch.org/",
+      "dependsOn": ["comfyui-venv"],
+      "detect": { "type": "torch", "python": "{python.comfy}", "version": "2.14.1" },
+      "install": { "variants": {
+        "gpu": { "steps": [
+          { "op": "download", "url": "https://download.pytorch.org/whl/cu126/torch-2.14.1%2Bcu126-cp312-cp312-win_amd64.whl", "to": "{tmp}/torch-2.14.1+cu126-cp312-cp312-win_amd64.whl", "size": 2602768778, "sha256": "97e3bc87ea74367518b740d912a7f5259c25a3c8115bf5916abee1d53ff115a4", "checksumSource": "official" },
+          { "op": "pip", "python": "{python.comfy}", "args": ["install", "--no-cache-dir", "{tmp}/torch-2.14.1+cu126-cp312-cp312-win_amd64.whl", "torchvision==0.29.1+cu126", "--index-url", "https://download.pytorch.org/whl/cu126", "--extra-index-url", "https://pypi.org/simple"] },
+          { "op": "delete-temp", "path": "{tmp}/torch-2.14.1+cu126-cp312-cp312-win_amd64.whl" } ] },
+        "cpu": { "steps": [
+          { "op": "pip", "python": "{python.comfy}", "args": ["install", "--no-cache-dir", "torch==2.14.1", "torchvision==0.29.1", "--index-url", "https://download.pytorch.org/whl/cpu", "--extra-index-url", "https://pypi.org/simple"] } ] } } },
+      "features": ["ai-images"], "diskBytes": 4600000000, "hardware": { "ramGBMin": 8 }
+    },
+    {
+      "id": "comfyui-requirements", "name": "ComfyUI Python packages", "category": "image", "level": "optional", "scope": "workspace",
+      "description": "Packages from runtime/comfyui/requirements.txt (aiohttp, transformers, safetensors, av, …). Installed after PyTorch so the chosen torch build is kept.",
+      "dependsOn": ["comfyui-torch"],
+      "detect": { "type": "python-import", "python": "{python.comfy}", "imports": ["aiohttp", "safetensors", "transformers", "einops", "torchsde", "yaml", "PIL", "av"] },
+      "install": { "steps": [ { "op": "pip", "python": "{python.comfy}", "args": ["install", "--no-cache-dir", "-r", "{runtime.comfyui}/requirements.txt"] } ] },
+      "features": ["ai-images"], "diskBytes": 1500000000
+    },
+    {
+      "id": "dreamshaper-8", "name": "DreamShaper 8 (SD1.5, pruned)", "category": "models", "level": "optional", "scope": "workspace",
+      "description": "Image checkpoint for Hybrid mode.", "provider": "Lykon", "format": "safetensors", "quantization": "fp16 pruned", "version": "8",
+      "license": "CreativeML OpenRAIL-M", "homepage": "https://huggingface.co/Lykon/DreamShaper", "dependsOn": ["comfyui"],
+      "detect": { "type": "files", "base": "{models.imageGeneration}", "files": [ { "path": "checkpoints/DreamShaper_8_pruned.safetensors", "size": 2132625894, "sha256": "879db523c30d3b9017143d56705015e15a2cb5628762c11d086fed9538abd7fd", "checksumSource": "official",
+        "url": "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors" } ] },
+      "install": { "type": "files" }, "features": ["ai-images"], "hardware": { "vramGBRecommended": 4 }
+    }
+  ]
+}

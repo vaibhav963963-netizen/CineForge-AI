@@ -425,6 +425,8 @@ export function createCharacter3D(config = {}) {
   const legL = createLeg(-1);
   const legR = createLeg(1);
 
+  upgradeLook(root, { skinMat, hairMat, clothMats: [shirtMat, vestMat, pantsMat], shoeMat, eyes, irisColor: cfg.irisColor || '#4E342E' });
+
   // ==========================================================================
   // KINEMATIC ANIMATION & ACTING API
   // ==========================================================================
@@ -570,3 +572,35 @@ export function createCharacter3D(config = {}) {
 
   return character;
 }
+
+// ============================================================================
+// QUALITY PASS (applied to every character): smooth geometry, lifelike skin, fabric sheen, living eyes
+// ============================================================================
+const SMOOTH = { CylinderGeometry: (p) => new THREE.CylinderGeometry(p.radiusTop, p.radiusBottom, p.height, Math.max(p.radialSegments, 32), Math.max(p.heightSegments, 2), p.openEnded, p.thetaStart, p.thetaLength),
+  SphereGeometry: (p) => new THREE.SphereGeometry(p.radius, Math.max(p.widthSegments, 40), Math.max(p.heightSegments, 28), p.phiStart, p.phiLength, p.thetaStart, p.thetaLength),
+  TorusGeometry: (p) => new THREE.TorusGeometry(p.radius, p.tube, Math.max(p.radialSegments, 16), Math.max(p.tubularSegments, 40), p.arc),
+  ConeGeometry: (p) => new THREE.ConeGeometry(p.radius, p.height, Math.max(p.radialSegments, 24), p.heightSegments, p.openEnded, p.thetaStart, p.thetaLength) };
+function physical(m, extra) { const p = new THREE.MeshPhysicalMaterial({ color: m.color, roughness: m.roughness, metalness: m.metalness, ...extra }); p.name = m.name; return p; }
+function upgradeLook(root, { skinMat, hairMat, clothMats, shoeMat, eyes, irisColor }) {
+  // skin: soft sheen like real skin under light; cloth: velvet-like sheen; hair: soft satin; shoes: light gloss
+  const skin = physical(skinMat, { roughness: 0.48, sheen: 0.35, sheenRoughness: 0.6, sheenColor: new THREE.Color('#FFD9C2'), clearcoat: 0.08, clearcoatRoughness: 0.6 });
+  const hair = physical(hairMat, { roughness: 0.55, sheen: 0.6, sheenRoughness: 0.4, sheenColor: hairMat.color.clone().offsetHSL(0, 0, 0.25) });
+  const shoe = physical(shoeMat, { roughness: 0.32, clearcoat: 0.35, clearcoatRoughness: 0.35 });
+  const cloth = new Map(clothMats.map((m) => [m, physical(m, { roughness: 0.82, sheen: 0.55, sheenRoughness: 0.75, sheenColor: m.color.clone().offsetHSL(0, -0.1, 0.18) })]));
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry, f = SMOOTH[g.type]; if (f && g.parameters) { o.geometry = f(g.parameters); g.dispose(); }
+    if (o.material === skinMat) o.material = skin; else if (o.material === hairMat) o.material = hair; else if (o.material === shoeMat) o.material = shoe; else if (cloth.has(o.material)) o.material = cloth.get(o.material);
+    o.castShadow = true; o.receiveShadow = true;
+  });
+  // eyes: coloured iris + dark pupil + catchlight (they read as alive on camera)
+  const irisMat = new THREE.MeshPhysicalMaterial({ color: irisColor, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.05 });
+  const pupilMat = new THREE.MeshBasicMaterial({ color: '#0B0B0B' }), glintMat = new THREE.MeshBasicMaterial({ color: '#FFFFFF' });
+  for (const e of eyes || []) {
+    e.pupil.material = irisMat; e.pupil.scale.setScalar(1.15);
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.0115, 20, 14), pupilMat); p.position.set(0, 0, 0.017); e.pupil.add(p);
+    const gl = new THREE.Mesh(new THREE.SphereGeometry(0.005, 12, 8), glintMat); gl.position.set(0.007, 0.008, 0.02); e.pupil.add(gl);
+    e.eyeball.material = new THREE.MeshPhysicalMaterial({ color: '#FBFBF8', roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 });
+  }
+}
+

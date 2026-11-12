@@ -16,7 +16,7 @@ async function api(path, opts = {}) {
 }
 
 // ── navigation ────────────────────────────────────────────────────────────────────────────────────────────
-const TITLES = { dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'] };
+const TITLES = { dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
 function go(id) {
   if (!TITLES[id]) id = 'dashboard';
   if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
@@ -24,14 +24,22 @@ function go(id) {
   $$('.screen').forEach((s) => s.classList.toggle('active', s.id === `screen-${id}`));
   $('#screen-title').textContent = TITLES[id][0]; $('#screen-subtitle').textContent = TITLES[id][1];
   if (id === 'jobs') renderJobHistory(); if (id === 'library') refreshProjects();
+  if (id === 'setup' && window.SetupUI) window.SetupUI.show();
 }
 
 // ── form ──────────────────────────────────────────────────────────────────────────────────────────────────
 function formInput() {
-  return { topic: $('#f-topic').value, language: $('#f-language').value, personality: $('#f-personality').value, voice: $('#f-voice').value, style: $('#f-style').value, character: $('#f-character').value, durationSeconds: +$('#f-duration').value, visualMode: $('#f-visualmode').value };
+  return { topic: $('#f-topic').value, language: $('#f-language').value, personality: $('#f-personality').value, voice: $('#f-voice').value, style: $('#f-style').value, character: $('#f-character').value, ...($('#f-look').value && !$('#look-group').hidden ? { look: $('#f-look').value } : {}), durationSeconds: +$('#f-duration').value, visualMode: $('#f-visualmode').value };
 }
 const fingerprintOf = (i) => [i.topic.trim().replace(/\s+/g, ' ').toLowerCase(), i.language, i.personality, i.durationSeconds].join('|');
 
+// appearance choices of the selected character (config/characters.json "looks")
+function fillLooks(keep) {
+  const ch = S.catalog.characters.find((c) => c.id === $('#f-character').value), looks = ch?.looks || [];
+  $('#look-group').hidden = !looks.length;
+  $('#f-look').innerHTML = looks.map((l) => `<option value="${l.id}">${esc(l.name)}</option>`).join('');
+  if (keep && looks.some((l) => l.id === keep)) $('#f-look').value = keep;
+}
 function fillForm() {
   const c = S.catalog;
   $('#f-language').innerHTML = c.languages.map((l) => `<option value="${l.id}" ${l.available ? '' : 'disabled'} title="${esc(l.available ? '' : l.problems.join('; '))}">${esc(l.name)}${l.available ? '' : ' (unavailable)'}</option>`).join('');
@@ -41,6 +49,7 @@ function fillForm() {
   const d = $('#f-duration'); d.min = Math.max(20, c.duration.min); d.max = Math.min(60, c.duration.max);
   const saved = store.get('studio.form');
   if (saved) for (const [k, id] of [['topic', 'f-topic'], ['language', 'f-language'], ['style', 'f-style'], ['character', 'f-character'], ['visualMode', 'f-visualmode'], ['durationSeconds', 'f-duration']]) { const el = $('#' + id); if (saved[k] !== undefined && [...(el.options || [{ value: saved[k] }])].some((o) => o.value == saved[k] && !o.disabled)) el.value = saved[k]; }
+  fillLooks(saved?.look);
   if (!saved || !c.visualModes.find((m) => m.id === $('#f-visualmode').value)?.available) $('#f-visualmode').value = c.visualModes.find((m) => m.available).id;
   if (!saved?.language || !c.languages.find((l) => l.id === $('#f-language').value)?.available) $('#f-language').value = c.languages.find((l) => l.available)?.id;
   onLanguageChange(saved);
@@ -242,8 +251,17 @@ async function loadScript(projectId, version) {
   $('#script-config-card').innerHTML = `<h4>Written for</h4><p>${esc(p.config.language.name)}<br>${esc(p.config.narration.personalityName)}<br>${p.config.durationSeconds} s target</p>`;
   ['#btn-add-line', '#btn-save-version'].forEach((b) => ($(b).disabled = false));
   S.script.linesKey = JSON.stringify(editedLines());
-  renderClaims(s, p);
+  renderClaims(s, p); renderReview(s);
   updateStats(); updateButtons();
+}
+
+// ── local-model proof-read result (meta.llmReview) ──────────────────────────────────────────────────────────
+function renderReview(s) {
+  const box = $('#script-review'); if (!box) return; const r = s.meta.llmReview, h = '<h4>Proof-read by local model</h4>';
+  if (!r) { box.innerHTML = `${h}<p class="muted">${/^llm/.test(s.meta.source || '') ? 'Written before proof-reading existed.' : 'Edited or hand-written version: you are the reviewer.'}</p>`; return; }
+  box.innerHTML = r.confirmed
+    ? `${h}<p class="text-emerald">✓ Confirmed: grammar, spelling and complete sentences checked${r.changedLines ? ` (${r.changedLines} line${r.changedLines > 1 ? 's' : ''} corrected)` : ''}.</p>`
+    : `${h}<p class="text-saffron">⚠ Not confirmed after ${r.rounds} round${r.rounds > 1 ? 's' : ''}. Fix these lines, or approve them as they are:</p><ul>${r.issues.map((i) => `<li>${i.line ? `Line ${i.line}: ` : ''}${esc(i.problem)}</li>`).join('')}</ul>`;
 }
 
 // ── fact check panel: every flagged claim must be confirmed (or the line edited) before rendering ────────────
@@ -308,7 +326,7 @@ const inputFromConfig = (c) => ({ topic: c.topic, language: c.language.id, perso
 function loadFormFromConfig(c) {
   const i = inputFromConfig(c);
   $('#f-topic').value = i.topic; $('#f-language').value = i.language; onLanguageChange({ personality: i.personality, voice: i.voice });
-  $('#f-style').value = i.style; $('#f-character').value = i.character; $('#f-duration').value = i.durationSeconds; $('#f-visualmode').value = i.visualMode; onFormChange();
+  $('#f-style').value = i.style; $('#f-character').value = i.character; fillLooks(i.look); $('#f-duration').value = i.durationSeconds; $('#f-visualmode').value = i.visualMode; onFormChange();
 }
 
 // ── library, history, settings, rosters ────────────────────────────────────────────────────────────────────
@@ -363,7 +381,7 @@ function portrait(c) {
   return `<svg viewBox="0 0 220 220" width="100%" height="100%"><defs><radialGradient id="g_${c.id}" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="${acc}" stop-opacity="0.35"/><stop offset="100%" stop-color="#0E1218"/></radialGradient></defs><rect width="220" height="220" fill="url(#g_${c.id})"/><path d="M55 170 Q110 152 165 170 L180 220 L40 220 Z" fill="${acc}"/><rect x="98" y="130" width="24" height="28" fill="${skin}"/><ellipse cx="110" cy="114" rx="30" ry="34" fill="${skin}"/><path d="M80 108 Q80 80 110 80 Q140 80 140 108 Q130 88 110 88 Q90 88 80 108Z" fill="${hair}"/><circle cx="98" cy="113" r="3" fill="#111"/><circle cx="122" cy="113" r="3" fill="#111"/><path d="M101 129 Q110 136 119 129" stroke="#7a2a2a" stroke-width="2.5" fill="none"/></svg>`;
 }
 function renderRosters() {
-  $('#characters-grid').innerHTML = S.catalog.characters.filter((c) => c.id !== 'none').map((c) => `<div class="char-card-3d"><div class="char-stage-3d"><span class="stage-badge">${c.available ? '3D design ✓' : 'no 3D design'}</span>${portrait(c)}</div><div class="char-content-3d"><div class="char-header-3d"><h3>${esc(c.name)}</h3><span class="char-role-badge">${esc(c.title || '')}</span></div><p class="char-desc-3d">${esc(c.role || '')}</p><div class="char-attire-pill"><span class="spec-label">Attire:</span> <span class="attire-text">${esc(c.attire || '')}</span></div><button class="btn btn-secondary btn-sm" data-usechar="${c.id}" ${c.available ? '' : 'disabled'}>Use in a video</button></div></div>`).join('');
+  $('#characters-grid').innerHTML = S.catalog.characters.filter((c) => c.id !== 'none').map((c) => `<div class="char-card-3d"><div class="char-stage-3d"><span class="stage-badge">${c.available ? '3D design ✓' : 'no 3D design'}</span>${portrait(c)}</div><div class="char-content-3d"><div class="char-header-3d"><h3>${esc(c.name)}</h3><span class="char-role-badge">${esc(c.title || '')}</span></div><p class="char-desc-3d">${esc(c.role || '')}</p><div class="char-attire-pill"><span class="spec-label">Attire:</span> <span class="attire-text">${esc(c.attire || '')}</span></div>${(c.looks || []).length ? `<div class="char-looks"><span class="spec-label">Appearances:</span> ${c.looks.map((l) => `<button class="look-chip" data-usechar="${c.id}" data-uselook="${l.id}" title="Use this appearance">${l.overrides ? `<i style="background:${esc(l.overrides.shirt || c.accentColor)}"></i>` : `<i style="background:${esc(c.accentColor)}"></i>`}${esc(l.name)}</button>`).join('')}</div>` : ''}<button class="btn btn-secondary btn-sm" data-usechar="${c.id}" ${c.available ? '' : 'disabled'}>Use in a video</button></div></div>`).join('');
   $('#voices-intro').textContent = `${S.catalog.voices.length} voices installed for the studio's languages (read from models/kokoro/voices-v1.0.bin).`;
   const byLang = {}; S.catalog.voices.forEach((v) => (byLang[v.accent] = byLang[v.accent] || []).push(v));
   $('#voices-grid').innerHTML = Object.entries(byLang).map(([g, vs]) => vs.map((v) => `<div class="voice-card"><h3>${esc(v.name)} ${v.recommended ? '★' : ''}</h3><p>${esc(v.notes)}</p><div class="voice-tags"><span class="voice-tag">${esc(g)}</span><span class="voice-tag">${v.gender}</span><span class="voice-tag"><code>${v.id}</code></span></div></div>`).join('')).join('');
@@ -386,13 +404,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (t.dataset.goto) { e.preventDefault(); go(t.dataset.goto); }
     if (t.dataset.play) openVideo(t.dataset.play);
     if (t.dataset.usetrend) useTrend(t.dataset.usetrend);
-    if (t.dataset.usechar) { $('#f-character').value = t.dataset.usechar; onFormChange(); go('create'); }
+    if (t.dataset.usechar) { $('#f-character').value = t.dataset.usechar; fillLooks(t.dataset.uselook); onFormChange(); go('create'); }
     if (t.dataset.reuse) { const p = S.projects.find((x) => x.id === t.dataset.reuse); loadFormFromConfig(p.config); go('create'); }
     if (t.dataset.openscript) { const p = S.projects.find((x) => x.id === t.dataset.openscript); loadScript(p.id, p.script.approvedVersion || p.script.versions.at(-1).version).then(() => go('scripts')); }
     if (t.classList.contains('le-del')) { t.closest('.line-edit').remove(); updateStats(); }
   });
   $('#btn-quick-create').onclick = () => go('create');
-  ['#f-topic', '#f-personality', '#f-voice', '#f-style', '#f-character', '#f-visualmode', '#f-duration'].forEach((s) => $(s).addEventListener('input', onFormChange));
+  ['#f-topic', '#f-personality', '#f-voice', '#f-style', '#f-character', '#f-look', '#f-visualmode', '#f-duration'].forEach((s) => $(s).addEventListener('input', onFormChange));
+  $('#f-character').addEventListener('change', () => { fillLooks(); onFormChange(); });
   $('#f-language').addEventListener('change', () => onLanguageChange());
   $('#btn-random').onclick = () => { const t = S.trends[Math.floor(Math.random() * S.trends.length)]; if (t) useTrend(t.id); };
   $('#btn-preview').onclick = () => submit('preview');

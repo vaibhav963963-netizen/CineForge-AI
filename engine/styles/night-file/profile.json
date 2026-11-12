@@ -5,18 +5,86 @@
   "dimension": "3d",
   "renderer": "webgl",
   "characterMode": "3d-model",
-  "palette": { "bg": "#07080C", "sky": "#0B0E16", "horizon": "#151A26", "ground": "#121318", "ink": "#0A0A0A", "primary": "#E4322B", "secondary": "#F1D9A6", "accent": "#E4322B", "paper": "#D8CFBA", "text": "#EFE6D2" },
-  "grade": { "bloom": 0.8, "bloomThreshold": 0.55, "warm": 0.0, "sat": 0.85, "vignette": 0.6, "grain": 0.05, "exposure": 1.2, "aperture": 0.003 },
-  "lighting": { "key": "#F1D9A6", "keyI": 2.4, "rim": "#E4322B", "rimI": 2.6, "sky": "#1A2030", "ground": "#050505", "hemiI": 0.18, "fog": "#07080C", "mood": "one hard light per scene, everything else falls into darkness, thin red rim on the subject" },
-  "captions": { "font": "FreeMono", "weight": 700, "y": 1560, "size": 84, "fill": "#EFE6D2", "stroke": "#000000", "strokeW": 10, "hi": "#E4322B", "box": null, "maxWords": 4, "upper": false, "typeOn": true, "pop": false },
-  "camera": { "behavior": "slow", "moves": ["push", "drift", "dolly"], "intensity": 0.4 },
-  "transition": { "type": "black", "duration": 0.3 },
-  "typography": { "title": "FreeMono", "titleWeight": 700, "label": "FreeMono", "labelWeight": 700 },
+  "palette": {
+    "bg": "#07080C",
+    "sky": "#0B0E16",
+    "horizon": "#151A26",
+    "ground": "#121318",
+    "ink": "#0A0A0A",
+    "primary": "#E4322B",
+    "secondary": "#F1D9A6",
+    "accent": "#E4322B",
+    "paper": "#D8CFBA",
+    "text": "#EFE6D2"
+  },
+  "grade": {
+    "bloom": 0.8,
+    "bloomThreshold": 0.55,
+    "warm": 0,
+    "sat": 0.85,
+    "vignette": 0.6,
+    "grain": 0.05,
+    "exposure": 1.2,
+    "aperture": 0.003
+  },
+  "lighting": {
+    "key": "#F1D9A6",
+    "keyI": 2.4,
+    "rim": "#E4322B",
+    "rimI": 2.6,
+    "sky": "#1A2030",
+    "ground": "#050505",
+    "hemiI": 0.18,
+    "fog": "#07080C",
+    "mood": "one hard light per scene, everything else falls into darkness, thin red rim on the subject"
+  },
+  "captions": {
+    "font": "FreeMono",
+    "weight": 700,
+    "y": 1560,
+    "size": 84,
+    "fill": "#EFE6D2",
+    "stroke": "#000000",
+    "strokeW": 10,
+    "hi": "#E4322B",
+    "box": null,
+    "maxWords": 4,
+    "upper": false,
+    "typeOn": true,
+    "pop": false
+  },
+  "camera": {
+    "behavior": "slow",
+    "moves": [
+      "push",
+      "drift",
+      "dolly"
+    ],
+    "intensity": 0.4
+  },
+  "transition": {
+    "type": "black",
+    "duration": 0.3
+  },
+  "typography": {
+    "title": "FreeMono",
+    "titleWeight": 700,
+    "label": "FreeMono",
+    "labelWeight": 700
+  },
   "image": {
-    "prompt": "dark cinematic noir still, single hard light source, deep black shadows, moody investigative atmosphere, muted colors with a red accent, film grain, vertical composition",
-    "negative": "bright, colorful, cartoon, text, watermark, logo, gore, blood, weapon, close-up face, nsfw"
+    "prompt": "cinematic night photograph, photorealistic, moody but clearly lit subject, practical lamps and moonlight, visible details, muted colors with a red accent, light film grain, well exposed, vertical composition",
+    "negative": "painting, illustration, drawing, cartoon, anime, pitch black, underexposed, silhouette only, bright daylight, text, watermark, logo, gore, blood, weapon, close-up face, nsfw"
   },
   "music": "tension",
-  "sfx": ["whoosh", "tock", "slam", "thud"],
-  "pacing": { "minShot": 2.6, "maxShot": 5.0 }
+  "sfx": [
+    "whoosh",
+    "tock",
+    "slam",
+    "thud"
+  ],
+  "pacing": {
+    "minShot": 2.6,
+    "maxShot": 5
+  }
 }

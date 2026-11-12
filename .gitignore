@@ -174,3 +174,9 @@ desktop.ini
 
 # Local AI image cache (regenerated on demand)
 models/image-generation/cache/
+
+# System Setup: portable runtimes, download cache and per-machine settings (never committed)
+runtime/node/
+runtime/python312/
+runtime/.downloads/
+config/setup-settings.json

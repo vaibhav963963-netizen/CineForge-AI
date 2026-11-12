@@ -64,10 +64,9 @@ export function frame2d(style) {
 
 /** 3D: a lit stage with the image as a backdrop plane (unlit, true colours) + a shadow-catching floor */
 export function backdropStage(THREE, tex, style) {
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(style.palette.bg || '#111');
-  const aspect = tex.image.width / tex.image.height, h = 9.5, w = h * aspect;
-  const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, fog: false }));
-  plane.position.set(0, h / 2 - 1.2, -5); scene.add(plane);
+  // the generated still IS the background (same 9:16 frame as the video): it always fills the shot. A world-space
+  // plane let orbit/drift/wide cameras see past its edge into a flat colour (seen Nov 12: character on plain blue).
+  const scene = new THREE.Scene(); scene.background = tex;
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.35 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
   const L = style.lighting;
   scene.add(new THREE.HemisphereLight(L.sky || '#FFF', L.ground || '#555', (L.hemiI ?? 0.9)));

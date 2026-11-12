@@ -70,6 +70,10 @@ async function openPage(port) {
   for (let i = 0; ; i++) {
     const st = await ev('window.OP ? (OP.bootError ? "ERR:" + OP.bootError : OP.ready) : false').catch(() => false);
     if (st === true) break;
+    // a module fetch can fail transiently right after image generation (GPU/RAM pressure): reload, don't fail the render
+    if (typeof st === 'string' && /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(st) && (openPage.reloads = (openPage.reloads || 0) + 1) <= 3) {
+      logs.push(`boot: module fetch failed, reloading (attempt ${openPage.reloads})`); await send('Page.reload', { ignoreCache: true }); await sleep(1500); i = 0; continue;
+    }
     if (typeof st === 'string') throw new Error('boot failed: ' + st + '\n' + logs.join('\n'));
     if (i > 1800) throw new Error('boot timeout (180 s)\n' + logs.join('\n'));
     await sleep(100);

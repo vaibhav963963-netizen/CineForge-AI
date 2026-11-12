@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { getCatalog } from './catalog.js';
 import { STUDIO_CONFIG } from './workspace.js';
 import { killTree } from './jobs.js';
+import { runtimeProfile } from './setup/settings.js';
 
 const PORT = STUDIO_CONFIG.services.llmPort || 8091;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -22,7 +23,9 @@ export async function ensureServer(onStatus = () => {}) {
   starting = (async () => {
     onStatus('Starting local script model (llama.cpp)');
     const log = [];
-    proc = spawn(llm.exe, ['-m', llm.model, '--host', '127.0.0.1', '--port', String(PORT), '-c', '8192', '-ngl', '99', '--no-webui', '-np', '1'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    // hardware profile (System Setup): 'auto' keeps these defaults; CPU-only → no GPU layers, low-memory → smaller context
+    const hw = runtimeProfile();
+    proc = spawn(llm.exe, ['-m', llm.model, '--host', '127.0.0.1', '--port', String(PORT), '-c', String(hw.llmContext || 8192), '-ngl', String(hw.llmGpuLayers ?? 99), '--no-webui', '-np', '1'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     const keep = (b) => { log.push(...b.toString().split(/\r?\n/).filter(Boolean)); if (log.length > 60) log.splice(0, log.length - 60); };
     proc.stdout.on('data', keep); proc.stderr.on('data', keep);
     for (let i = 0; i < 240; i++) {

@@ -6,6 +6,7 @@
   <title>AI Shorts Studio</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="studio.css">
+  <link rel="stylesheet" href="setup.css">
 </head>
 <body>
   <div class="app-layout">
@@ -27,6 +28,8 @@
         <button class="nav-item" data-screen="voices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><span>Voices</span></button>
         <button class="nav-item" data-screen="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>Video Library</span><span class="badge-count" id="nav-video-count">0</span></button>
         <button class="nav-item" data-screen="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Job History</span></button>
+        <div class="nav-section-label">SETTINGS</div>
+        <button class="nav-item" data-screen="setup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span>System Setup</span></button>
         <button class="nav-item" data-screen="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Engines &amp; Paths</span></button>
       </nav>
       <div class="sidebar-footer">
@@ -43,6 +46,7 @@
 
       <!-- DASHBOARD -->
       <section class="screen active" id="screen-dashboard">
+        <div class="su-banner" id="su-global-banner" hidden></div>
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-content"><span class="stat-label">Exported videos</span><h3 class="stat-value" id="stat-total-videos">–</h3><span class="stat-meta text-emerald">in exports/</span></div></div>
           <div class="stat-card"><div class="stat-content"><span class="stat-label">Projects</span><h3 class="stat-value" id="stat-projects">–</h3><span class="stat-meta">in projects/</span></div></div>
@@ -79,6 +83,7 @@
                 <div class="form-group" data-field="style"><label for="f-style">Visual animation style</label><select id="f-style"></select><span class="field-hint" id="style-hint"></span><span class="field-error"></span></div>
                 <div class="form-group" data-field="durationSeconds"><label for="f-duration">Target duration <span class="tip" title="Controls script length, number of shots and pacing. The final video must land within the tolerance shown.">?</span></label><div class="range-display"><input type="range" id="f-duration" min="20" max="60" step="5" value="40"><span id="duration-val">40s</span></div><span class="field-hint" id="duration-hint"></span><span class="field-error"></span></div>
                 <div class="form-group" data-field="character"><label for="f-character">Lead character</label><select id="f-character"></select><span class="field-hint" id="character-hint"></span><span class="field-error"></span></div>
+                <div class="form-group" data-field="look" id="look-group" hidden><label for="f-look">Appearance</label><select id="f-look"></select><span class="field-error"></span></div>
               </div>
               <div class="form-row three-col">
                 <div class="form-group" data-field="visualMode"><label for="f-visualmode">Visual mode <span class="tip" title="Hybrid adds locally generated AI images (ComfyUI) to the 3D/2D animation. Procedural uses only animated scenes.">?</span></label><select id="f-visualmode"></select><span class="field-error"></span></div>
@@ -133,6 +138,7 @@
             <div class="panel-header"><h3>How lines become shots</h3></div>
             <div class="rules-card"><h4>Narration</h4><p>• <b>Text</b> is spoken and captioned, in the project's language.</p><p>• Hinglish lines also need <b>Say</b>: the same sentence in Devanagari for the Hindi voice.</p></div>
             <div class="rules-card"><h4>Visuals</h4><p>• <b>Visual</b> (English) describes what to show; the storyboard planner turns it into a scene, props and actions.</p><p>• <b>On screen</b> adds a number, year or comparison (e.g. <code>Gravity $100M vs Mangalyaan $74M</code>).</p></div>
+            <div class="rules-card" id="script-review"><h4>Proof-read by local model</h4><p class="muted">Open a script to see the review.</p></div>
             <div class="rules-card claims-card" id="script-claims"><h4>Fact check</h4><p class="muted">Open a script to see its claims.</p></div>
             <div class="rules-card" id="script-config-card"></div>
           </div>
@@ -155,6 +161,19 @@
       <section class="screen" id="screen-jobs"><div class="section-intro"><h2>Job history</h2><p>Every script and render job with its real stage timings. Stored in <code>logs/jobs/</code>.</p></div><div class="job-history" id="job-history"></div></section>
 
       <!-- SETTINGS -->
+      <!-- SYSTEM SETUP (setup.js) -->
+      <section class="screen" id="screen-setup">
+        <div class="su-wrap">
+          <div class="su-tabs" id="su-tabs"></div>
+          <div class="su-live" id="su-activeop" hidden></div>
+          <div class="su-pane active" id="su-overview"><div id="su-overview-body"><p class="muted">Loading…</p></div></div>
+          <div class="su-pane" id="su-components"><div id="su-components-body"></div></div>
+          <div class="su-pane" id="su-activity"><div id="su-activity-body"></div></div>
+          <div class="su-pane" id="su-health"><div id="su-health-body"></div></div>
+          <div class="su-pane" id="su-settings"><div id="su-settings-body"></div></div>
+        </div>
+      </section>
+
       <section class="screen" id="screen-settings">
         <div class="settings-container">
           <div class="panel"><div class="panel-header"><h3>Local engines</h3><p>Detected from the files on disk</p></div><div class="settings-grid" id="engines-grid"></div></div>
@@ -174,5 +193,6 @@
     </div>
   </div>
   <script src="app.js"></script>
+  <script src="setup.js"></script>
 </body>
 </html>

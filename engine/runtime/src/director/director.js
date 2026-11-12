@@ -107,7 +107,7 @@ export async function buildDirector({ scene, E, three }) {
       else env = stage.env(sh.environment);
       const set = new THREE.Group(); set.visible = false; env.scene.add(set);
       if (!envSets.has(env.scene)) envSets.set(env.scene, []); envSets.get(env.scene).push(set);
-      const lead = leadCast ? (method === 'hybrid' ? (() => { const a = S3.makeActor({ archetype: C.archetype }, style); set.add(a.root); return a; })() : stage.lead(env, C.archetype)) : null;
+      const lead = leadCast ? (method === 'hybrid' ? (() => { const a = S3.makeActor({ archetype: C.archetype, look: C.lookOverrides }, style); set.add(a.root); return a; })() : stage.lead(env, C.archetype, C.lookOverrides)) : null;
       const A = env.anchors || {};
       const leadPos = leadCast?.action === 'ring_bell' && env.bell ? [env.bell.position.x + 0.42, 0, env.bell.position.z + 0.3] : leadCast?.position && A[leadCast.position] && Array.isArray(A[leadCast.position]) ? A[leadCast.position] : (A.lead || [0, 0, 0]);
       const extras = extrasCast.map((c, k) => {

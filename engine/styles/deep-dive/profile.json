@@ -5,18 +5,88 @@
   "dimension": "3d",
   "renderer": "webgl",
   "characterMode": "3d-model",
-  "palette": { "bg": "#0E1A24", "sky": "#1B3A4B", "horizon": "#2A5568", "ground": "#22313B", "ink": "#111111", "primary": "#4FD1E8", "secondary": "#B8283A", "accent": "#FFD43B", "paper": "#F4F1EA", "text": "#FFFFFF" },
-  "grade": { "bloom": 0.45, "bloomThreshold": 0.55, "warm": 0.03, "sat": 1.12, "vignette": 0.32, "grain": 0.012, "exposure": 1.05, "aperture": 0.004 },
-  "lighting": { "key": "#FFE2C2", "keyI": 3.0, "rim": "#4FD1E8", "rimI": 2.8, "sky": "#BFE6F2", "ground": "#3A2E28", "hemiI": 0.8, "fog": "#0E1A24", "mood": "warm low sun in the real world, cyan glow for x-ray and inside views" },
-  "captions": { "font": "Inter", "weight": 900, "y": 1480, "size": 112, "fill": "#FFFFFF", "stroke": "#111111", "strokeW": 22, "hi": "#FFD43B", "box": null, "maxWords": 3, "upper": false, "typeOn": false, "pop": true },
-  "camera": { "behavior": "glide", "moves": ["push", "orbit", "drift", "dolly"], "intensity": 0.7 },
-  "transition": { "type": "flash", "duration": 0.18 },
-  "typography": { "title": "Inter", "titleWeight": 900, "label": "Inter", "labelWeight": 800 },
+  "palette": {
+    "bg": "#0E1A24",
+    "sky": "#1B3A4B",
+    "horizon": "#2A5568",
+    "ground": "#22313B",
+    "ink": "#111111",
+    "primary": "#4FD1E8",
+    "secondary": "#B8283A",
+    "accent": "#FFD43B",
+    "paper": "#F4F1EA",
+    "text": "#FFFFFF"
+  },
+  "grade": {
+    "bloom": 0.45,
+    "bloomThreshold": 0.55,
+    "warm": 0.03,
+    "sat": 1.12,
+    "vignette": 0.32,
+    "grain": 0.012,
+    "exposure": 1.05,
+    "aperture": 0.004
+  },
+  "lighting": {
+    "key": "#FFE2C2",
+    "keyI": 3,
+    "rim": "#4FD1E8",
+    "rimI": 2.8,
+    "sky": "#BFE6F2",
+    "ground": "#3A2E28",
+    "hemiI": 0.8,
+    "fog": "#0E1A24",
+    "mood": "warm low sun in the real world, cyan glow for x-ray and inside views"
+  },
+  "captions": {
+    "font": "Inter",
+    "weight": 900,
+    "y": 1480,
+    "size": 112,
+    "fill": "#FFFFFF",
+    "stroke": "#111111",
+    "strokeW": 22,
+    "hi": "#FFD43B",
+    "box": null,
+    "maxWords": 3,
+    "upper": false,
+    "typeOn": false,
+    "pop": true
+  },
+  "camera": {
+    "behavior": "glide",
+    "moves": [
+      "push",
+      "orbit",
+      "drift",
+      "dolly"
+    ],
+    "intensity": 0.7
+  },
+  "transition": {
+    "type": "flash",
+    "duration": 0.18
+  },
+  "typography": {
+    "title": "Inter",
+    "titleWeight": 900,
+    "label": "Inter",
+    "labelWeight": 800
+  },
   "image": {
-    "prompt": "stylized 3D science visualization, glossy render, cinematic shallow depth of field, cyan rim light, dark teal background, educational, highly detailed, vertical composition",
-    "negative": "text, watermark, logo, blurry, gore, wounds, deformed, extra limbs, nsfw, flat cartoon"
+    "prompt": "cinematic photograph, photorealistic, real location, natural light with soft cyan accent, sharp focus, high detail, shallow depth of field, well exposed, 35mm lens, vertical composition",
+    "negative": "painting, oil painting, illustration, drawing, sketch, cartoon, anime, concept art, text, watermark, logo, blurry, underexposed, overexposed, dark, gore, wounds, deformed, extra limbs, nsfw"
   },
   "music": "bed",
-  "sfx": ["whoosh", "pop", "sparkle", "slam", "tock"],
-  "pacing": { "minShot": 2.0, "maxShot": 4.5 }
+  "sfx": [
+    "whoosh",
+    "pop",
+    "sparkle",
+    "slam",
+    "tock"
+  ],
+  "pacing": {
+    "minShot": 2,
+    "maxShot": 4.5
+  }
 }

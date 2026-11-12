@@ -41,7 +41,7 @@ export function renderPlan({ approved, hybrid }) {
 }
 export const scriptPlan = () => [{ id: 'validate', weight: 1 }, { id: 'script', name: 'Script generation (local LLM)', weight: 20 }, { id: 'prepare', name: 'Language check & duration estimate', weight: 1 }];
 
-export const inputFromConfig = (c) => ({ topic: c.topic, language: c.language.id, personality: c.narration.personality, voice: c.narration.voice, speed: c.narration.speed, style: c.visual.style, character: c.visual.character, durationSeconds: c.durationSeconds, durationTolerance: c.durationTolerance, visualMode: c.visual.visualMode });
+export const inputFromConfig = (c) => ({ topic: c.topic, language: c.language.id, personality: c.narration.personality, voice: c.narration.voice, speed: c.narration.speed, style: c.visual.style, character: c.visual.character, ...(c.visual.look ? { look: c.visual.look } : {}), durationSeconds: c.durationSeconds, durationTolerance: c.durationTolerance, visualMode: c.visual.visualMode });
 
 const node = process.execPath, PY = PATHS.python, SCRIPTS = PATHS.engineScripts;
 const readJSON = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
@@ -74,7 +74,7 @@ export async function runScriptJob(job, { projectId, config, facts = null }) {
   const problems = checkLanguage(res.script, config);
   if (problems.length) throw new Error(problems.join('; '));
   const est = estimateSeconds(res.script, config);
-  const saved = addScriptVersion(projectId, res.script, { factsProvided: !!facts, factFile: res.meta.factFile, claimReview: res.meta.claimReview, claimsApproved: res.meta.claimReview.summary.needsReview === 0, claimsToVerify: res.meta.claimsToVerify, source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
+  const saved = addScriptVersion(projectId, res.script, { factsProvided: !!facts, factFile: res.meta.factFile, claimReview: res.meta.claimReview, claimsApproved: res.meta.claimReview.summary.needsReview === 0, claimsToVerify: res.meta.claimsToVerify, ...(res.meta.polish ? { polish: res.meta.polish } : {}), ...(res.meta.viaEnglish ? { viaEnglish: true, englishDraft: res.meta.englishDraft } : {}), ...(res.meta.llmReview ? { llmReview: res.meta.llmReview } : {}), attempts: res.meta.attempts, source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
   job.completeStage('prepare', `≈${est.seconds} s estimated for a ${config.durationSeconds} s target`);
   job.complete({ projectId, version: saved.version, script: res.script, estimate: est, meta: res.meta }, `Script v${saved.version} ready for review`);
 }
@@ -114,9 +114,10 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     // factual error is never rendered
     const rv = res.meta.claimReview, contradicted = rv.claims.filter((c) => c.status === 'contradicted');
     const acceptance = rv.summary.needsReview && !contradicted.length && acceptUnverifiedClaims ? { claimsApproved: true, claimsApprovedAt: new Date().toISOString(), claimsApprovedBy: 'render request (acceptUnverifiedClaims)' } : { claimsApproved: rv.summary.needsReview === 0 };
-    const saved = addScriptVersion(projectId, script, { claimReview: rv, factFile: res.meta.factFile, ...acceptance, source: 'llm-at-render', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: res.meta.wordCount, estimatedSeconds: res.meta.estimatedSeconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
+    const saved = addScriptVersion(projectId, script, { claimReview: rv, factFile: res.meta.factFile, ...acceptance, ...(res.meta.llmReview ? { llmReview: res.meta.llmReview } : {}), source: 'llm-at-render', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: res.meta.wordCount, estimatedSeconds: res.meta.estimatedSeconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds });
     version = saved.version;
     if (contradicted.length) throw new Error(`Script v${version} repeats ${contradicted.length} known factual error(s): ${contradicted.map((c) => `line ${c.line}: ${c.note}`).join('; ')}. Edit it in Script Studio.`);
+    if (res.meta.llmReview && !res.meta.llmReview.confirmed) throw new Error(`Script v${version}: the local model's proof-read still flags ${res.meta.llmReview.issues.length} line(s) (${res.meta.llmReview.issues.slice(0, 3).map((i) => `line ${i.line}: ${i.problem}`).join('; ')}). Open it in Script Studio, fix or approve those lines, then render.`);
     if (!acceptance.claimsApproved) throw new Error(`Script v${version} has ${rv.summary.needsReview} factual claim(s) to review. Open it in Script Studio, confirm the claims, then render.`);
     for (const c of rv.claims.filter((x) => x.status !== 'supported')) job.warn(`Unverified claim accepted by the render request: line ${c.line} ${c.kind} "${c.value}"`);
     approveScriptVersion(projectId, saved.version);

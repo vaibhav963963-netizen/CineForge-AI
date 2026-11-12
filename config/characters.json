@@ -14,6 +14,46 @@
     "usedInProjects": [
       "desi-boy-playing-cricket",
       "the-science-behind-indian"
+    ],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Classic blue jersey"
+      },
+      {
+        "id": "whites",
+        "name": "Cricket whites",
+        "overrides": {
+          "shirt": "#F5F5F5",
+          "vest": "#F5F5F5",
+          "pants": "#EEEEEE",
+          "trim": "#1E88E5",
+          "shoes": "#FFFFFF"
+        }
+      },
+      {
+        "id": "street",
+        "name": "Street casual",
+        "overrides": {
+          "shirt": "#E53935",
+          "vest": "#212121",
+          "pants": "#37474F",
+          "trim": "#FFFFFF",
+          "accessories": []
+        }
+      },
+      {
+        "id": "festive",
+        "name": "Festive kurta",
+        "overrides": {
+          "shirt": "#FFB300",
+          "vest": "#6A1B9A",
+          "pants": "#FFF8E1",
+          "trim": "#FFD54F",
+          "shoes": "#8D6E63",
+          "accessories": []
+        }
+      }
     ]
   },
   {
@@ -30,6 +70,32 @@
     "svgType": "chanakya",
     "usedInProjects": [
       "the-science-behind-indian"
+    ],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Ivory & saffron"
+      },
+      {
+        "id": "royal",
+        "name": "Royal court",
+        "overrides": {
+          "shirt": "#FFF8E1",
+          "vest": "#B71C1C",
+          "pants": "#FFE0B2",
+          "trim": "#FFD700"
+        }
+      },
+      {
+        "id": "ascetic",
+        "name": "Ascetic saffron",
+        "overrides": {
+          "shirt": "#EF6C00",
+          "vest": "#E65100",
+          "pants": "#FFB74D",
+          "trim": "#FFE0B2"
+        }
+      }
     ]
   },
   {
@@ -44,7 +110,33 @@
     "hairColor": "#1B1B1B",
     "hairStyle": "Handlebar Mustache & Pagri",
     "svgType": "shivaji",
-    "usedInProjects": []
+    "usedInProjects": [],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Crimson angrakha"
+      },
+      {
+        "id": "battle",
+        "name": "Battle armour",
+        "overrides": {
+          "shirt": "#4E342E",
+          "vest": "#263238",
+          "pants": "#5D4037",
+          "trim": "#B0BEC5"
+        }
+      },
+      {
+        "id": "court",
+        "name": "Royal court white",
+        "overrides": {
+          "shirt": "#FAFAFA",
+          "vest": "#C62828",
+          "pants": "#FFF8E1",
+          "trim": "#FFD700"
+        }
+      }
+    ]
   },
   {
     "id": "desi_uncle",
@@ -58,7 +150,45 @@
     "hairColor": "#424242",
     "hairStyle": "Side Part with Silver Streaks",
     "svgType": "uncle",
-    "usedInProjects": []
+    "usedInProjects": [],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Kurta & Nehru jacket"
+      },
+      {
+        "id": "morning",
+        "name": "Morning walk",
+        "overrides": {
+          "shirt": "#ECEFF1",
+          "vest": "#1565C0",
+          "pants": "#E0E0E0",
+          "shoes": "#FFFFFF",
+          "trim": "#90CAF9"
+        }
+      },
+      {
+        "id": "festive",
+        "name": "Festive silk",
+        "overrides": {
+          "shirt": "#FFE082",
+          "vest": "#4A148C",
+          "pants": "#FFF8E1",
+          "trim": "#FFD700"
+        }
+      },
+      {
+        "id": "office",
+        "name": "Office shirt",
+        "overrides": {
+          "shirt": "#B3E5FC",
+          "vest": "#B3E5FC",
+          "pants": "#37474F",
+          "trim": "#0277BD",
+          "shoes": "#212121"
+        }
+      }
+    ]
   },
   {
     "id": "indian_techie",
@@ -72,7 +202,41 @@
     "hairColor": "#1A1A1A",
     "hairStyle": "Textured Modern Crop",
     "svgType": "techie",
-    "usedInProjects": []
+    "usedInProjects": [],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Teal hoodie"
+      },
+      {
+        "id": "office",
+        "name": "Office formal",
+        "overrides": {
+          "shirt": "#FFFFFF",
+          "vest": "#1A237E",
+          "pants": "#263238",
+          "trim": "#90CAF9",
+          "shoes": "#111111",
+          "accessories": [
+            "glasses"
+          ]
+        }
+      },
+      {
+        "id": "weekend",
+        "name": "Weekend tee",
+        "overrides": {
+          "shirt": "#FFCA28",
+          "vest": "#FFCA28",
+          "pants": "#1565C0",
+          "trim": "#FFFFFF",
+          "shoes": "#ECEFF1",
+          "accessories": [
+            "glasses"
+          ]
+        }
+      }
+    ]
   },
   {
     "id": "curious_student",
@@ -88,6 +252,44 @@
     "svgType": "student",
     "usedInProjects": [
       "why-do-indian-temples-hav"
+    ],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Orange tee & backpack"
+      },
+      {
+        "id": "uniform",
+        "name": "School uniform",
+        "overrides": {
+          "shirt": "#FFFFFF",
+          "vest": "#0D47A1",
+          "pants": "#1A237E",
+          "trim": "#C62828",
+          "shoes": "#111111"
+        }
+      },
+      {
+        "id": "sports",
+        "name": "Sports day",
+        "overrides": {
+          "shirt": "#43A047",
+          "vest": "#43A047",
+          "pants": "#FFFFFF",
+          "trim": "#FFEB3B",
+          "shoes": "#FFFFFF"
+        }
+      },
+      {
+        "id": "winter",
+        "name": "Winter sweater",
+        "overrides": {
+          "shirt": "#6D4C41",
+          "vest": "#AD1457",
+          "pants": "#37474F",
+          "trim": "#FFCC80"
+        }
+      }
     ]
   },
   {
@@ -105,6 +307,41 @@
     "usedInProjects": [
       "the-man-who-bought-a-bank",
       "bank-dollar"
+    ],
+    "looks": [
+      {
+        "id": "classic",
+        "name": "Charcoal suit"
+      },
+      {
+        "id": "navy",
+        "name": "Navy suit",
+        "overrides": {
+          "vest": "#0D1B3E",
+          "pants": "#0D1B3E",
+          "trim": "#FFB300"
+        }
+      },
+      {
+        "id": "lab",
+        "name": "Lab coat",
+        "overrides": {
+          "shirt": "#B3E5FC",
+          "vest": "#FAFAFA",
+          "pants": "#37474F",
+          "trim": "#1565C0"
+        }
+      },
+      {
+        "id": "bandhgala",
+        "name": "Bandhgala",
+        "overrides": {
+          "shirt": "#FFF8E1",
+          "vest": "#3E2723",
+          "pants": "#3E2723",
+          "trim": "#FFD700"
+        }
+      }
     ]
   }
 ]

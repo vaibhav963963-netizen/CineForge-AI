@@ -94,3 +94,8 @@ select option:disabled { color: #6B7280; }
 .claims-state { margin-top: 8px; font-size: 12.5px; } .claims-state.ok { color: #6EE7B7; } .claims-state.block { color: #FCD34D; }
 .facts-groups details { margin-top: 6px; font-size: 12.5px; } .facts-groups summary { cursor: pointer; font-weight: 600; }
 .facts-groups ul { margin: 4px 0 0 16px; padding: 0; } .facts-groups li { margin: 2px 0; color: var(--text-muted); }
+/* character appearances */
+.char-looks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 10px; font-size: 12px; }
+.look-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border-subtle); background: var(--bg-tertiary); color: var(--text-main); font: inherit; font-size: 12px; cursor: pointer; }
+.look-chip:hover { border-color: var(--accent-saffron); }
+.look-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,.3); }

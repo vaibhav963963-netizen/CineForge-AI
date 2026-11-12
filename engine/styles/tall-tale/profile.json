@@ -5,18 +5,90 @@
   "dimension": "3d",
   "renderer": "webgl",
   "characterMode": "3d-model",
-  "palette": { "bg": "#8EC9F2", "sky": "#3D8EE0", "horizon": "#BFE4F7", "ground": "#79C25A", "ink": "#1A1A1E", "primary": "#D8343F", "secondary": "#3C6FB6", "accent": "#FFD43B", "paper": "#F4EFE4", "text": "#FFFFFF" },
-  "grade": { "bloom": 0.3, "warm": 0.04, "sat": 1.16, "vignette": 0.18, "grain": 0.01, "exposure": 1.0, "aperture": 0.0012 },
-  "lighting": { "key": "#FFF0D4", "keyI": 3.4, "rim": "#90CAF9", "rimI": 2.2, "sky": "#E3F2FD", "ground": "#6D5A45", "hemiI": 1.0, "fog": "#D0E3F0", "mood": "bright midday sun outside, warm bulbs inside, pink sunset for endings" },
-  "captions": { "font": "Inter", "weight": 900, "y": 1340, "size": 96, "fill": "#FFFFFF", "stroke": "#0B0B10", "strokeW": 16, "hi": null, "box": null, "maxWords": 2, "upper": false, "typeOn": false, "pop": true },
-  "camera": { "behavior": "dynamic", "moves": ["push", "crane", "orbit", "pan", "punch", "track"], "intensity": 1.0 },
-  "transition": { "type": "whip", "duration": 0.22 },
-  "typography": { "title": "Caladea", "titleWeight": 700, "label": "Inter", "labelWeight": 900 },
+  "palette": {
+    "bg": "#8EC9F2",
+    "sky": "#3D8EE0",
+    "horizon": "#BFE4F7",
+    "ground": "#79C25A",
+    "ink": "#1A1A1E",
+    "primary": "#D8343F",
+    "secondary": "#3C6FB6",
+    "accent": "#FFD43B",
+    "paper": "#F4EFE4",
+    "text": "#FFFFFF"
+  },
+  "grade": {
+    "bloom": 0.3,
+    "warm": 0.04,
+    "sat": 1.16,
+    "vignette": 0.18,
+    "grain": 0.01,
+    "exposure": 1,
+    "aperture": 0.0012
+  },
+  "lighting": {
+    "key": "#FFF0D4",
+    "keyI": 3.4,
+    "rim": "#90CAF9",
+    "rimI": 2.2,
+    "sky": "#E3F2FD",
+    "ground": "#6D5A45",
+    "hemiI": 1,
+    "fog": "#D0E3F0",
+    "mood": "bright midday sun outside, warm bulbs inside, pink sunset for endings"
+  },
+  "captions": {
+    "font": "Inter",
+    "weight": 900,
+    "y": 1340,
+    "size": 96,
+    "fill": "#FFFFFF",
+    "stroke": "#0B0B10",
+    "strokeW": 16,
+    "hi": null,
+    "box": null,
+    "maxWords": 2,
+    "upper": false,
+    "typeOn": false,
+    "pop": true
+  },
+  "camera": {
+    "behavior": "dynamic",
+    "moves": [
+      "push",
+      "crane",
+      "orbit",
+      "pan",
+      "punch",
+      "track"
+    ],
+    "intensity": 1
+  },
+  "transition": {
+    "type": "whip",
+    "duration": 0.22
+  },
+  "typography": {
+    "title": "Caladea",
+    "titleWeight": 700,
+    "label": "Inter",
+    "labelWeight": 900
+  },
   "image": {
-    "prompt": "stylized 3D cartoon render, playful animated movie still, bright saturated colors, soft global illumination, sunny, clean shapes, vertical composition",
-    "negative": "photo, photorealistic, text, watermark, logo, blurry, deformed, extra limbs, gore, nsfw"
+    "prompt": "bright cinematic photograph, photorealistic, warm golden-hour sunlight, vivid natural colors, sharp focus, high detail, well exposed, vertical composition",
+    "negative": "painting, oil painting, illustration, drawing, sketch, cartoon, anime, text, watermark, logo, blurry, deformed, extra limbs, underexposed, overexposed, gore, nsfw"
   },
   "music": "bounce",
-  "sfx": ["whoosh", "pop", "plop", "boing", "tock", "sparkle"],
-  "pacing": { "minShot": 1.6, "maxShot": 4.0 }
+  "sfx": [
+    "whoosh",
+    "pop",
+    "plop",
+    "boing",
+    "tock",
+    "sparkle"
+  ],
+  "pacing": {
+    "minShot": 1.6,
+    "maxShot": 4
+  }
 }

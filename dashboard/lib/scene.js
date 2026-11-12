@@ -36,13 +36,14 @@ export function archetypeDesigns() {
 
 export function characterSpec(config, catalogChar) {
   if (config.visual.character === 'none') return { id: 'none', mode: 'none' };
-  const d = archetypeDesigns()[config.visual.archetype];
+  const base = archetypeDesigns()[config.visual.archetype], ov = config.visual.lookOverrides || {};
+  const d = base ? { ...base, ...ov, accessories: ov.accessories || base.accessories } : base;
   if (!d) throw new Error(`3D design for "${config.visual.archetype}" not found in character3d.js`);
   const accessory = d.hairStyle === 'turban' ? 'turban' : d.hairStyle === 'bun' ? 'bun' : d.accessories.includes('cap') ? 'cap' : d.accessories.includes('headphones') ? 'headphones' : d.accessories.includes('glasses') ? 'glasses' : 'none';
   return {
     id: config.visual.character, name: config.visual.characterName, archetype: config.visual.archetype, mode: config.visual.characterMode,
     colors: { skin: d.skin, shirt: d.shirt, vest: d.vest, pants: d.pants, hair: d.hairColor, accent: d.vest && d.vest !== d.shirt ? d.vest : (catalogChar?.accentColor || d.trim), accent2: d.trim },
-    accessory, attire: catalogChar?.attire || null,
+    accessory, attire: catalogChar?.attire || null, look: config.visual.look || null, lookName: config.visual.lookName || null, lookOverrides: config.visual.lookOverrides || null,
   };
 }
 

@@ -11,6 +11,7 @@ import { spawn } from 'node:child_process';
 import { PATHS, ROOT, STUDIO_CONFIG, childEnv } from './workspace.js';
 import { getCatalog } from './catalog.js';
 import { killTree } from './jobs.js';
+import { runtimeProfile } from './setup/settings.js';
 
 const PORT = STUDIO_CONFIG.services.comfyPort || 8188, BASE = `http://127.0.0.1:${PORT}`;
 const WORKFLOW = path.join(PATHS.comfyWorkflows, 'sd15-txt2img.json');
@@ -34,7 +35,7 @@ export async function ensureComfy(onStatus = () => {}) {
   starting = (async () => {
     onStatus('Starting ComfyUI (local)');
     const log = [];
-    proc = spawn(c.python, [path.join(PATHS.comfyui, 'main.py'), '--listen', '127.0.0.1', '--port', String(PORT), '--extra-model-paths-config', EXTRA_PATHS, '--disable-auto-launch', '--preview-method', 'none', '--offline', '--disable-all-custom-nodes'],
+    proc = spawn(c.python, [path.join(PATHS.comfyui, 'main.py'), '--listen', '127.0.0.1', '--port', String(PORT), '--extra-model-paths-config', EXTRA_PATHS, '--disable-auto-launch', '--preview-method', 'none', '--offline', '--disable-all-custom-nodes', ...(runtimeProfile().comfyArgs || [])],
       { cwd: PATHS.comfyui, env: childEnv(), windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     const keep = (b) => { log.push(...b.toString().split(/\r?\n/).filter(Boolean)); if (log.length > 80) log.splice(0, log.length - 80); };
     proc.stdout.on('data', keep); proc.stderr.on('data', keep);
@@ -69,7 +70,16 @@ function buildPrompt({ checkpoint, positive, negative, seed, prefix, s }) {
 export const seedFor = (text, salt = 0) => parseInt(crypto.createHash('sha1').update(`${text}#${salt}`).digest('hex').slice(0, 8), 16);
 
 /** generate (or reuse from cache) one image. onStep({ current, total }) reports real sampler steps. */
-export async function generateImage({ positive, negative, seed, outFile, prefix, onStep = () => {}, isCancelled = () => false, settingsOverride = null }) {
+// an occasional ComfyUI run ends without an image (history written after the "finished" event, or a transient
+// websocket/execution error): retry the same request up to 2 more times before failing the render
+export async function generateImage(opts) {
+  for (let attempt = 1; ; attempt++) {
+    try { return await generateOnce(opts); }
+    catch (e) { if (e.cancelled || attempt >= 3 || /rejected the workflow/.test(e.message)) throw e; console.warn(`image attempt ${attempt} failed (${e.message}); retrying`); await new Promise((r) => setTimeout(r, 1500)); }
+  }
+}
+
+async function generateOnce({ positive, negative, seed, outFile, prefix, onStep = () => {}, isCancelled = () => false, settingsOverride = null }) {
   const c = getCatalog()._internal.comfy, s = settingsOverride || settings();
   const { prompt, workflowVersion } = buildPrompt({ checkpoint: c.checkpoint, positive, negative, seed, prefix, s });
   const key = crypto.createHash('sha1').update(JSON.stringify([c.checkpoint, workflowVersion, positive, negative, seed, s])).digest('hex').slice(0, 16);
@@ -101,8 +111,12 @@ export async function generateImage({ positive, negative, seed, outFile, prefix,
     const poll = setInterval(async () => { if (isCancelled()) { clearInterval(poll); try { await fetch(`${BASE}/interrupt`, { method: 'POST' }); } catch {} } }, 500);
     try { await finished; } finally { clearInterval(poll); }
     if (isCancelled()) throw Object.assign(new Error('Job cancelled by user'), { cancelled: true });
-    const h = await (await fetch(`${BASE}/history/${promptId}`)).json();
-    const img = Object.values(h[promptId]?.outputs || {}).flatMap((o) => o.images || [])[0];
+    let img = null;
+    for (let k = 0; k < 20 && !img; k++) {   // history can lag the finished event by a moment
+      const h = await (await fetch(`${BASE}/history/${promptId}`)).json();
+      img = Object.values(h[promptId]?.outputs || {}).flatMap((o) => o.images || [])[0];
+      if (!img) await new Promise((r) => setTimeout(r, 500));
+    }
     if (!img) throw new Error('ComfyUI finished without an image');
     const buf = Buffer.from(await (await fetch(`${BASE}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder)}&type=${img.type}`)).arrayBuffer());
     fs.writeFileSync(outFile, buf); fs.writeFileSync(cached, buf);

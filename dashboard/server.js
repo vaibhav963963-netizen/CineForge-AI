@@ -15,6 +15,7 @@ import { runScriptJob, runRenderJob, renderPlan, scriptPlan, inputFromConfig } f
 import { checkLanguage, estimateSeconds } from './lib/scriptgen.js';
 import { generateImage, seedFor, readImageIndex, writeImageIndex, freeVram } from './lib/imagegen.js';
 import { TRENDING_TOPICS } from './lib/trends.js';
+import { createSetupRoutes } from './lib/setup/routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // never die silently: log and keep serving (a crashed server would also orphan the running job)
@@ -34,6 +35,8 @@ fs.writeFileSync(LOCK, JSON.stringify({ pid: process.pid, port: PORT, startedAt:
 const releaseLock = () => { try { if (JSON.parse(fs.readFileSync(LOCK, 'utf8')).pid === process.pid) fs.rmSync(LOCK); } catch {} };
 process.on('exit', releaseLock); for (const s of ['SIGINT', 'SIGTERM', 'SIGBREAK']) process.on(s, () => process.exit(0));
 const jobs = new JobManager();
+// System Setup (dependency scanner, download manager, installer). Install/repair/update wait while a job runs.
+const setup = createSetupRoutes({ port: PORT, isBusy: () => (jobs.running ? `a ${jobs.running.kind || 'render'} job is running` : null) });
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.wav': 'audio/wav', '.ttf': 'font/ttf', '.otf': 'font/otf', '.woff2': 'font/woff2' };
@@ -119,6 +122,7 @@ function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUn
 // ── router ──────────────────────────────────────────────────────────────────────────────────────────────────
 async function api(req, res, url) {
   const p = url.pathname, m = (re) => p.match(re), method = req.method;
+  if (p.startsWith('/api/setup/')) return setup.handle(req, res, url, { readBody, send });
   if (p === '/api/catalog') return send(res, 200, publicCatalog());
   if (p === '/api/system') return send(res, 200, systemInfo());
   if (p === '/api/trends') return send(res, 200, TRENDING_TOPICS);
@@ -224,8 +228,7 @@ const server = http.createServer(async (req, res) => {
   const p = decodeURIComponent(url.pathname);
   try {
     if (p.startsWith('/api/')) return await api(req, res, url);
-    if (p.startsWith('/media/')) return media(req, res, p.slice(7));
-    let f = path.join(__dirname, 'public', p === '/' ? 'index.html' : p);
+    if (p.startsWith('/media/')) return media(req, res, p.slice(7));    let f = path.join(__dirname, 'public', p === '/' ? 'index.html' : p);
     if (!f.startsWith(path.join(__dirname, 'public')) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(__dirname, 'public', 'index.html');
     res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     fs.createReadStream(f).pipe(res);

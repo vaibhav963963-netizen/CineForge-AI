@@ -207,7 +207,7 @@ function detectCharacters(archetypes) {
     const archetype = c.archetype || c.id, has3d = archetypes.includes(archetype);
     return {
       id: c.id, name: c.name, title: c.title, role: c.role, attire: c.attire, headwear: c.headwear, skin: c.skin, accentColor: c.accentColor,
-      hairColor: c.hairColor, svgType: c.svgType, archetype, available: has3d,
+      hairColor: c.hairColor, svgType: c.svgType, archetype, available: has3d, looks: (c.looks || []).map((l) => ({ id: l.id, name: l.name, overrides: l.overrides || null })),
       reason: has3d ? null : `no 3D design registered for "${archetype}" in character3d.js`,
     };
   });

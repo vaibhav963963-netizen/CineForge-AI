@@ -109,13 +109,20 @@ const ENV3D = {
     return { scene, root: g, anchors: { lead: [0.9, 0, 1.6], leadFacing: Math.PI * 0.85, focus: [0, 2.2, -0.9], bell: bellPivot, wide: [0, 4, -3] }, bell: bellPivot };
   },
   space(style) {
-    const scene = new THREE.Scene(), g = new THREE.Group(); scene.add(g); scene.background = new THREE.Color('#02030A'); stars(scene);
+    // deep-blue nebula sky instead of near-black #02030A: shots that frame mostly sky (a small orbiter, a wide orbit)
+    // measured luma 10–22 and failed the video's visibility gate; this still reads as space but is never a black frame
+    const sky = canvasTexture(256, 512, (c, w, h) => {
+      const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#0D1A3E'); gr.addColorStop(0.55, '#16224A'); gr.addColorStop(1, '#2A1B48'); c.fillStyle = gr; c.fillRect(0, 0, w, h);
+      for (let i = 0; i < 7; i++) { const x = rnd(i + 31) * w, y = rnd(i + 47) * h, r = 60 + rnd(i + 5) * 110, rg = c.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, i % 2 ? 'rgba(79,209,232,0.22)' : 'rgba(170,110,220,0.20)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = rg; c.fillRect(0, 0, w, h); }
+    });
+    sky.colorSpace = THREE.SRGBColorSpace;
+    const scene = new THREE.Scene(), g = new THREE.Group(); scene.add(g); scene.background = sky; stars(scene);
     const earthTex = canvasTexture(512, 256, (c, w, h) => { c.fillStyle = '#1F5FA8'; c.fillRect(0, 0, w, h); c.fillStyle = '#3E9B4F'; for (let i = 0; i < 26; i++) { c.beginPath(); c.ellipse(rnd(i) * w, h * 0.2 + rnd(i + 3) * h * 0.6, 20 + rnd(i + 5) * 50, 12 + rnd(i + 8) * 30, rnd(i) * 3, 0, 7); c.fill(); } c.fillStyle = 'rgba(255,255,255,0.55)'; for (let i = 0; i < 40; i++) { c.beginPath(); c.ellipse(rnd(i + 50) * w, rnd(i + 70) * h, 24 + rnd(i) * 40, 4 + rnd(i + 2) * 6, 0, 0, 7); c.fill(); } });
     const marsTex = canvasTexture(512, 256, (c, w, h) => { c.fillStyle = '#B5502C'; c.fillRect(0, 0, w, h); for (let i = 0; i < 60; i++) { c.fillStyle = `rgba(${90 + rnd(i) * 60},${30 + rnd(i + 1) * 20},${20},${0.3 + rnd(i + 2) * 0.4})`; c.beginPath(); c.arc(rnd(i + 9) * w, rnd(i + 19) * h, 3 + rnd(i + 4) * 16, 0, 7); c.fill(); } });
     const earth = sph(4, new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.7 }), g, [-7, -1, -12], 48); earth.userData.keepColor = true;
     const mars = sph(2.6, new THREE.MeshStandardMaterial({ map: marsTex, roughness: 0.9 }), g, [9, 2.5, -30], 48); mars.userData.keepColor = true;
     for (const [r, y] of [[13, 0], [26, 0]]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 4, 160), new THREE.MeshBasicMaterial({ color: '#4FD1E8', transparent: true, opacity: 0.5 })); ring.rotation.x = Math.PI / 2; ring.position.set(-4, -3, -16); g.add(ring); }
-    const sun = new THREE.PointLight('#FFF2D6', 400, 0, 1.2); sun.position.set(-30, 10, 20); scene.add(sun, new THREE.AmbientLight('#334', 0.4));
+    const sun = new THREE.PointLight('#FFF2D6', 400, 0, 1.2); sun.position.set(-30, 10, 20); scene.add(sun, new THREE.AmbientLight('#556688', 1.0));
     const rim = new THREE.DirectionalLight(style.lighting.rim || '#4FD1E8', 1.4); rim.position.set(5, 3, -10); scene.add(rim);
     return { scene, root: g, anchors: { lead: [1.2, -1.2, 2], leadFacing: -0.3, focus: [0, 0, 0], earth, mars, wide: [0, 0, -12] }, update(t) { earth.rotation.y = t * 0.15; mars.rotation.y = t * 0.1; } };
   },
@@ -287,7 +294,7 @@ export function makeActor(spec, style) {
   // spec: { archetype, colors? } — extras are generic recoloured people, never a different registered character
   const cfg = spec.generic
     ? { archetype: 'desi_hero', shirt: spec.colors?.shirt || '#5C6BC0', vest: null, pants: spec.colors?.pants || '#37474F', trim: spec.colors?.trim || '#ECEFF1', hairColor: '#222', accessories: [] }
-    : { archetype: spec.archetype };
+    : { archetype: spec.archetype, ...(spec.look || {}) };   // chosen appearance: colours / accessories over the design
   const a = createCharacter3D(cfg);
   if (style.id === 'night-file' && spec.generic) a.root.traverse((o) => { if (o.isMesh) { o.material = new THREE.MeshStandardMaterial({ color: '#0C0C0E', roughness: 0.9 }); } });
   return a;
@@ -398,9 +405,9 @@ export class Stage3D {
     }
     return this.envs.get(kind);
   }
-  lead(env, archetype) {
+  lead(env, archetype, look = null) {
     if (!archetype) return null;
-    if (!env.lead) { env.lead = makeActor({ archetype }, this.style); env.scene.add(env.lead.root); }
+    if (!env.lead) { env.lead = makeActor({ archetype, look }, this.style); env.scene.add(env.lead.root); }
     return env.lead;
   }
 }

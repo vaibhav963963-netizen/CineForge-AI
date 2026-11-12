@@ -7,14 +7,21 @@ silently replaced with a default.
 ## Run
 
 ```
-setup-workspace.bat     # once: Python env, FFmpeg check, models (resumable, sha256-verified), ComfyUI
-start-studio.bat        # dashboard at http://127.0.0.1:3000/
-node --test tests/      # unit tests (validation, progress math, storyboard)
+CineForge-Setup.bat     # new PC or everyday start: gets portable Node.js if missing (asks first, SHA-256 checked),
+                        # starts the dashboard and opens Settings → System Setup, which installs everything else
+start-studio.bat        # same as CineForge-Setup.bat
+node --test tests/setup.test.mjs                  # System Setup tests (downloads, registry, security)
+node --test tests/unit.test.mjs tests/setup.test.mjs   # unit + System Setup tests
 node tests/e2e-run.mjs cases [A B C UNSUPPORTED] [--source llm|fixture]   # end-to-end acceptance (server running)
 node tests/e2e-run.mjs progress                                           # progress acceptance
 ```
 
 Only one studio server may run per workspace (`logs/jobs/.server.lock`).
+
+**Installing on another PC:** see [docs/setup/README.md](docs/setup/README.md) for the full guide (hardware,
+models, offline install, configuration, updates, troubleshooting). Every dependency is defined once in
+[config/dependencies.json](config/dependencies.json). The dependency audit is in
+[docs/setup/AUDIT-AND-PLAN.md](docs/setup/AUDIT-AND-PLAN.md).
 
 ## How a video is made (one job, real progress)
 
@@ -92,9 +99,12 @@ All commands run from the workspace folder (`Shorts Studio`). Windows; Node 22 r
 
 **1. First-time setup (once)**
 ```bat
-setup-workspace.bat
+CineForge-Setup.bat
 ```
-Installs the Python environment, checks FFmpeg, downloads the models (resumable, sha256-verified) and sets up ComfyUI.
+Gets Node.js if it's missing, opens **Settings → System Setup** and walks you through the first-run guide: scan,
+install required / recommended / optional components, download models (resumable, checksum-verified) and run health
+checks. `setup-workspace.bat` is the older command-line installer. It still works, but it needs Node.js and
+Python 3.12 already installed.
 
 **2. Start the studio**
 ```bat

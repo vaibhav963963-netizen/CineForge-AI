@@ -116,8 +116,15 @@ export function reviewClaims(script, { topic = '', topicFacts = null, userFacts 
     const line = i + 1, t0 = [l.text, l.onScreen].filter((x) => x && String(x).trim()).join(' · '), t = spokenNumbersToDigits(t0), tn = norm(t0), hedged = HEDGE.test(t0);
     // known errors first: these are wrong regardless of anything else
     for (const e of items(topicFacts?.knownErrors)) {
-      const keys = (e.keys || [e.text]).map(norm);
-      if (keys.some((k) => k && tn.includes(k))) add(line, t, 'known error', e.text, 'contradicted', e.correction ? `Correct: ${e.correction}` : 'This is a known error for this topic.');
+      // norm() drops symbols, so the key "₹100" became "100" and flagged the correct "100 मिलियन डॉलर" (and would
+      // match "1000"): a key with a currency sign must match with that sign, and numbers only as whole numbers
+      const raw = String(t0).toLowerCase().normalize('NFC');
+      const hit = (key) => {
+        if (/[₹$]/.test(key)) { const k = key.toLowerCase().replace(/\s+/g, '\\s*').replace(/[$]/g, '\\$'); return new RegExp(`${k}(?![\\d.,])`, 'u').test(raw); }
+        const k = norm(key); if (!k) return false;
+        return new RegExp(`(?:^|[^\\p{N}\\p{L}])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{N}])`, 'u').test(tn);
+      };
+      if ((e.keys || [e.text]).some(hit)) add(line, t, 'known error', e.text, 'contradicted', e.correction ? `Correct: ${e.correction}` : 'This is a known error for this topic.');
     }
     // legends / theories told as fact
     for (const [kind, arr] of [['legend', topicFacts?.legends], ['theory', topicFacts?.theories]]) {
@@ -146,7 +153,11 @@ export function reviewClaims(script, { topic = '', topicFacts = null, userFacts 
       // a number from a theory/belief/legend is fine when the line frames it that way ("कुछ मानते हैं … सात सेकंड")
       // (theory numbers only: a verified number with the wrong unit — "74 करोड़ डॉलर" for 74 million — must still fail)
       const framedTheoryNum = C.theoryNums.has(k) && !C.verifiedNums.has(k) && (hedged || BELIEF_HEDGE.test(t0)) && !SCIENCE_CREDIT.test(t0);
-      let ok = framedTheoryNum || (!!units && (!u || units.has(u) || units.has('') && !['crore', 'lakh', 'million', 'billion'].includes(u)));
+      // when the facts state this number with a unit, the line must use that unit: a bare "5020" in the fact keys let
+      // "5,020 feet" pass although the fact says 5,020 metres. Any unit is accepted only for numbers the facts never
+      // give with a unit (and never a currency).
+      const explicitUnits = units ? [...units].filter(Boolean) : [];
+      let ok = framedTheoryNum || (!!units && (!u || units.has(u) || (explicitUnits.length === 0 && !['crore', 'lakh', 'million', 'billion'].includes(u))));
       // the number must belong to the subject the line talks about: "Gravity's budget was ₹450 crore" uses
       // Mangalyaan's cost (a verified number) for Gravity. When the line names a fact's subject (its non-numeric
       // keys) and none of those facts holds this number, it is attached to the wrong subject.
@@ -159,8 +170,12 @@ export function reviewClaims(script, { topic = '', topicFacts = null, userFacts 
         continue;
       }
       if (ok && !framedTheoryNum) {
-        const subjects = factSubjects(topicFacts, tn);
-        if (subjects.length && !subjects.some((s) => s.nums.has(k))) { ok = false; wrongSubject = subjects[0].text; }
+        // only facts that give numbers themselves compete for the subject ("Roopkund … Himalayas … 5,020 metres" named
+        // the number-free intro fact via "himalaya" and was wrongly flagged); and a number is fine when a fact that
+        // holds it also shares a subject word with the line
+        const subjects = factSubjects(topicFacts, tn).filter((s) => s.nums.size > 0);
+        const holderNamed = factSubjects(topicFacts, tn).some((s) => s.nums.has(k));
+        if (subjects.length && !holderNamed && !subjects.some((s) => s.nums.has(k))) { ok = false; wrongSubject = subjects[0].text; }
       }
       const note = ok ? null : wrongSubject ? `This number belongs to a different fact. For this subject the verified fact is: "${wrongSubject}"` : units ?`The verified facts give ${k} with a different unit (${[...units].filter(Boolean).join(', ') || 'none'}).` : haveFacts ? 'Not in the verified facts for this topic.' : 'No fact file for this topic: check this number.';
       add(line, t, 'number', n, ok ? 'supported' : 'unverified', note);
