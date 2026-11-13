@@ -1,15 +1,15 @@
-
 # ==============================================================================
-# CineForge AI — Production .gitignore
-# Local-first AI Video Production Studio
-# Protects source repository from model weights, generated media, secrets
-# and machine-specific runtime files.
+# CineForge AI — .gitignore
+# Local-first AI video studio. The repository holds source code, configuration,
+# fact files, tests and a few committed evidence projects. Never commit model
+# weights, runtimes, generated media, logs, caches, per-machine settings or secrets.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # PYTHON ENVIRONMENTS & CACHE
 # ------------------------------------------------------------------------------
 runtime/python-venv/
+runtime/python312/
 venv/
 .venv/
 env/
@@ -25,23 +25,30 @@ htmlcov/
 # ------------------------------------------------------------------------------
 # NODE.JS
 # ------------------------------------------------------------------------------
+runtime/node/
 node_modules/
 dist/
 .npm/
+coverage/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
 # ------------------------------------------------------------------------------
-# LOCAL BINARIES
+# LOCAL RUNTIMES & BINARIES (installed by System Setup; licences/readmes stay tracked)
 # ------------------------------------------------------------------------------
 runtime/ffmpeg/bin/
+runtime/llama.cpp/*
+!runtime/llama.cpp/LICENSE*
+!runtime/llama.cpp/README*
+runtime/.downloads/
+runtime/tmp/
 *.exe
 *.dll
 *.pdb
 
 # ------------------------------------------------------------------------------
-# AI MODEL WEIGHTS — NEVER COMMIT MODEL FILES
+# AI MODEL WEIGHTS — NEVER COMMIT MODEL FILES (small config/tokenizer json stays tracked)
 # ------------------------------------------------------------------------------
 models/**/*.gguf
 models/**/*.safetensors
@@ -53,11 +60,13 @@ models/**/*.bin
 models/**/*.model
 models/**/*.tflite
 models/**/*.engine
+models/image-generation/checkpoints/
 
 # Model caches and downloaded repositories
 models/**/blobs/
 models/**/snapshots/
 models/**/hub/
+models/image-generation/cache/
 .cache/
 hf-cache/
 huggingface/
@@ -78,8 +87,13 @@ ComfyUI/user/
 comfyui_models/
 
 # ------------------------------------------------------------------------------
-# GENERATED VIDEO, AUDIO & RENDER OUTPUTS
+# GENERATED PROJECTS, VIDEO, AUDIO & RENDER OUTPUTS
 # ------------------------------------------------------------------------------
+# New projects (studio runs, script tests) stay local. Projects committed before
+# this rule (evidence/acceptance projects) remain tracked; inside them the heavy
+# outputs below are still never added.
+projects/*
+!projects/.gitkeep
 projects/*/renders/
 projects/*/review/
 projects/*/audio/
@@ -90,7 +104,7 @@ projects/*/data/*.mp4
 projects/*/data/*.mkv
 projects/*/data/*.webm
 
-exports/
+exports/*
 !exports/.gitkeep
 
 # Generated media files anywhere else
@@ -104,11 +118,10 @@ exports/
 *.m4a
 
 # ------------------------------------------------------------------------------
-# TEMPORARY FRAMES & CHROME
+# TEMPORARY FRAMES, DOWNLOADS & CHROME PROFILES
 # ------------------------------------------------------------------------------
 tmp/
 temp/
-runtime/tmp/
 fs-chrome-*/
 *.tmp
 *.part
@@ -116,7 +129,7 @@ fs-chrome-*/
 *.lock
 
 # ------------------------------------------------------------------------------
-# LOGS & EXECUTION TRACES
+# LOGS, JOB STORE & EVALUATION REPORTS
 # ------------------------------------------------------------------------------
 logs/
 *.log
@@ -148,37 +161,35 @@ credentials/
 secrets/
 
 # ------------------------------------------------------------------------------
-# LOCAL DATABASES & MACHINE-SPECIFIC DATA
+# PER-MACHINE SETTINGS & LOCAL DATABASES
 # ------------------------------------------------------------------------------
+config/setup-settings.json
 *.sqlite
 *.sqlite3
 *.db
-.DS_Store
-Thumbs.db
-desktop.ini
 
 # ------------------------------------------------------------------------------
-# IDE & EDITOR
+# OPERATING SYSTEM FILES
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ------------------------------------------------------------------------------
+# IDE, EDITOR & LOCAL AI-ASSISTANT STATE
 # ------------------------------------------------------------------------------
 .vscode/
 .idea/
+*.code-workspace
 *.swp
 *.swo
 *~
+.claude/
+.cursor/
 
 # ------------------------------------------------------------------------------
 # PRESERVE IMPORTANT EMPTY DIRECTORIES
 # ------------------------------------------------------------------------------
-# generated projects (script tests, local renders) stay local; projects committed before this rule remain tracked
-projects/*
-!projects/.gitkeep
 !youtube/queue/.gitkeep
-
-# Local AI image cache (regenerated on demand)
-models/image-generation/cache/
-
-# System Setup: portable runtimes, download cache and per-machine settings (never committed)
-runtime/node/
-runtime/python312/
-runtime/.downloads/
-config/setup-settings.json
