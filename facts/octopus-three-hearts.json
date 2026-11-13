@@ -1,0 +1,163 @@
+{
+  "id": "octopus-three-hearts",
+  "title": "Why octopuses have three hearts",
+  "match": [
+    "octopus",
+    "octopuses",
+    "octopi",
+    "three hearts",
+    "ऑक्टोपस",
+    "आक्टोपस"
+  ],
+  "aliases": [
+    "Octopus",
+    "Octopuses",
+    "Earth"
+  ],
+  "sources": [
+    "Smithsonian Ocean: 'Octopuses: three hearts, blue blood'",
+    "Wikipedia 'Octopus' (circulatory system) and 'Hemocyanin'",
+    "Wikipedia 'Chromatophore'"
+  ],
+  "verified": [
+    {
+      "text": "An octopus has three hearts: two branchial hearts and one systemic heart.",
+      "keys": [
+        "three hearts",
+        "3 hearts",
+        "teen dil",
+        "तीन दिल",
+        "तीन हार्ट"
+      ]
+    },
+    {
+      "text": "Each of the two branchial hearts pumps blood through one of the octopus's two gills.",
+      "keys": [
+        "branchial",
+        "two gills",
+        "gills"
+      ]
+    },
+    {
+      "text": "The gills take up oxygen dissolved in the water that flows over them, so the blood picks up oxygen there.",
+      "keys": [
+        "oxygen",
+        "gills",
+        "water"
+      ]
+    },
+    {
+      "text": "The systemic heart then pumps the oxygen-rich blood to the rest of the body, including the arms and the brain.",
+      "keys": [
+        "systemic",
+        "rest of the body",
+        "whole body"
+      ]
+    },
+    {
+      "text": "Octopus blood is blue because it carries oxygen with hemocyanin, a copper-based protein, instead of the iron-based hemoglobin in human blood.",
+      "keys": [
+        "blue blood",
+        "hemocyanin",
+        "haemocyanin",
+        "copper"
+      ]
+    },
+    {
+      "text": "The systemic heart stops beating while an octopus swims, which is one reason octopuses tire quickly when swimming and often crawl instead.",
+      "keys": [
+        "stops beating",
+        "swims",
+        "swimming",
+        "crawl"
+      ]
+    },
+    {
+      "text": "An octopus changes colour with chromatophores: tiny sacs of pigment in its skin that muscles stretch or squeeze, controlled by its nerves — not by its hearts or blood.",
+      "keys": [
+        "chromatophore",
+        "chromatophores",
+        "pigment",
+        "colour",
+        "color",
+        "camouflage"
+      ]
+    }
+  ],
+  "theories": [
+    {
+      "text": "Scientists think the extra hearts help because hemocyanin carries oxygen less efficiently than hemoglobin, so the blood needs an extra push through the gills.",
+      "keys": [
+        "less efficient",
+        "extra push",
+        "why three"
+      ]
+    }
+  ],
+  "legends": [],
+  "knownErrors": [
+    {
+      "text": "An octopus has two hearts",
+      "keys": [
+        "has two hearts",
+        "only two hearts",
+        "do dil hain",
+        "do dil hote",
+        "दो दिल हैं",
+        "दो दिल होते",
+        "उनके पास दो दिल"
+      ],
+      "correction": "An octopus has three hearts: two branchial hearts (one per gill) and one systemic heart."
+    },
+    {
+      "text": "The hearts or blood make the octopus change colour",
+      "keys": [
+        "heart changes colour",
+        "hearts change colour",
+        "heart changes color",
+        "blood changes colour",
+        "dil rang badalta",
+        "दिल रंग बदल",
+        "हार्ट रंग बदल",
+        "खून रंग बदल"
+      ],
+      "correction": "Colour change comes from chromatophores in the skin, worked by muscles and nerves — not by the hearts or blood."
+    },
+    {
+      "text": "Gills are oxygen filters",
+      "keys": [
+        "oxygen filter",
+        "oxygen ke liye filter",
+        "ऑक्सीजन के लिए फिल्टर",
+        "ऑक्सीजन फिल्टर",
+        "like filters",
+        "like a filter",
+        "jaise filter",
+        "जैसे फिल्टर",
+        "जैसे फ़िल्टर",
+        "फिल्टर की तरह"
+      ],
+      "correction": "Gills take up oxygen dissolved in the water that flows over them; they are not filters."
+    },
+    {
+      "text": "Octopus blood is red",
+      "keys": [
+        "red blood",
+        "blood is red",
+        "लाल खून"
+      ],
+      "correction": "Octopus blood is blue: it carries oxygen with copper-based hemocyanin."
+    }
+  ],
+  "uncertain": [],
+  "terms": {
+    "hi": {
+      "branchial hearts": "ब्रांकियल हार्ट (गिल्स वाले दिल)",
+      "systemic heart": "सिस्टमिक हार्ट (पूरे शरीर वाला दिल)",
+      "gills": "गिल्स (गलफड़े)",
+      "hemocyanin": "हीमोसायनिन",
+      "chromatophores": "क्रोमैटोफोर्स (त्वचा की रंग वाली थैलियाँ)",
+      "oxygen": "ऑक्सीजन"
+    }
+  }
+}

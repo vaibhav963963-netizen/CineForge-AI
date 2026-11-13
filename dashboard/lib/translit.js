@@ -49,7 +49,9 @@ function word(w) {
 }
 
 // the conventional casual spelling of very common Hindi words
-const COMMON = { 'में': 'mein', 'हैं': 'hain', 'है': 'hai', 'नहीं': 'nahi', 'यहाँ': 'yahan', 'वहाँ': 'wahan', 'क्यों': 'kyun', 'मैं': 'main', 'तो': 'toh', 'ये': 'ye', 'वो': 'wo', 'यह': 'yeh', 'वह': 'woh', 'कि': 'ki', 'और': 'aur', 'भारत': 'Bharat' };
+const COMMON = { 'में': 'mein', 'हैं': 'hain', 'है': 'hai', 'नहीं': 'nahi', 'यहाँ': 'yahan', 'वहाँ': 'wahan', 'क्यों': 'kyun', 'मैं': 'main', 'तो': 'toh', 'ये': 'ye', 'वो': 'wo', 'यह': 'yeh', 'वह': 'woh', 'कि': 'ki', 'और': 'aur', 'भारत': 'Bharat',
+  // common words the letter-by-letter rule spells unnaturally ("ke lie", "bhaee", "huee", "gae")
+  'लिए': 'liye', 'लिये': 'liye', 'भाई': 'bhai', 'हुई': 'hui', 'हुए': 'hue', 'गए': 'gaye', 'गई': 'gayi', 'गये': 'gaye', 'कई': 'kai', 'नई': 'nayi', 'आए': 'aaye', 'आई': 'aayi', 'किए': 'kiye', 'दिए': 'diye', 'पाए': 'paaye', 'चाहिए': 'chahiye', 'उन्हें': 'unhe', 'इन्हें': 'inhe', 'उसे': 'use', 'इसे': 'ise', 'क्या': 'kya', 'कैसे': 'kaise', 'ऐसे': 'aise', 'जैसे': 'jaise', 'वैसे': 'waise', 'दोनों': 'dono', 'बीच': 'beech', 'ज़्यादा': 'zyada', 'ज्यादा': 'zyada', 'सबसे': 'sabse', 'असल': 'asal', 'वजह': 'wajah', 'जगह': 'jagah' };
 // English loanwords as Indians write them in Devanagari → their English spelling (nukta-free keys; see dekey)
 const LOANWORDS = {
   'क्रिकेट': 'cricket', 'मिशन': 'mission', 'बजट': 'budget', 'आउट': 'out', 'विकेट': 'wicket', 'रॉकेट': 'rocket', 'हीरो': 'hero', 'इसरो': 'ISRO', 'मार्स': 'Mars', 'नासा': 'NASA',
@@ -57,6 +59,10 @@ const LOANWORDS = {
   'फोन': 'phone', 'मोबाइल': 'mobile', 'इंटरनेट': 'internet', 'यूट्यूब': 'YouTube', 'गूगल': 'Google', 'कंप्यूटर': 'computer', 'टेक्नोलॉजी': 'technology', 'साइंस': 'science', 'साइंटिस्ट': 'scientist', 'साइंटिस्ट्स': 'scientists', 'रिसर्च': 'research', 'डीएनए': 'DNA',
   'सैटेलाइट': 'satellite', 'ऑर्बिट': 'orbit', 'स्पेस': 'space', 'इंजन': 'engine', 'फ्यूल': 'fuel', 'सिग्नल': 'signal', 'कैमरा': 'camera', 'प्लान': 'plan', 'बिलियन': 'billion', 'मिलियन': 'million', 'डॉलर': 'dollar', 'डॉलर्स': 'dollars',
   'लाइफ': 'life', 'स्टोरी': 'story', 'फैक्ट': 'fact', 'ट्रिक': 'trick', 'टेस्ट': 'test', 'न्यूज': 'news', 'सीक्रेट': 'secret', 'मिस्ट्री': 'mystery', 'लेक': 'lake', 'स्केलेटन': 'skeleton', 'ग्लेशियर': 'glacier', 'लाइट': 'light',
+  // science / biology / tech words Hinglish speakers say in English
+  'फिल्टर': 'filter', 'गिल': 'gill', 'गिल्स': 'gills', 'ऑक्सीजन': 'oxygen', 'ऑक्सिजन': 'oxygen', 'पंप': 'pump', 'हार्ट': 'heart', 'हार्ट्स': 'hearts', 'ब्लड': 'blood', 'सिस्टम': 'system', 'सिस्टमिक': 'systemic', 'ब्रांचियल': 'branchial', 'ब्रैंकियल': 'branchial',
+  'कॉपर': 'copper', 'प्रोटीन': 'protein', 'सेल': 'cell', 'सेल्स': 'cells', 'वायरस': 'virus', 'बैक्टीरिया': 'bacteria', 'वैक्सीन': 'vaccine', 'एंटीबॉडी': 'antibody', 'एंटीबॉडीज़': 'antibodies', 'इम्यून': 'immune', 'टाइडल': 'tidal', 'लॉकिंग': 'locking', 'लिब्रेशन': 'libration',
+  'मसल': 'muscle', 'मसल्स': 'muscles', 'स्किन': 'skin', 'कलर': 'colour', 'कैमोफ्लाज': 'camouflage', 'क्रोमैटोफोर': 'chromatophore', 'क्रोमैटोफोर्स': 'chromatophores', 'नर्व': 'nerve', 'नर्व्स': 'nerves', 'ब्रेन': 'brain', 'डेटा': 'data', 'नेटवर्क': 'network', 'सर्वर': 'server', 'बैंक': 'bank', 'पेमेंट': 'payment', 'ऐप': 'app',
   'ग्रेविटी': 'Gravity', 'हॉलीवुड': 'Hollywood', 'बॉलीवुड': 'Bollywood', 'टीवी': 'TV', 'ओके': 'OK', 'बॉस': 'boss', 'एआई': 'AI', 'आईपीएल': 'IPL', 'बीसीसीआई': 'BCCI',
 };
 // frequent native Hindi words: never matched to an English hint (काम "kaam" ≠ "come", कर "kar" ≠ "car")
@@ -95,7 +101,9 @@ export function hinglishCaption(text, englishHints = []) {
   const kept = [];
   const out = String(text).split(/(\s+)/).map((w) => {
     if (!/[ऀ-ॿ]/.test(w)) { if (/[A-Za-z]{2,}/.test(w)) kept.push(w.replace(/[^A-Za-z'-]/g, '')); return w; }
-    const m = w.match(/^([^ऀ-ॿ]*)([ऀ-ॿ]+)([^ऀ-ॿ]*)$/);
+    // the danda (। ॥, U+0964/5) sits inside the Devanagari block but is punctuation: keep it out of the word, or every
+    // sentence-final word missed the common-word / loanword tables ("भाई।" → "bhaee.")
+    const m = w.match(/^([^ऀ-ॣ०-ॿ]*)([ऀ-ॣ०-ॿ]+)([^ऀ-ॣ०-ॿ]*)$/);
     if (!m) return word(w);
     const [, pre, core, post] = m, dk = dekey(core);
     if (COMMON[core]) return pre + COMMON[core] + post;
@@ -105,6 +113,7 @@ export function hinglishCaption(text, englishHints = []) {
     if (LOAN[dk]) { kept.push(LOAN[dk]); return pre + LOAN[dk] + post; }
     return pre + roman + post;
   }).join('');
-  return { text: out.charAt(0).toUpperCase() + out.slice(1), english: kept };
+  const roman = out.replace(/\s*[।॥]/g, '.');
+  return { text: roman.charAt(0).toUpperCase() + roman.slice(1), english: kept };
 }
 export function devanagariToHinglish(text, englishHints = []) { return hinglishCaption(text, englishHints).text; }

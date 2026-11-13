@@ -7,7 +7,7 @@ import { PATHS, childEnv, rel, CHROME } from './workspace.js';
 import { getCatalog, whisperFor } from './catalog.js';
 import { validateGenerationConfig, scriptFingerprint, configHash } from './validate.js';
 import { projectDir, loadProject, updateProject, addScriptVersion, getScriptVersion, approveScriptVersion } from './projects.js';
-import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords } from './scriptgen.js';
+import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords, letters } from './scriptgen.js';
 import { planStoryboard } from './storyboard.js';
 import { scaffoldRuntime, characterSpec, writeRuntimeScript, writeScene } from './scene.js';
 import { generateImage, seedFor, freeVram, readImageIndex, writeImageIndex } from './imagegen.js';
@@ -79,7 +79,7 @@ export async function runScriptJob(job, { projectId, config, facts = null }) {
     topic: config.topic, generatedAt: new Date().toISOString(), status: res.meta.status || null, gates: res.meta.gates || null, gateGroups: res.meta.gateGroups || null,
     claims: res.meta.claims || null, draftFlags: res.meta.draftFlags || null, editorialJudgment: res.meta.editorialJudgment || null,
     research: res.meta.research ? { essentials: res.meta.research.essentials, needsResearch: res.meta.research.needsResearch, rejected: res.meta.research.rejected } : null,
-    plan: res.meta.plan || null, hookEndingRewrite: res.meta.hookEndingRewrite || null, visuals: res.meta.visuals || null, lengthFit: res.meta.lengthFit || null, generationLog: res.meta.generationLog || null });
+    plan: res.meta.plan || null, hookEndingRewrite: res.meta.hookEndingRewrite || null, visuals: res.meta.visuals || null, lengthFit: res.meta.lengthFit || null, lengthFitLog: res.meta.lengthFitLog || null, generationLog: res.meta.generationLog || null });
   job.completeStage('prepare', `≈${est.seconds} s estimated for a ${config.durationSeconds} s target`);
   job.complete({ projectId, version: saved.version, script: res.script, estimate: est, meta: res.meta }, `Script v${saved.version} ready for review`);
 }
@@ -124,10 +124,19 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     topic: config.topic, generatedAt: new Date().toISOString(), status: res.meta.status || null, gates: res.meta.gates || null, gateGroups: res.meta.gateGroups || null,
     claims: res.meta.claims || null, draftFlags: res.meta.draftFlags || null, editorialJudgment: res.meta.editorialJudgment || null,
     research: res.meta.research ? { essentials: res.meta.research.essentials, needsResearch: res.meta.research.needsResearch, rejected: res.meta.research.rejected } : null,
-    plan: res.meta.plan || null, hookEndingRewrite: res.meta.hookEndingRewrite || null, visuals: res.meta.visuals || null, lengthFit: res.meta.lengthFit || null, generationLog: res.meta.generationLog || null });
+    plan: res.meta.plan || null, hookEndingRewrite: res.meta.hookEndingRewrite || null, visuals: res.meta.visuals || null, lengthFit: res.meta.lengthFit || null, lengthFitLog: res.meta.lengthFitLog || null, generationLog: res.meta.generationLog || null });
     version = saved.version;
     if (contradicted.length) throw new Error(`Script v${version} repeats ${contradicted.length} known factual error(s): ${contradicted.map((c) => `line ${c.line}: ${c.note}`).join('; ')}. Edit it in Script Studio.`);
-    if (res.meta.llmReview && !res.meta.llmReview.confirmed) throw new Error(`Script v${version}: the local model's proof-read still flags ${res.meta.llmReview.issues.length} line(s) (${res.meta.llmReview.issues.slice(0, 3).map((i) => `line ${i.line}: ${i.problem}`).join('; ')}). Open it in Script Studio, fix or approve those lines, then render.`);
+    // one-click render with the request's acceptance: a NEEDS_REVIEW script (correctable issues, e.g. "needs research"
+    // when no fact file exists — which no script can pass on its own) renders with every issue logged as a warning; a
+    // FAILED script (wrong language/script) and known factual errors (above) still stop. Without acceptance: stop.
+    // a length far off target is not "accepted": TTS would fail minutes later anyway (seen: estimated 55 s for 40 s,
+    // narrated 72 s, job failed at Kokoro). Stop here with the script saved for editing.
+    const dur = res.meta.gates?.duration;
+    if (dur && dur.estimatedSeconds && Math.abs(dur.estimatedSeconds - config.durationSeconds) > config.durationSeconds * Math.max(0.15, (config.durationTolerance || 0.1) * 1.5)) throw new Error(`Script v${version} would last about ${dur.estimatedSeconds} s for a ${config.durationSeconds} s target. Open it in Script Studio and shorten/lengthen it (or change the duration), then render.`);
+    if (res.meta.llmReview && !res.meta.llmReview.confirmed && acceptUnverifiedClaims && res.meta.status !== 'FAILED') {
+      for (const i of res.meta.llmReview.issues || []) job.warn(`Script review (accepted by the render request): ${i.line ? `line ${i.line}: ` : ''}${String(i.problem).slice(0, 200)}`);
+    } else if (res.meta.llmReview && !res.meta.llmReview.confirmed) throw new Error(`Script v${version}: the local model's proof-read still flags ${res.meta.llmReview.issues.length} line(s) (${res.meta.llmReview.issues.slice(0, 3).map((i) => `line ${i.line}: ${i.problem}`).join('; ')}). Open it in Script Studio, fix or approve those lines, then render.`);
     if (!acceptance.claimsApproved) throw new Error(`Script v${version} has ${rv.summary.needsReview} factual claim(s) to review. Open it in Script Studio, confirm the claims, then render.`);
     for (const c of rv.claims.filter((x) => x.status !== 'supported')) job.warn(`Unverified claim accepted by the render request: line ${c.line} ${c.kind} "${c.value}"`);
     approveScriptVersion(projectId, saved.version);
@@ -153,7 +162,7 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   job.startStage('tts', `Synthesizing ${config.language.name} narration with ${config.narration.voice} (${config.narration.ttsLang})`);
   let narr = await tts(config.narration.speed, 'pass 1'), speedUsed = config.narration.speed;
   // learn the real speaking rate from every first pass, including scripts that then fail the length check
-  recordVoiceRate(config.narration.voice, script.lines.reduce((a, l) => a + countWords(l.say || l.text), 0), narr.speechSeconds, config.narration.speed);
+  { const cal = recordVoiceRate(config, { lines: script.lines, speechSeconds: narr.speechSeconds, speed: config.narration.speed, estimatedSeconds: estimateSeconds({ lines: script.lines }, config).seconds, actualSeconds: narr.duration }); if (!cal.recorded) job.log(`  calibration: run not used (${cal.reason})`); }
   if (Math.abs(narr.duration - T) > tol * T) {
     // aim for the exact target, but clamp to the personality's speed range: landing anywhere inside ±tol is a pass
     const fixed = narr.duration - narr.speechSeconds, base = config.narration.delivery.speed;

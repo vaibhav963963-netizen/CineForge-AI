@@ -155,6 +155,7 @@ async function submit(kind) {
     if (!confirm(`${why}The studio will write a NEW script during the render, so you will not be able to review its facts first.\n\nKnown factual errors still stop the render; other unverified claims will be accepted and logged.\n\nRecommended: "Generate script preview" and review the fact check in Script Studio.\n\nRender without fact review?`)) return;
     body.acceptUnverifiedClaims = true;
   }
+  resetForNewRun({ keepScript: kind !== 'preview' && !!body.scriptVersion });
   S.submitting = true; updateButtons();
   try {
     const r = await api(url, { method: 'POST', body });
@@ -165,6 +166,39 @@ async function submit(kind) {
     $('#form-errors').hidden = false; $('#form-errors').innerHTML = errs.map((m) => `<div>✖ ${esc(m)}</div>`).join('');
     if (e.data?.factCheck && S.preview) { toast('Review the flagged facts in Script Studio first'); loadScript(S.preview.projectId, S.preview.version).then(() => go('scripts')); }
   } finally { S.submitting = false; updateButtons(); }
+}
+
+/**
+ * A new short starts from a clean slate: previous errors, the previous job's stages/warnings/result and — unless the
+ * approved, still-matching preview is being rendered — the previous project's script in Script Studio are cleared.
+ * (Nothing is deleted: old projects and versions stay in Projects / Job history.)
+ */
+function resetForNewRun({ keepScript = false } = {}) {
+  const fe = $('#form-errors'); if (fe) { fe.hidden = true; fe.innerHTML = ''; }
+  detachJob(); S.job = null; S.shown = 0; S.target = 0;
+  const set = (sel, fn) => { const el = $(sel); if (el) fn(el); };
+  set('#job-title', (el) => (el.textContent = 'Starting…'));
+  set('#job-message', (el) => (el.textContent = ''));
+  set('#job-meta', (el) => (el.innerHTML = ''));
+  set('#job-stages', (el) => (el.innerHTML = ''));
+  set('#job-warnings', (el) => { el.hidden = true; el.innerHTML = ''; });
+  set('#job-result', (el) => { el.hidden = true; el.innerHTML = ''; });
+  set('#job-log', (el) => (el.innerHTML = ''));
+  set('#job-fill', (el) => { el.style.width = '0%'; el.className = 'progress-fill'; });
+  set('#job-percent', (el) => (el.textContent = '0%'));
+  set('#job-pulse', (el) => (el.className = 'pulse-indicator'));
+  if (!keepScript) clearScriptStudio();
+}
+function clearScriptStudio() {
+  S.preview = null; store.set('studio.preview', null); S.script = null;
+  const set = (sel, fn) => { const el = $(sel); if (el) fn(el); };
+  set('#script-title', (el) => (el.textContent = 'No script yet'));
+  set('#script-sub', (el) => (el.textContent = 'The script for the new short will appear here when it is written.'));
+  set('#script-version', (el) => { el.hidden = true; el.innerHTML = ''; });
+  ['#script-editor', '#script-review', '#script-claims', '#script-config-card', '#script-stats'].forEach((s) => set(s, (el) => (el.innerHTML = '')));
+  ['#btn-add-line', '#btn-save-version'].forEach((b) => set(b, (el) => (el.disabled = true)));
+  if (typeof renderPreviewState === 'function') renderPreviewState();
+  if (typeof updateStats === 'function') try { updateStats(); } catch {}
 }
 
 function attachJob(jobId) {
@@ -263,7 +297,7 @@ async function loadScript(projectId, version) {
 function renderReview(s) {
   const box = $('#script-review'); if (!box) return; const r = s.meta.llmReview, h = '<h4>Proof-read by local model</h4>';
   if (!r) { box.innerHTML = `${h}<p class="muted">${/^llm/.test(s.meta.source || '') ? 'Written before proof-reading existed.' : 'Edited or hand-written version: you are the reviewer.'}</p>`; return; }
-  const G = s.meta.gates, GL = { language: 'Language', facts: 'Facts', coverage: 'Topic coverage', narrative: 'Story', visuals: 'Visuals', duration: 'Duration', editorial: 'Editorial' };
+  const G = s.meta.gates, GL = { language: 'Language', facts: 'Facts', coverage: 'Topic coverage', narrative: 'Story', terms: 'Terms', visuals: 'Visuals', duration: 'Duration', editorial: 'Editorial' };
   const gatesHtml = G ? `<div class="claims-sum">${Object.entries(GL).filter(([k]) => G[k]).map(([k, label]) => `<span class="claim-badge ${G[k].ok ? 'supported' : (k === 'facts' && G[k].needsResearch && !G[k].issues.some((x) => !/^needs research/.test(x)) ? 'unverified' : 'contradicted')}" title="${esc(G[k].issues.join(' • '))}">${G[k].ok ? '✓' : (k === 'facts' && G[k].needsResearch ? '?' : '✗')} ${label}</span>`).join('')}</div>${G.facts?.unverifiedClaims?.length ? `<details><summary>Needs research: claims from the model's own knowledge (${G.facts.unverifiedClaims.length})</summary><ul>${G.facts.unverifiedClaims.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></details>` : ''}` : '';
   // status of THIS version + claim ledger (claim ID, line, status, source / explanation)
   const ST = { READY: ['supported', 'READY — ready for your review'], NEEDS_REVIEW: ['unverified', 'NEEDS REVIEW — generated, with issues to fix'], FAILED: ['contradicted', 'FAILED — not usable as it is'] };

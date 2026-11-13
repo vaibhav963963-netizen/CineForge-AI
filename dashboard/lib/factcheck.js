@@ -113,16 +113,19 @@ export function reviewClaims(script, { topic = '', topicFacts = null, userFacts 
   const add = (line, text, kind, value, status, note) => claims.push({ id: `L${line}-${claims.filter((c) => c.line === line).length + 1}`, line, text, kind, value, status, note });
   (script.lines || []).forEach((l, i) => {
     // the on-screen text is a claim too (seen: invented "₹2,000 – ₹10,000" and "90% temples" cards)
-    const line = i + 1, t0 = [l.text, l.onScreen].filter((x) => x && String(x).trim()).join(' · '), t = spokenNumbersToDigits(t0), tn = norm(t0), hedged = HEDGE.test(t0);
+    const line = i + 1, t0 = [l.text, l.onScreen].filter((x) => x && String(x).trim()).join(' · '), t = spokenNumbersToDigits(t0), tn = norm(t0);
+    // Hinglish: the Hindi voice reads the Devanagari "say" form — known errors and uncertainty wording are checked on
+    // it too (numbers are read from the caption only, so they are not counted twice)
+    const tv = [t0, l.say].filter((x) => x && String(x).trim()).join(' · '), tnv = norm(tv), hedged = HEDGE.test(tv);
     // known errors first: these are wrong regardless of anything else
     for (const e of items(topicFacts?.knownErrors)) {
       // norm() drops symbols, so the key "₹100" became "100" and flagged the correct "100 मिलियन डॉलर" (and would
       // match "1000"): a key with a currency sign must match with that sign, and numbers only as whole numbers
-      const raw = String(t0).toLowerCase().normalize('NFC');
+      const raw = String(tv).toLowerCase().normalize('NFC');
       const hit = (key) => {
         if (/[₹$]/.test(key)) { const k = key.toLowerCase().replace(/\s+/g, '\\s*').replace(/[$]/g, '\\$'); return new RegExp(`${k}(?![\\d.,])`, 'u').test(raw); }
         const k = norm(key); if (!k) return false;
-        return new RegExp(`(?:^|[^\\p{N}\\p{L}])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{N}])`, 'u').test(tn);
+        return new RegExp(`(?:^|[^\\p{N}\\p{L}])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{N}])`, 'u').test(tnv);
       };
       if ((e.keys || [e.text]).some(hit)) add(line, t, 'known error', e.text, 'contradicted', e.correction ? `Correct: ${e.correction}` : 'This is a known error for this topic.');
     }

@@ -58,7 +58,7 @@ export const PERSONALITIES = [
   {
     id: 'mumbai-conversational', name: 'Mumbai Conversational', blurb: 'Bambaiya street-smart Hindi ("Ek minute! Suno...").',
     languages: ['hi'],
-    voice: 'Casual Mumbai-style conversational Hindi (Bambaiya flavour): friendly, street-smart, a little cheeky. Mumbai flavour comes from word choice and attitude ("बोले तो", "एकदम" once or twice where they fit naturally) — never as the opening words and never as filler; the story itself must carry the interest. Keep it respectful, no slurs or vulgarity.',
+    voice: 'Casual Mumbai-style conversational Hindi (Bambaiya flavour): friendly, street-smart, a little cheeky. Mumbai flavour comes from word choice and attitude ("बोले तो", "एकदम" once or twice where they fit naturally) — never as the opening words and never as filler; the story itself must carry the interest. Do not keep addressing the viewer as "भाई", "यार" or "दोस्तों" — at most once in a whole script, never tacked onto the end of a sentence. Keep it respectful, no slurs or vulgarity.',
     delivery: { speed: 1.06, gap: 0.2, lead: 0.25, outro: 0.9 },
   },
   {
