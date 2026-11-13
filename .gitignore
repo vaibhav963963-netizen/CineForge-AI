@@ -169,6 +169,8 @@ desktop.ini
 # ------------------------------------------------------------------------------
 # PRESERVE IMPORTANT EMPTY DIRECTORIES
 # ------------------------------------------------------------------------------
+# generated projects (script tests, local renders) stay local; projects committed before this rule remain tracked
+projects/*
 !projects/.gitkeep
 !youtube/queue/.gitkeep
 
