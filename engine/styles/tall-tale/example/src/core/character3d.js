@@ -11,94 +11,10 @@ const lerp = (a, b, t) => a + (b - a) * t;
 // ============================================================================
 // CHARACTER PRESETS & ARCHETYPES
 // ============================================================================
-export const ARCHETYPES = {
-  desi_hero: {
-    name: 'Desi Hero (Bunty)',
-    skin: '#F2B98E',
-    hairColor: '#1E1E1E',
-    hairStyle: 'modern',
-    shirt: '#1E88E5',
-    vest: '#0D47A1',
-    pants: '#263238',
-    shoes: '#FFFFFF',
-    trim: '#FFD54F',
-    accessories: ['cap']
-  },
-  desi_uncle: {
-    name: 'Desi Uncle (Sharma Ji)',
-    skin: '#DE9B72',
-    hairColor: '#424242',
-    hairStyle: 'side_part',
-    shirt: '#FFF8E1',
-    vest: '#C62828', // Nehru jacket
-    pants: '#F5F5F5', // Dhoti/pajama
-    shoes: '#5D4037', // Leather jutti
-    trim: '#FFB300',
-    accessories: ['mustache', 'glasses']
-  },
-  curious_student: {
-    name: 'Curious Student (Aarav)',
-    skin: '#F7C59F',
-    hairColor: '#2B2B2B',
-    hairStyle: 'curly',
-    shirt: '#FB8C00',
-    pants: '#37474F',
-    shoes: '#E0E0E0',
-    trim: '#00ACC1',
-    accessories: ['backpack']
-  },
-  indian_techie: {
-    name: 'Indian Techie (Rohan)',
-    skin: '#E8A87C',
-    hairColor: '#1A1A1A',
-    hairStyle: 'modern',
-    shirt: '#00897B',
-    pants: '#212121',
-    shoes: '#424242',
-    trim: '#80CBC4',
-    accessories: ['glasses', 'headphones']
-  },
-  chanakya_scholar: {
-    name: 'Ancient Scholar (Chanakya)',
-    skin: '#EAA97B',
-    hairColor: '#212121',
-    hairStyle: 'bun',
-    shirt: '#FFF3E0', // Angavastram
-    vest: '#E65100',  // Saffron sash
-    pants: '#FFE0B2',
-    shoes: '#8D6E63',
-    trim: '#FFB74D',
-    accessories: ['scarf']
-  },
-  warrior_king: {
-    name: 'Warrior King (Shivaji)',
-    skin: '#E59B6E',
-    hairColor: '#1B1B1B',
-    hairStyle: 'turban',
-    shirt: '#C2185B',
-    vest: '#37474F', // Armor breastplate
-    pants: '#ECEFF1',
-    shoes: '#3E2723',
-    trim: '#FFD700',
-    accessories: ['turban', 'mustache', 'sash']
-  },
-  authority_suit: {
-    name: 'Authority Figure (Leader)',
-    skin: '#F0BA95',
-    hairColor: '#37474F',
-    hairStyle: 'side_part',
-    shirt: '#ECEFF1',
-    vest: '#263238', // Suit jacket
-    pants: '#263238',
-    shoes: '#111111',
-    trim: '#D32F2F', // Red tie
-    accessories: ['tie']
-  }
-};
+// Designs live in one folder per character: ./characters/<id>/index.js (registry: ./characters/index.js)
+import { DESIGNS } from './characters/index.js';
+export const ARCHETYPES = DESIGNS;
 
-// ============================================================================
-// 3D PROCEDURAL CHARACTER RIG GENERATOR
-// ============================================================================
 export function createCharacter3D(config = {}) {
   const presetKey = config.archetype || 'desi_hero';
   const cfg = { ...(ARCHETYPES[presetKey] || ARCHETYPES.desi_hero), ...config };
@@ -199,12 +115,23 @@ export function createCharacter3D(config = {}) {
   head.castShadow = true;
   headGroup.add(head);
 
-  // Chin / Jawline definition
-  const jawGeo = new THREE.BoxGeometry(0.14, 0.10, 0.12);
-  const jaw = new THREE.Mesh(jawGeo, skinMat);
-  jaw.position.set(0, -0.09, 0.05);
-  jaw.castShadow = true;
+  // Cheeks / upper jaw: a soft rounded lower face blended into the head (no hard box edges)
+  const cheeks = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), skinMat);
+  cheeks.scale.set(0.135, 0.085, 0.125);
+  cheeks.position.set(0, -0.06, 0.03);
+  cheeks.castShadow = true;
+  headGroup.add(cheeks);
+
+  // Moving jaw: rounded chin + lower lip drop together when the character speaks
+  const jaw = new THREE.Group();
+  jaw.position.set(0, -0.045, 0.02);
   headGroup.add(jaw);
+  const chin = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), skinMat);
+  // kept inside the round head silhouette: at rest the face stays round; it only shows as a soft curve when the jaw drops
+  chin.scale.set(0.07, 0.05, 0.07);
+  chin.position.set(0, -0.055, 0.04);
+  chin.castShadow = true;
+  jaw.add(chin);
 
   // 3D Eyes
   const eyeMat = new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.1 });
@@ -252,11 +179,39 @@ export function createCharacter3D(config = {}) {
   nose.rotation.x = 0.3;
   headGroup.add(nose);
 
-  // 3D Cartoon Mouth
-  const mouthMat = new THREE.MeshStandardMaterial({ color: '#880E4F', roughness: 0.4 });
-  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.02), mouthMat);
-  mouth.position.set(0, -0.07, 0.165);
+  // Mouth: dark interior + upper teeth + upper lip (fixed) and lower lip (on the jaw), lips tinted from the skin
+  const lipMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(cfg.skin).lerp(new THREE.Color('#9c3b46'), 0.45), roughness: 0.45 });
+  const mouthMat = new THREE.MeshStandardMaterial({ color: '#3a0d14', roughness: 0.8 });
+  const mouth = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), mouthMat);   // interior; height follows the opening
+  mouth.scale.set(0.03, 0.004, 0.012);
+  mouth.position.set(0, -0.071, 0.152);
   headGroup.add(mouth);
+  const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.009, 0.006), new THREE.MeshStandardMaterial({ color: '#f4efe6', roughness: 0.35 }));
+  teeth.position.set(0, -0.068, 0.157);
+  teeth.visible = false;
+  headGroup.add(teeth);
+  const lipGeo = new THREE.CapsuleGeometry(0.0065, 0.048, 4, 12);
+  const upperLip = new THREE.Mesh(lipGeo, lipMat);
+  upperLip.rotation.z = Math.PI / 2;
+  upperLip.position.set(0, -0.064, 0.16);
+  upperLip.scale.set(0.85, 1, 0.8);
+  headGroup.add(upperLip);
+  const lowerLip = new THREE.Mesh(lipGeo, lipMat);
+  lowerLip.rotation.z = Math.PI / 2;
+  lowerLip.position.set(0, -0.032, 0.138);   // relative to the jaw group → face y ≈ -0.077
+  lowerLip.scale.set(1, 0.9, 0.85);
+  jaw.add(lowerLip);
+  let talkCur = 0, exprOpen = 0, talkPhase = 0;
+  function shapeMouth(open, wide = 0) {
+    const o = clamp(open, 0, 1);
+    jaw.position.y = -0.045 - o * 0.016;
+    jaw.rotation.x = o * 0.06;
+    mouth.scale.set(0.028 * (1 + wide * 0.25 - o * 0.12), 0.004 + o * 0.011, 0.012);
+    mouth.position.y = -0.071 - o * 0.007;
+    teeth.visible = o > 0.12;
+    upperLip.scale.x = 0.85 * (1 + wide * 0.2 - o * 0.1);
+    lowerLip.scale.x = 1 + wide * 0.2 - o * 0.12;
+  }
 
   // 3D Ears
   for (const side of [-1, 1]) {
@@ -497,6 +452,7 @@ export function createCharacter3D(config = {}) {
     // Expressive Storytelling Gestures
     setGesture(type = 'explain', t = 0) {
       this.setIdle(t);
+      exprOpen = 0;
       const beat = Math.sin(t * 4.5);
 
       switch (type) {
@@ -524,7 +480,7 @@ export function createCharacter3D(config = {}) {
           armR.elbow.rotation.set(0.3, 0, 0);
           armL.elbow.rotation.set(0.3, 0, 0);
           neck.rotation.set(-0.2, 0, 0);
-          mouth.scale.set(1.4, 2.0, 1.0);
+          exprOpen = 0.45;
           break;
 
         case 'shock': // Lean back, hands raised defensively, eyes wide
@@ -536,7 +492,7 @@ export function createCharacter3D(config = {}) {
           armL.elbow.rotation.set(-1.4, 0, 0);
           this.setBlink(0);
           eyebrows[0].position.y = 0.095; eyebrows[1].position.y = 0.095;
-          mouth.scale.set(1.2, 2.5, 1.0);
+          exprOpen = 0.7;
           break;
 
         case 'point': // Pointing forward at viewer/target
@@ -558,9 +514,12 @@ export function createCharacter3D(config = {}) {
 
     // 3D Mouth & Speech Animation
     setTalk(amount = 0) {
-      const k = clamp(amount, 0, 1);
-      mouth.scale.y = 1.0 + k * 2.2;
-      mouth.scale.x = 1.0 + k * 0.4;
+      // smoothed (no frame-to-frame snapping), never fully gaping; a slow phase alternates wide (e/i) and round (o/u) shapes
+      const target = clamp(amount, 0, 1) * 0.75;
+      talkCur += (target - talkCur) * 0.45;
+      talkPhase += 0.37;
+      const open = Math.max(talkCur, exprOpen);
+      shapeMouth(open, talkCur > 0.05 ? Math.sin(talkPhase) * 0.5 : 0);
     },
 
     // Natural LookAt Camera/Target

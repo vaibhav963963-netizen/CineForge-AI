@@ -149,7 +149,7 @@
       <section class="screen" id="screen-trends"><div class="section-intro"><h2>Topic ideas</h2><p>Each idea fills the form with a supported language, personality and style. You can change anything.</p></div><div class="trends-grid" id="trends-grid"></div></section>
 
       <!-- CHARACTERS -->
-      <section class="screen" id="screen-characters"><div class="section-intro"><h2>Character roster</h2><p>Registered characters with a 3D design in <code>character3d.js</code>. In 3D styles they appear as the 3D model; in 2D styles as a 2D figure in the same colours and signature accessory.</p></div><div class="characters-grid" id="characters-grid"></div></section>
+      <section class="screen" id="screen-characters"><div class="section-intro"><h2>Character roster</h2><p>Registered characters, one folder each in <code>engine/styles/tall-tale/example/src/core/characters/</code>. In 3D styles they appear as the 3D model; in 2D styles as a 2D figure in the same colours and signature accessory.</p></div><div class="characters-grid" id="characters-grid"></div></section>
 
       <!-- VOICES -->
       <section class="screen" id="screen-voices"><div class="section-intro"><h2>Installed voices</h2><p id="voices-intro">Read from models/kokoro/voices-v1.0.bin.</p></div><div class="voices-grid" id="voices-grid"></div></section>
@@ -192,7 +192,9 @@
       </div>
     </div>
   </div>
+  <script type="importmap">{"imports":{"three":"/engine3d/three.module.js"}}</script>
   <script src="app.js"></script>
+  <script type="module" src="charpreview.js"></script>
   <script src="setup.js"></script>
 </body>
 </html>

@@ -24,7 +24,8 @@
     "Hollywood",
     "Gravity",
     "Asia",
-    "Asian"
+    "Asian",
+    "PSLV-C25"
   ],
   "sources": [
     "ISRO mission pages for the Mars Orbiter Mission",
@@ -32,13 +33,15 @@
   ],
   "verified": [
     {
-      "text": "The Mars Orbiter Mission, also called Mangalyaan, was launched by ISRO on 5 November 2013 on a PSLV rocket from Sriharikota.",
+      "text": "The Mars Orbiter Mission, also called Mangalyaan, was launched by ISRO on 5 November 2013 on the PSLV-C25 rocket from Sriharikota.",
       "keys": [
         "launched",
         "pslv",
         "sriharikota",
         "2013",
-        "5 november"
+        "5 november",
+        "pslv-c25",
+        "c25"
       ]
     },
     {

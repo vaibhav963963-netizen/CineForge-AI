@@ -99,3 +99,6 @@ select option:disabled { color: #6B7280; }
 .look-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border-subtle); background: var(--bg-tertiary); color: var(--text-main); font: inherit; font-size: 12px; cursor: pointer; }
 .look-chip:hover { border-color: var(--accent-saffron); }
 .look-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,.3); }
+.char-stage-3d img.char-3d { width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; transition: opacity .25s; }
+.char-stage-3d img.char-3d.ready { opacity: 1; }
+.look-chip.active { border-color: var(--accent-saffron); color: var(--accent-saffron); }

@@ -243,9 +243,13 @@ async function onJobFinished(j) {
 async function loadScript(projectId, version) {
   const [p, s] = await Promise.all([api(`/api/projects/${projectId}`), api(`/api/projects/${projectId}/scripts/${version}`)]);
   S.script = { project: p, version, data: s };
-  $('#script-title').textContent = s.title; $('#script-sub').textContent = `${p.id} · v${version} · ${s.meta.source}${s.meta.model ? ' · ' + s.meta.model.name : ''}`;
+  // stale indicator: the displayed version is not the newest one in this project (approved versions are never replaced)
+  const latest = Math.max(...p.script.versions.map((v) => v.version)), stale = version !== latest;
+  $('#script-title').textContent = s.title;
+  $('#script-sub').innerHTML = `${esc(p.id)} · v${version} · ${esc(s.meta.source)}${s.meta.model ? ' · ' + esc(s.meta.model.name) : ''}${stale ? ` <span class="claim-badge unverified" title="A newer version exists. The approved version is kept unchanged.">older version — latest is v${latest} <a href="#" data-latest="${latest}">show latest</a></span>` : ''}`;
+  const lk = $('#script-sub').querySelector('[data-latest]'); if (lk) lk.onclick = (e) => { e.preventDefault(); loadScript(projectId, latest); };
   const vs = $('#script-version'); vs.hidden = false;
-  vs.innerHTML = p.script.versions.map((v) => `<option value="${v.version}" ${v.version === version ? 'selected' : ''}>v${v.version} · ${v.source}${v.approved ? ' · approved' : ''}</option>`).join('');
+  vs.innerHTML = p.script.versions.map((v) => `<option value="${v.version}" ${v.version === version ? 'selected' : ''}>v${v.version} · ${v.source}${v.approved ? ' · approved' : ''}${v.version === latest ? ' · latest' : ''}</option>`).join('');
   const hing = p.config.language.id === 'hinglish';
   $('#script-editor').innerHTML = s.lines.map((l, i) => lineEditor(l, i, hing)).join('');
   $('#script-config-card').innerHTML = `<h4>Written for</h4><p>${esc(p.config.language.name)}<br>${esc(p.config.narration.personalityName)}<br>${p.config.durationSeconds} s target</p>`;
@@ -259,9 +263,22 @@ async function loadScript(projectId, version) {
 function renderReview(s) {
   const box = $('#script-review'); if (!box) return; const r = s.meta.llmReview, h = '<h4>Proof-read by local model</h4>';
   if (!r) { box.innerHTML = `${h}<p class="muted">${/^llm/.test(s.meta.source || '') ? 'Written before proof-reading existed.' : 'Edited or hand-written version: you are the reviewer.'}</p>`; return; }
-  box.innerHTML = r.confirmed
-    ? `${h}<p class="text-emerald">✓ Confirmed: grammar, spelling and complete sentences checked${r.changedLines ? ` (${r.changedLines} line${r.changedLines > 1 ? 's' : ''} corrected)` : ''}.</p>`
-    : `${h}<p class="text-saffron">⚠ Not confirmed after ${r.rounds} round${r.rounds > 1 ? 's' : ''}. Fix these lines, or approve them as they are:</p><ul>${r.issues.map((i) => `<li>${i.line ? `Line ${i.line}: ` : ''}${esc(i.problem)}</li>`).join('')}</ul>`;
+  const G = s.meta.gates, GL = { language: 'Language', facts: 'Facts', coverage: 'Topic coverage', narrative: 'Story', visuals: 'Visuals', duration: 'Duration', editorial: 'Editorial' };
+  const gatesHtml = G ? `<div class="claims-sum">${Object.entries(GL).filter(([k]) => G[k]).map(([k, label]) => `<span class="claim-badge ${G[k].ok ? 'supported' : (k === 'facts' && G[k].needsResearch && !G[k].issues.some((x) => !/^needs research/.test(x)) ? 'unverified' : 'contradicted')}" title="${esc(G[k].issues.join(' • '))}">${G[k].ok ? '✓' : (k === 'facts' && G[k].needsResearch ? '?' : '✗')} ${label}</span>`).join('')}</div>${G.facts?.unverifiedClaims?.length ? `<details><summary>Needs research: claims from the model's own knowledge (${G.facts.unverifiedClaims.length})</summary><ul>${G.facts.unverifiedClaims.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></details>` : ''}` : '';
+  // status of THIS version + claim ledger (claim ID, line, status, source / explanation)
+  const ST = { READY: ['supported', 'READY — ready for your review'], NEEDS_REVIEW: ['unverified', 'NEEDS REVIEW — generated, with issues to fix'], FAILED: ['contradicted', 'FAILED — not usable as it is'] };
+  const st = s.meta.status && ST[s.meta.status];
+  const when = s.meta.generatedAt || s.meta.createdAt;
+  const statusHtml = st ? `<p><span class="claim-badge ${st[0]}">${st[1]}</span> <span class="muted">v${s.version ?? ''}${when ? ` · ${new Date(when).toLocaleString()}` : ''}</span></p>` : '';
+  const L = (s.meta.claims || []).filter((c) => c.status !== 'VERIFIED');
+  const ledgerHtml = (s.meta.claims || []).length ? `<details ${L.length ? 'open' : ''}><summary>Claims: ${(s.meta.claims || []).length - L.length} verified, ${L.length} to check</summary><ul>${(s.meta.claims || []).map((c) => `<li><code>${esc(c.id)}</code> line ${c.line} · <b>${esc(c.status)}</b> · ${esc(c.claim)}${c.source?.fact ? ` <span class="muted">← ${esc(c.source.fact)}</span>` : ''}${c.explanation ? ` <span class="muted">(${esc(c.explanation)})</span>` : ''}</li>`).join('')}</ul></details>` : '';
+  const adv = s.meta.gates?.editorial?.advisory || [];
+  const advHtml = adv.length ? `<details><summary>Editor notes (advisory — the local model cannot reliably judge storytelling; please read the script yourself)</summary><ul>${adv.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : '';
+  box.innerHTML = statusHtml + ledgerHtml + advHtml + (r.confirmed && !G
+    ? `${h}<p class="text-saffron">Older version: only grammar was proof-read (no fact, coverage, story or duration gates). Review it yourself or regenerate.</p>`
+    : r.confirmed
+    ? `${h}${gatesHtml}<p class="text-emerald">✓ Ready for your review: language, facts, coverage, story, duration and editorial checks passed${r.changedLines ? ` (${r.changedLines} line${r.changedLines > 1 ? 's' : ''} corrected)` : ''}.</p>`
+    : `${h}${gatesHtml}<p class="text-saffron">⚠ Not ready after ${r.rounds} round${r.rounds > 1 ? 's' : ''}. Fix these lines, or approve them as they are:</p><ul>${r.issues.map((i) => `<li>${i.line ? `Line ${i.line}: ` : ''}${esc(i.problem)}</li>`).join('')}</ul>`);
 }
 
 // ── fact check panel: every flagged claim must be confirmed (or the line edited) before rendering ────────────
@@ -381,7 +398,9 @@ function portrait(c) {
   return `<svg viewBox="0 0 220 220" width="100%" height="100%"><defs><radialGradient id="g_${c.id}" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="${acc}" stop-opacity="0.35"/><stop offset="100%" stop-color="#0E1218"/></radialGradient></defs><rect width="220" height="220" fill="url(#g_${c.id})"/><path d="M55 170 Q110 152 165 170 L180 220 L40 220 Z" fill="${acc}"/><rect x="98" y="130" width="24" height="28" fill="${skin}"/><ellipse cx="110" cy="114" rx="30" ry="34" fill="${skin}"/><path d="M80 108 Q80 80 110 80 Q140 80 140 108 Q130 88 110 88 Q90 88 80 108Z" fill="${hair}"/><circle cx="98" cy="113" r="3" fill="#111"/><circle cx="122" cy="113" r="3" fill="#111"/><path d="M101 129 Q110 136 119 129" stroke="#7a2a2a" stroke-width="2.5" fill="none"/></svg>`;
 }
 function renderRosters() {
-  $('#characters-grid').innerHTML = S.catalog.characters.filter((c) => c.id !== 'none').map((c) => `<div class="char-card-3d"><div class="char-stage-3d"><span class="stage-badge">${c.available ? '3D design ✓' : 'no 3D design'}</span>${portrait(c)}</div><div class="char-content-3d"><div class="char-header-3d"><h3>${esc(c.name)}</h3><span class="char-role-badge">${esc(c.title || '')}</span></div><p class="char-desc-3d">${esc(c.role || '')}</p><div class="char-attire-pill"><span class="spec-label">Attire:</span> <span class="attire-text">${esc(c.attire || '')}</span></div>${(c.looks || []).length ? `<div class="char-looks"><span class="spec-label">Appearances:</span> ${c.looks.map((l) => `<button class="look-chip" data-usechar="${c.id}" data-uselook="${l.id}" title="Use this appearance">${l.overrides ? `<i style="background:${esc(l.overrides.shirt || c.accentColor)}"></i>` : `<i style="background:${esc(c.accentColor)}"></i>`}${esc(l.name)}</button>`).join('')}</div>` : ''}<button class="btn btn-secondary btn-sm" data-usechar="${c.id}" ${c.available ? '' : 'disabled'}>Use in a video</button></div></div>`).join('');
+  $('#characters-grid').innerHTML = S.catalog.characters.filter((c) => c.id !== 'none').map((c) => `<div class="char-card-3d"><div class="char-stage-3d"><span class="stage-badge">${c.available ? '3D design ✓' : 'no 3D design'}</span>${c.available ? `<img class="char-3d" data-char3d data-card="${c.id}" data-archetype="${esc(c.archetype)}" data-accent="${esc(c.accentColor || '#F59E0B')}" alt="${esc(c.name)} (3D)">` : portrait(c)}</div><div class="char-content-3d"><div class="char-header-3d"><h3>${esc(c.name)}</h3><span class="char-role-badge">${esc(c.title || '')}</span></div><p class="char-desc-3d">${esc(c.role || '')}</p><div class="char-attire-pill"><span class="spec-label">Attire:</span> <span class="attire-text">${esc(c.attire || '')}</span></div>${(c.looks || []).length ? `<div class="char-looks"><span class="spec-label">Appearances:</span> ${c.looks.map((l) => `<button class="look-chip ${l === c.looks[0] ? 'active' : ''}" data-lookcard="${c.id}" data-lookid="${l.id}" title="Preview this appearance">${l.overrides ? `<i style="background:${esc(l.overrides.shirt || c.accentColor)}"></i>` : `<i style="background:${esc(c.accentColor)}"></i>`}${esc(l.name)}</button>`).join('')}</div>` : ''}<button class="btn btn-secondary btn-sm" data-usechar="${c.id}" data-uselook="${c.looks?.[0]?.id || ''}" ${c.available ? '' : 'disabled'}>Use in a video</button></div></div>`).join('');
+  // real 3D previews from the engine's character code (charpreview.js loads as a module, maybe after this)
+  if (window.CharPreview) window.CharPreview.fill($('#characters-grid')); else window.addEventListener('charpreview-ready', () => window.CharPreview.fill($('#characters-grid')), { once: true });
   $('#voices-intro').textContent = `${S.catalog.voices.length} voices installed for the studio's languages (read from models/kokoro/voices-v1.0.bin).`;
   const byLang = {}; S.catalog.voices.forEach((v) => (byLang[v.accent] = byLang[v.accent] || []).push(v));
   $('#voices-grid').innerHTML = Object.entries(byLang).map(([g, vs]) => vs.map((v) => `<div class="voice-card"><h3>${esc(v.name)} ${v.recommended ? '★' : ''}</h3><p>${esc(v.notes)}</p><div class="voice-tags"><span class="voice-tag">${esc(g)}</span><span class="voice-tag">${v.gender}</span><span class="voice-tag"><code>${v.id}</code></span></div></div>`).join('')).join('');
@@ -400,13 +419,17 @@ let toastT; function toast(m) { let el = $('#toast'); if (!el) { el = document.c
 document.addEventListener('DOMContentLoaded', async () => {
   $$('.nav-item').forEach((b) => b.addEventListener('click', () => go(b.dataset.screen)));
   document.addEventListener('click', (e) => {
+    const lc = e.target.closest('[data-lookcard]');
+    if (lc) { const ch = S.catalog.characters.find((c) => c.id === lc.dataset.lookcard), lk = ch?.looks.find((l) => l.id === lc.dataset.lookid), card = lc.closest('.char-card-3d'), img = card?.querySelector('img[data-char3d]');
+      card?.querySelectorAll('.look-chip').forEach((b) => b.classList.toggle('active', b === lc)); const use = card?.querySelector('[data-usechar]'); if (use) use.dataset.uselook = lk?.id || '';
+      if (img && window.CharPreview) { img.dataset.look = lk?.overrides ? JSON.stringify(lk.overrides) : ''; window.CharPreview.fill(card); } return; }
     const t = e.target.closest('[data-goto],[data-play],[data-reuse],[data-openscript],[data-usetrend],[data-usechar],.le-del'); if (!t) return;
     if (t.dataset.goto) { e.preventDefault(); go(t.dataset.goto); }
     if (t.dataset.play) openVideo(t.dataset.play);
     if (t.dataset.usetrend) useTrend(t.dataset.usetrend);
     if (t.dataset.usechar) { $('#f-character').value = t.dataset.usechar; fillLooks(t.dataset.uselook); onFormChange(); go('create'); }
     if (t.dataset.reuse) { const p = S.projects.find((x) => x.id === t.dataset.reuse); loadFormFromConfig(p.config); go('create'); }
-    if (t.dataset.openscript) { const p = S.projects.find((x) => x.id === t.dataset.openscript); loadScript(p.id, p.script.approvedVersion || p.script.versions.at(-1).version).then(() => go('scripts')); }
+    if (t.dataset.openscript) { const p = S.projects.find((x) => x.id === t.dataset.openscript); loadScript(p.id, Math.max(...p.script.versions.map((v) => v.version))).then(() => go('scripts')); }
     if (t.classList.contains('le-del')) { t.closest('.line-edit').remove(); updateStats(); }
   });
   $('#btn-quick-create').onclick = () => go('create');

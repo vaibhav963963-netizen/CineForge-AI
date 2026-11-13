@@ -6,6 +6,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { PATHS } from './workspace.js';
+// 3D designs: one folder per character (engine/styles/tall-tale/example/src/core/characters/<id>/index.js)
+import { DESIGNS } from '../../engine/styles/tall-tale/example/src/core/characters/index.js';
 
 const CORE3D = path.join(PATHS.styles, 'tall-tale', 'example');
 const FONT_FILES = [
@@ -21,18 +23,7 @@ function devanagariFont() {
 }
 
 /** colours + accessories of each 3D archetype, read from the character asset itself (character3d.js) */
-export function archetypeDesigns() {
-  const src = fs.readFileSync(path.join(CORE3D, 'src', 'core', 'character3d.js'), 'utf8');
-  const block = src.slice(src.indexOf('export const ARCHETYPES'), src.indexOf('export function createCharacter3D'));
-  const out = {};
-  for (const m of block.matchAll(/^ {2}([a-z_]+): \{([\s\S]*?)^ {2}\}/gm)) {
-    const body = m[2], d = {};
-    for (const f of body.matchAll(/(\w+): '([^']*)'/g)) d[f[1]] = f[2];
-    const acc = body.match(/accessories: \[([^\]]*)\]/); d.accessories = acc ? [...acc[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : [];
-    out[m[1]] = d;
-  }
-  return out;
-}
+export function archetypeDesigns() { return Object.fromEntries(Object.entries(DESIGNS).map(([k, d]) => [k, { ...d, accessories: d.accessories || [] }])); }
 
 export function characterSpec(config, catalogChar) {
   if (config.visual.character === 'none') return { id: 'none', mode: 'none' };
@@ -58,6 +49,7 @@ export function scaffoldRuntime(dir, config) {
   if (webgl) {
     copyDir(path.join(CORE3D, 'vendor'), path.join(dir, 'vendor'));
     for (const f of ['engine.js', 'character3d.js', 'environments3d.js']) fs.copyFileSync(path.join(CORE3D, 'src', 'core', f), path.join(dir, 'src', 'core', f));
+    copyDir(path.join(CORE3D, 'src', 'core', 'characters'), path.join(dir, 'src', 'core', 'characters'));   // one folder per character
     inventory.threeJs = 'three.js r170 (MIT)'; inventory.characterAsset = 'engine/styles/tall-tale/example/src/core/character3d.js';
   } else {
     // 2D styles never load WebGL code

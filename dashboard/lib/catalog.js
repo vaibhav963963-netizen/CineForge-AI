@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { PATHS, STUDIO_CONFIG, CHROME } from './workspace.js';
+import { DESIGNS, LOOKS } from '../../engine/styles/tall-tale/example/src/core/characters/index.js';
 
 // ── LANGUAGES ────────────────────────────────────────────────────────────────────────────────────────────────────
 // ttsScript = the script the narration text must be in for Kokoro's phonemizer (espeak-ng 'hi' only reads Devanagari;
@@ -29,12 +30,12 @@ export const LANGUAGES = [
   {
     id: 'hinglish', name: 'Hinglish (Roman-script captions, Hindi voice)', code: 'hi', script: 'Latn', dialect: 'hinglish', locale: 'hi-IN',
     ttsLang: 'hi', ttsScript: 'Deva', voiceLangs: ['hi'], whisperLanguage: 'hi', captionScript: 'Latn',
-    writing: 'Write Hinglish-style conversational Hindi: everyday spoken Hindi mixed with the common English words young Indians use, written ENTIRELY in Devanagari script (write English words phonetically in Devanagari too, e.g. मिशन, बजट, क्रिकेट). Never write Roman/Latin letters. The studio converts each line to Roman-script captions automatically and the Hindi voice reads the Devanagari.',
+    writing: 'Write Hinglish-style conversational Hindi: everyday spoken Hindi mixed with the common English words young Indians use, written ENTIRELY in Devanagari script (write English words phonetically in Devanagari too, e.g. मिशन, बजट, क्रिकेट). For science, tech and body words use the English word the way people actually speak (हार्ट, ब्लड, ऑक्सीजन, सिस्टम, कैमोफ्लाज), never formal textbook Hindi (हृदय, रक्त, प्रणाली, छलावरण, मांसपेशियाँ, संचालित, व्यवस्था). Never write Roman/Latin letters. The studio converts each line to Roman-script captions automatically and the Hindi voice reads the Devanagari.',
   },
   {
     id: 'en', name: 'English', code: 'en', script: 'Latn', dialect: 'standard', locale: 'en-IN',
     ttsLang: null /* from the voice: en-us or en-gb */, ttsScript: 'Latn', voiceLangs: ['en-us', 'en-gb'], whisperLanguage: 'en', captionScript: 'Latn',
-    writing: 'Write in clear, natural spoken English for an Indian audience. Write numbers the way they are spoken.',
+    writing: 'Write in clear, natural spoken English for an Indian audience, ENTIRELY in English with Latin letters — never Hindi or Devanagari, even for Indian topics. Write numbers the way they are spoken.',
   },
 ];
 
@@ -51,13 +52,13 @@ export const PERSONALITIES = [
   {
     id: 'energetic-youtuber', name: 'Energetic Indian YouTuber', blurb: 'Fast, punchy hooks and rhetorical questions.',
     languages: '*',
-    voice: 'High-energy Indian YouTuber. Open with a shocking hook question. Short punchy sentences, exclamations, direct address to the viewer ("socho", "imagine this"), fast rhythm, a twist at the end.',
+    voice: 'High-energy Indian YouTuber. Open with the single most surprising concrete detail of THIS topic (a number, an outcome or a contradiction), not a generic question. Short punchy sentences, direct address to the viewer, fast rhythm, a twist at the end.',
     delivery: { speed: 1.1, gap: 0.16, lead: 0.2, outro: 0.8 },
   },
   {
     id: 'mumbai-conversational', name: 'Mumbai Conversational', blurb: 'Bambaiya street-smart Hindi ("Ek minute! Suno...").',
     languages: ['hi'],
-    voice: 'Casual Mumbai-style conversational Hindi (Bambaiya flavour): friendly, street-smart, a little cheeky. Use natural Mumbai expressions like "ek minute", "suno", "bole toh", "ekdum", "kya scene hai" where they fit. Keep it respectful, no slurs or vulgarity.',
+    voice: 'Casual Mumbai-style conversational Hindi (Bambaiya flavour): friendly, street-smart, a little cheeky. Mumbai flavour comes from word choice and attitude ("बोले तो", "एकदम" once or twice where they fit naturally) — never as the opening words and never as filler; the story itself must carry the interest. Keep it respectful, no slurs or vulgarity.',
     delivery: { speed: 1.06, gap: 0.2, lead: 0.25, outro: 0.9 },
   },
   {
@@ -193,13 +194,7 @@ function detectFonts() {
   return { devanagari: deva.length ? { files: deva, family: 'StudioDeva' } : null, all: files };
 }
 
-const CHAR3D_SRC = path.join(PATHS.styles, 'tall-tale', 'example', 'src', 'core', 'character3d.js');
-function detectArchetypes() {
-  try {
-    const src = fs.readFileSync(CHAR3D_SRC, 'utf8'), block = src.slice(src.indexOf('export const ARCHETYPES'), src.indexOf('export function createCharacter3D'));
-    return [...block.matchAll(/^ {2}([a-z_]+): \{$/gm)].map((m) => m[1]);
-  } catch { return []; }
-}
+function detectArchetypes() { return Object.keys(DESIGNS); }   // one folder per character in src/core/characters
 function detectCharacters(archetypes) {
   let list = [];
   try { list = JSON.parse(fs.readFileSync(PATHS.characters, 'utf8')); } catch {}
@@ -207,7 +202,7 @@ function detectCharacters(archetypes) {
     const archetype = c.archetype || c.id, has3d = archetypes.includes(archetype);
     return {
       id: c.id, name: c.name, title: c.title, role: c.role, attire: c.attire, headwear: c.headwear, skin: c.skin, accentColor: c.accentColor,
-      hairColor: c.hairColor, svgType: c.svgType, archetype, available: has3d, looks: (c.looks || []).map((l) => ({ id: l.id, name: l.name, overrides: l.overrides || null })),
+      hairColor: c.hairColor, svgType: c.svgType, archetype, available: has3d, looks: (LOOKS[archetype] || []).map((l) => ({ id: l.id, name: l.name, overrides: l.overrides || null })),
       reason: has3d ? null : `no 3D design registered for "${archetype}" in character3d.js`,
     };
   });

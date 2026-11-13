@@ -46,8 +46,8 @@ test('letters from another script inside a Hindi line are refused', () => {
   assert.equal(p.length, 1); assert.match(p[0], /line 1 .*another script/);
 });
 
-test('line count: Hindi written directly gets longer lines, English keeps 3.4 s per line', () => {
-  assert.equal(lineCount(HI), 10); assert.equal(lineCount({ ...EN, durationSeconds: 30 }), 9);
+test('line count: ~6 s per line, one story beat each (reference script: 7 lines for 45 s)', () => {
+  assert.equal(lineCount({ ...EN, durationSeconds: 45 }), 7); assert.equal(lineCount({ ...EN, durationSeconds: 30 }), 5); assert.equal(lineCount({ ...HI, durationSeconds: 60 }), 10);
 });
 
 test('fact check: a number the facts give in metres is not accepted in feet (seen: "5,020 feet")', () => {

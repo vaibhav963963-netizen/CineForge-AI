@@ -1,0 +1,127 @@
+{
+  "id": "moon-tidal-locking",
+  "title": "Why the Moon always shows the same face (tidal locking)",
+  "match": [
+    "same face",
+    "same side",
+    "tidal locking",
+    "tidally locked",
+    "far side of the moon",
+    "moon always show",
+    "चाँद का एक ही",
+    "चंद्रमा का एक ही"
+  ],
+  "aliases": [
+    "Moon",
+    "Earth",
+    "Sun",
+    "Jupiter",
+    "Solar System",
+    "NASA",
+    "Luna 3"
+  ],
+  "sources": [
+    "NASA Science: 'Tidal Locking' and Moon facts pages",
+    "Wikipedia 'Tidal locking' and 'Far side of the Moon'"
+  ],
+  "verified": [
+    {
+      "text": "The Moon is tidally locked to Earth: it spins once on its own axis in the same time it takes to go once around Earth, about 27.3 days — so one spin equals one orbit.",
+      "keys": [
+        "tidally locked",
+        "tidal locking",
+        "27",
+        "27.3",
+        "same time",
+        "spins once",
+        "rotates once"
+      ]
+    },
+    {
+      "text": "Because the spin and the orbit take the same time, the same half of the Moon, the near side, always faces Earth.",
+      "keys": [
+        "near side",
+        "same half",
+        "same side",
+        "same face"
+      ]
+    },
+    {
+      "text": "Long ago the young Moon spun faster. Earth's gravity stretched it slightly, raising a bulge, and Earth's pull on that bulge slowly braked the Moon's spin until it matched its orbit.",
+      "keys": [
+        "bulge",
+        "spun faster",
+        "slowed",
+        "braked",
+        "stretched"
+      ]
+    },
+    {
+      "text": "The Moon's far side is not permanently dark: it gets as much sunlight as the near side, just at different times.",
+      "keys": [
+        "far side",
+        "dark side",
+        "sunlight"
+      ]
+    },
+    {
+      "text": "Because the Moon's orbit is slightly tilted and oval, a small wobble called libration lets us see about 59 percent of its surface over time.",
+      "keys": [
+        "libration",
+        "wobble",
+        "59"
+      ]
+    },
+    {
+      "text": "Many large moons are tidally locked to their planets, including Jupiter's four largest moons.",
+      "keys": [
+        "jupiter",
+        "other moons",
+        "many moons"
+      ]
+    },
+    {
+      "text": "The far side of the Moon was first photographed by the Soviet Luna 3 probe in 1959.",
+      "keys": [
+        "luna 3",
+        "1959",
+        "photographed"
+      ]
+    }
+  ],
+  "theories": [],
+  "legends": [],
+  "knownErrors": [
+    {
+      "text": "The far side of the Moon is always dark",
+      "keys": [
+        "always dark",
+        "permanently dark"
+      ],
+      "correction": "The far side gets as much sunlight as the near side; it only always faces away from Earth."
+    },
+    {
+      "text": "The Moon does not rotate",
+      "keys": [
+        "does not rotate",
+        "doesn't rotate",
+        "does not spin",
+        "doesn't spin"
+      ],
+      "correction": "The Moon does rotate, once per orbit, which is why the same side faces Earth."
+    }
+  ],
+  "uncertain": [],
+  "terms": {
+    "hi": {
+      "tidal locking": "टाइडल लॉकिंग (ज्वारीय बंधन)",
+      "tidally locked": "टाइडली लॉक्ड",
+      "libration": "लिब्रेशन",
+      "near side": "चाँद का पास वाला हिस्सा",
+      "far side": "चाँद का दूर वाला हिस्सा",
+      "tidal bulge": "ज्वारीय उभार",
+      "rotation": "अपनी धुरी पर घूमना",
+      "orbit": "पृथ्वी की परिक्रमा"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "vaccines-immune-system",
+  "title": "How vaccines train the immune system",
+  "match": ["vaccine", "vaccines", "vaccination", "टीका", "टीके", "वैक्सीन"],
+  "aliases": ["WHO", "Edward Jenner", "Jenner", "India", "B cells", "T cells", "mRNA"],
+  "sources": ["WHO 'How do vaccines work?'", "Wikipedia 'Vaccine', 'Smallpox', 'Edward Jenner'"],
+  "verified": [
+    { "text": "A vaccine shows the immune system a harmless version or piece of a germ: a weakened or killed germ, a protein from it, or genetic instructions (as in mRNA vaccines) for the body to make that protein.", "keys": ["weakened", "killed", "harmless", "piece", "protein", "mrna"] },
+    { "text": "The immune system treats that piece as an invader: B cells make antibodies that latch onto it, and T cells help coordinate the response and destroy infected cells.", "keys": ["antibodies", "b cells", "t cells", "antibody"] },
+    { "text": "After the response, long-lived memory B and T cells remain, so if the real germ arrives later the body recognises it and responds much faster.", "keys": ["memory", "remember", "faster", "recognise", "recognize"] },
+    { "text": "Some vaccines need booster doses to keep the immune memory strong.", "keys": ["booster"] },
+    { "text": "In 1796 Edward Jenner showed that material from cowpox could protect a person from smallpox, the first vaccine.", "keys": ["jenner", "1796", "cowpox", "smallpox"] },
+    { "text": "Smallpox was declared eradicated worldwide by the WHO in 1980.", "keys": ["eradicated", "1980"] },
+    { "text": "India was certified polio-free by the WHO in 2014, as part of the South-East Asia region.", "keys": ["polio", "2014"] },
+    { "text": "When enough people are immune, a germ struggles to spread, which also protects people who cannot be vaccinated; this is called herd immunity.", "keys": ["herd immunity", "enough people", "community"] }
+  ],
+  "theories": [],
+  "legends": [],
+  "knownErrors": [
+    { "text": "Vaccines cause autism", "keys": ["autism"], "correction": "Large studies found no link between vaccines and autism." }
+  ],
+  "uncertain": []
+}

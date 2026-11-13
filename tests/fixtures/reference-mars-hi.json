@@ -1,0 +1,13 @@
+{
+  "note": "User-supplied reference script (quality target). Used only as a regression fixture: the story/visual checks must accept it. Never used as a generation template.",
+  "topic": "ISRO Mars Orbiter Mission (Mangalyaan)",
+  "lines": [
+    { "text": "दुनिया के लिए मंगल तक पहुँचना एक बड़ी चुनौती थी। लेकिन भारत ने पहली ही कोशिश में इतिहास रच दिया!", "en": "Reaching Mars was a huge challenge for the world, but India made history on its very first attempt.", "visual": "Cinematic view of Mars from space, the Indian Mars Orbiter spacecraft approaching the red planet." },
+    { "text": "5 नवंबर 2013 को श्रीहरिकोटा से इसरो ने मंगलयान को पीएसएलवी-सी25 रॉकेट के जरिए अंतरिक्ष में रवाना किया।", "en": "On 5 November 2013 ISRO launched Mangalyaan from Sriharikota on the PSLV-C25 rocket.", "visual": "PSLV-C25 rocket lifting off from the Sriharikota launchpad." },
+    { "text": "इसके बाद शुरू हुई मंगल तक पहुँचने की लंबी अंतरिक्ष यात्रा।", "en": "Then began the long journey through space to Mars.", "visual": "Mangalyaan travelling through deep space, Earth shrinking behind it and Mars ahead." },
+    { "text": "24 सितंबर 2014 को मंगलयान ने मंगल की कक्षा में प्रवेश किया। भारत अपने पहले ही प्रयास में यह सफलता पाने वाला पहला देश बना।", "en": "On 24 September 2014 Mangalyaan entered Mars orbit, and India became the first country to succeed on its first attempt.", "visual": "Mars Orbiter performing orbit insertion, entering an elliptical orbit around Mars." },
+    { "text": "इस पूरे मिशन पर खर्च हुए थे लगभग 450 करोड़ रुपये।", "en": "The whole mission cost about 450 crore rupees.", "visual": "Mars Orbiter spacecraft against the red planet, mission cost shown as a clean graphic." },
+    { "text": "मंगलयान को सिर्फ छह महीने के लिए डिजाइन किया गया था, लेकिन इसने लगभग आठ साल तक काम किया!", "en": "Mangalyaan was designed for only six months, but it worked for about eight years.", "visual": "The spacecraft orbiting Mars over the years, a timeline from 2014 to 2022." },
+    { "text": "यह सिर्फ मंगल तक पहुँचने की कहानी नहीं थी। यह भारतीय वैज्ञानिकों की मेहनत, काबिलियत और हौसले की मिसाल थी!", "en": "This was not just a story of reaching Mars; it was proof of the hard work, skill and courage of Indian scientists.", "visual": "Wide view of Mars with the Mangalyaan spacecraft orbiting in the foreground." }
+  ]
+}

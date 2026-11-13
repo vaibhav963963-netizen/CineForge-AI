@@ -54,7 +54,8 @@ export async function chat({ messages, schema, temperature = 0.8, maxTokens = 20
       ...(schema ? { response_format: { type: 'json_schema', json_schema: { name: 'output', schema, strict: true } } } : {}) };
     const r = await fetch(`${BASE}/v1/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal });
     if (!r.ok) throw new Error(`script model HTTP ${r.status}: ${(await r.text()).slice(0, 300)}`);
-    let text = '', tokens = 0, buf = '';
+    // finishReason: 'stop' = complete; 'length' = cut off at max_tokens (the only way grammar-constrained JSON ends up invalid)
+    let text = '', tokens = 0, buf = '', finishReason = null;
     const dec = new TextDecoder();
     for await (const chunk of r.body) {
       buf += dec.decode(chunk, { stream: true });
@@ -63,10 +64,10 @@ export async function chat({ messages, schema, temperature = 0.8, maxTokens = 20
         const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
         if (!line.startsWith('data:')) continue;
         const data = line.slice(5).trim(); if (data === '[DONE]') continue;
-        try { const j = JSON.parse(data); const d = j.choices?.[0]?.delta?.content; if (d) { text += d; tokens++; if (onToken) onToken(tokens, text); } } catch {}
+        try { const j = JSON.parse(data); const c = j.choices?.[0]; const d = c?.delta?.content; if (c?.finish_reason) finishReason = c.finish_reason; if (d) { text += d; tokens++; if (onToken) onToken(tokens, text); } } catch {}
       }
     }
-    return { text, tokens };
+    return { text, tokens, finishReason, truncated: finishReason === 'length' };
   } finally { busy--; scheduleIdleStop(); }
 }
 

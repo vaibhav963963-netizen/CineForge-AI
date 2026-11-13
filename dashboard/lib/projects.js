@@ -74,7 +74,8 @@ export function addScriptVersion(id, script, meta) {
 }
 
 function entryForProject(entry) {
-  const { claimReview, ...rest } = entry;
+  // per-version validation detail stays in the version file; project.json keeps the status and summaries only
+  const { claimReview, gates, claims, research, plan, visuals, generationLog, editorialJudgment, draftFlags, ...rest } = entry;
   return claimReview ? { ...rest, claimSummary: claimReview.summary } : rest;
 }
 

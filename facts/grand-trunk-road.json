@@ -1,0 +1,25 @@
+{
+  "id": "grand-trunk-road",
+  "title": "The Grand Trunk Road",
+  "match": ["grand trunk road", "gt road", "जीटी रोड", "ग्रैंड ट्रंक रोड", "sadak-e-azam", "uttarapath"],
+  "aliases": ["Grand Trunk Road", "GT Road", "Sher Shah Suri", "Sher Shah", "Mauryan", "Maurya", "Uttarapath", "Mughal", "Mughals", "British", "Kabul", "Afghanistan", "Bangladesh", "Pakistan", "India", "Kolkata", "Delhi", "Lahore", "Peshawar", "Amritsar", "Kipling", "Kim", "Asia", "Sadak-e-Azam", "Afghan"],
+  "sources": ["Wikipedia 'Grand Trunk Road'", "Encyclopaedia Britannica 'Sher Shah of Sur'"],
+  "verified": [
+    { "text": "The Grand Trunk Road is one of Asia's oldest and longest major roads, running from Bangladesh across north India and Pakistan to Kabul in Afghanistan.", "keys": ["oldest", "longest", "kabul", "bangladesh", "afghanistan"] },
+    { "text": "An early form of the route existed in the Mauryan Empire, around the 3rd century BCE, as the northern trade route called the Uttarapath.", "keys": ["maurya", "mauryan", "uttarapath", "3rd century"] },
+    { "text": "In the 16th century the Afghan ruler Sher Shah Suri rebuilt and extended the road, which was then called Sadak-e-Azam.", "keys": ["sher shah", "16th century", "sadak-e-azam", "rebuilt"] },
+    { "text": "Sher Shah Suri ruled north India from 1540 to 1545.", "keys": ["1540", "1545"] },
+    { "text": "Along the road Sher Shah built sarais (rest houses for travellers) at regular intervals, dug wells and planted shade trees.", "keys": ["sarai", "rest house", "wells", "trees"] },
+    { "text": "The sarais also served as stations for a horse-mounted postal and news service.", "keys": ["postal", "post", "news", "horse"] },
+    { "text": "The Mughal emperors kept the road in use and marked distances with tall pillars called kos minars.", "keys": ["mughal", "kos minar", "milestone", "pillar"] },
+    { "text": "In the 19th century the British rebuilt it as a metalled road and named it the Grand Trunk Road.", "keys": ["british", "19th century", "named", "metalled"] },
+    { "text": "Rudyard Kipling described the road in his novel Kim as a river of life.", "keys": ["kipling", "kim", "river of life"] },
+    { "text": "Today large parts of the old route are national highways in India, Pakistan and Bangladesh.", "keys": ["today", "highway", "national highway"] }
+  ],
+  "theories": [],
+  "legends": [],
+  "knownErrors": [
+    { "text": "Akbar built the Grand Trunk Road", "keys": ["akbar built", "akbar ordered"], "correction": "Sher Shah Suri rebuilt and extended the road in the 16th century; the Mughals later maintained it." }
+  ],
+  "uncertain": ["Exact total length (figures vary by where the ends are counted)."]
+}

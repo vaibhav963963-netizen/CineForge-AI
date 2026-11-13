@@ -1,0 +1,25 @@
+{
+  "id": "indus-valley-decline",
+  "title": "Decline of the Indus Valley (Harappan) cities",
+  "match": ["indus valley", "harappa", "harappan", "mohenjo-daro", "mohenjo daro", "सिंधु घाटी", "हड़प्पा"],
+  "aliases": ["Harappa", "Mohenjo-daro", "Dholavira", "Lothal", "Indus", "Ghaggar-Hakra", "Mesopotamia", "Pakistan", "India", "Gujarat"],
+  "sources": ["Wikipedia 'Indus Valley Civilisation'", "Encyclopaedia Britannica 'Indus civilization'"],
+  "verified": [
+    { "text": "The Indus Valley, or Harappan, civilisation was at its peak from about 2600 to 1900 BCE, in what is now Pakistan and north-west India.", "keys": ["2600", "1900", "harappan", "peak", "mature"] },
+    { "text": "Its cities, such as Harappa, Mohenjo-daro, Dholavira and Lothal, had planned grid streets, covered drains and bricks of standard sizes.", "keys": ["grid", "drain", "drainage", "bricks", "planned"] },
+    { "text": "From around 1900 BCE the big cities were slowly abandoned, and people moved into smaller villages, many further east.", "keys": ["abandoned", "villages", "east", "slowly", "gradual"] },
+    { "text": "The decline was gradual, over centuries, not a single sudden collapse.", "keys": ["gradual", "centuries", "not sudden"] },
+    { "text": "The Indus script has still not been deciphered, so the people's own records cannot be read.", "keys": ["script", "deciphered", "undeciphered"] },
+    { "text": "The ruins of Harappa and Mohenjo-daro were excavated in the 1920s.", "keys": ["1920s", "excavated"] }
+  ],
+  "theories": [
+    { "text": "Scientists think weakening monsoon rains and long droughts made farming harder and helped push people out of the cities.", "keys": ["monsoon", "drought", "climate", "rain"] },
+    { "text": "Rivers may have shifted course or dried up, including the Ghaggar-Hakra river system, cutting off water and trade routes.", "keys": ["river", "ghaggar", "hakra", "dried", "shifted"] },
+    { "text": "Trade with Mesopotamia appears to have declined in the same period, which may have weakened the cities.", "keys": ["trade", "mesopotamia"] }
+  ],
+  "legends": [],
+  "knownErrors": [
+    { "text": "Invading Aryans destroyed the Indus cities", "keys": ["invaders destroyed", "aryan invasion", "aryans destroyed", "invasion destroyed"], "correction": "Most scholars now reject the idea that an invasion destroyed the cities; the decline was gradual, likely driven by climate and river changes." }
+  ],
+  "uncertain": []
+}

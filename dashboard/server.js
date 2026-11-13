@@ -228,7 +228,13 @@ const server = http.createServer(async (req, res) => {
   const p = decodeURIComponent(url.pathname);
   try {
     if (p.startsWith('/api/')) return await api(req, res, url);
-    if (p.startsWith('/media/')) return media(req, res, p.slice(7));    let f = path.join(__dirname, 'public', p === '/' ? 'index.html' : p);
+    if (p.startsWith('/media/')) return media(req, res, p.slice(7));
+    // the dashboard's character previews load the SAME character code the videos use (read-only, two files only)
+    const ENGINE3D = { '/engine3d/character3d.js': path.join(PATHS.styles, 'tall-tale', 'example', 'src', 'core', 'character3d.js'), '/engine3d/three.module.js': path.join(PATHS.styles, 'tall-tale', 'example', 'vendor', 'three.module.js') };
+    // …and the per-character design files the character code imports (characters/index.js, characters/<id>/index.js)
+    const cm = p.match(/^\/engine3d\/characters\/(?:([a-z_]+)\/)?index\.js$/);
+    if (cm) { const f = path.join(PATHS.styles, 'tall-tale', 'example', 'src', 'core', 'characters', ...(cm[1] ? [cm[1]] : []), 'index.js'); if (fs.existsSync(f)) { res.writeHead(200, { 'Content-Type': MIME['.js'], 'Cache-Control': 'no-cache' }); return fs.createReadStream(f).pipe(res); } }
+    if (ENGINE3D[p]) { res.writeHead(200, { 'Content-Type': MIME['.js'], 'Cache-Control': 'no-cache' }); return fs.createReadStream(ENGINE3D[p]).pipe(res); }    let f = path.join(__dirname, 'public', p === '/' ? 'index.html' : p);
     if (!f.startsWith(path.join(__dirname, 'public')) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(__dirname, 'public', 'index.html');
     res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     fs.createReadStream(f).pipe(res);
