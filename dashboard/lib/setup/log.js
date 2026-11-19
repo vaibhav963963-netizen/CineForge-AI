@@ -4,9 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { PATHS } from '../workspace.js';
+import { CONFIG } from '../config.js';
 
 // CINEFORGE_SETUP_DIR lets tests keep their records out of the real setup log
-export const SETUP_DIR = process.env.CINEFORGE_SETUP_DIR ? path.resolve(process.env.CINEFORGE_SETUP_DIR) : path.join(PATHS.logs, 'setup');
+export const SETUP_DIR = CONFIG.CINEFORGE_SETUP_DIR || path.join(PATHS.logs, 'setup');
 export const LOG_FILE = path.join(SETUP_DIR, 'setup.log');
 fs.mkdirSync(SETUP_DIR, { recursive: true });
 

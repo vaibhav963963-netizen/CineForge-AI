@@ -143,3 +143,21 @@ export function listProjects() {
   }
   return out.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
 }
+
+/**
+ * Permanently delete one short: its project folder (scripts, audio, images, review) and its exported video(s).
+ * The id must be a plain folder name directly inside the projects folder (no paths, no "_" system folders).
+ * Returns the removed paths (relative to the workspace). Throws if the short does not exist.
+ */
+export function deleteProject(id) {
+  if (!/^[A-Za-z0-9][\w.-]{0,120}$/.test(String(id || '')) || id.includes('..')) throw Object.assign(new Error('invalid project id'), { status: 400 });
+  const dir = path.resolve(PATHS.projects, id);
+  if (path.dirname(dir) !== path.resolve(PATHS.projects) || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) throw Object.assign(new Error('project not found'), { status: 404 });
+  const removed = [];
+  // exports/<id>.mp4 and companions (exports/<id>.srt, <id>.jpg …) — exact "<id>." prefix only
+  if (fs.existsSync(PATHS.exports)) for (const f of fs.readdirSync(PATHS.exports)) {
+    if (f.startsWith(`${id}.`)) { const full = path.join(PATHS.exports, f); fs.rmSync(full, { force: true }); removed.push(full); }
+  }
+  fs.rmSync(dir, { recursive: true, force: true }); removed.push(dir);
+  return removed;
+}

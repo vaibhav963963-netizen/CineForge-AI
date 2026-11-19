@@ -31,8 +31,13 @@ const long = ['पृथ्वी हर दिन अपनी धुरी प
   'इस वजह से बहुत तेज़ हवाएँ चलेंगी और बड़ी-बड़ी लहरें तटों से टकराएँगी, जिससे भारी नुकसान होगा।',
   'इसलिए पाँच सेकंड का यह ठहराव भी पूरी दुनिया के लिए एक बहुत बड़ी आपदा बन जाएगा, सोचिए ज़रा।'];
 const value = () => ({ script: { title: 't', lines: long.map((text) => ({ text, visual: 'v' })) }, meta: {} });
-const shorter = ['पृथ्वी लगभग 24 घंटे में अपनी धुरी पर एक चक्कर लगाती है।', 'भूमध्य रेखा पर सतह लगभग 1670 किलोमीटर प्रति घंटे से घूमती है।', 'अगर यह अचानक रुके, तो वायुमंडल और महासागर आगे बढ़ते रहेंगे।', 'इससे तेज़ हवाएँ चलेंगी और बड़ी लहरें तटों से टकराएँगी।', 'इसलिए पाँच सेकंड का ठहराव भी दुनिया के लिए आपदा होगा।'];
-const mock = (lines) => async () => ({ text: JSON.stringify({ lines }), truncated: false });
+const shorter = ['पृथ्वी हर दिन लगभग 24 घंटे में अपनी धुरी पर एक पूरा चक्कर लगाती है।', 'भूमध्य रेखा पर सतह लगभग 1670 किलोमीटर प्रति घंटे से घूमती है।', 'अगर यह अचानक रुके, तो वायुमंडल और महासागर आगे बढ़ते रहेंगे।', 'इस वजह से तेज़ हवाएँ चलेंगी और लहरें तटों से टकराएँगी, जिससे भारी नुकसान होगा।', 'इसलिए पाँच सेकंड का ठहराव भी दुनिया के लिए आपदा होगा।'];
+// one line per request: the mock answers the line named in "  LINE: …"
+const mock = (lines) => async ({ messages, schema }) => {
+  if (schema?.properties?.sameMeaning) return { text: JSON.stringify({ sameMeaning: true, lost: '' }), truncated: false };   // semantic review: agree by default
+  const t = messages[1].content.match(/^  LINE: (.*)$/m)[1], i = long.indexOf(t);
+  return { text: JSON.stringify({ line: i >= 0 ? lines[i] : t }), truncated: false };
+};
 
 test('length: a script ~12 % (or more) over target is shortened, every number kept, decisions logged', async () => {
   const v = value(), cfg = { ...HI, durationSeconds: Math.round(estimateSeconds(v.script, HI).seconds / 1.2) };
@@ -40,7 +45,7 @@ test('length: a script ~12 % (or more) over target is shortened, every number ke
   assert.equal(out.meta.lengthFit.improved, true);
   assert.ok(out.meta.lengthFit.to < out.meta.lengthFit.from);
   assert.ok(out.script.lines[0].text.includes('24') && out.script.lines[1].text.includes('1670'));
-  const res = out.meta.lengthFitLog[0].lines.map((l) => l.result);
+  const res = out.meta.lengthFitLog.flatMap((e) => e.lines || []).map((l) => l.result);
   assert.ok(res.includes('accepted') && res.every((r) => r === 'accepted' || r === 'not needed'), JSON.stringify(res));
   // over-shortening is avoided: only the lines needed to reach the target are applied
   assert.ok(Math.abs(out.meta.lengthFit.to - cfg.durationSeconds) <= cfg.durationSeconds * 0.12, JSON.stringify(out.meta.lengthFit));
@@ -49,9 +54,9 @@ test('length: a rewrite that drops a number or is not shorter is rejected line b
   const v = value(), cfg = { ...HI, durationSeconds: Math.round(estimateSeconds(v.script, HI).seconds / 1.2) };
   const bad = [...shorter]; bad[1] = 'भूमध्य रेखा पर सतह बहुत तेज़ घूमती है।'; bad[2] = long[2] + ' और यह बात सच है।';
   const out = await fitLength(cfg, v, { chatFn: mock(bad) });
-  const r = out.meta.lengthFitLog[0].lines;
+  const r = out.meta.lengthFitLog.flatMap((e) => e.lines || []);
   assert.match(r.find((x) => x.line === 2).reason, /dropped a number \(1670\)/);
-  assert.match(r.find((x) => x.line === 3).reason, /not shorter/);
+  assert.match(r.find((x) => x.line === 3).reason, /not shorter|2 sentences/);
   assert.equal(out.script.lines[1].text, long[1]);   // rejected lines keep the original text
   assert.ok(out.meta.lengthFit.to < out.meta.lengthFit.from);   // the accepted lines still shortened the script
 });
@@ -59,7 +64,8 @@ test('length: when nothing improves it is reported as not improved (never as suc
   const v = value(), cfg = { ...HI, durationSeconds: Math.round(estimateSeconds(v.script, HI).seconds / 1.2) };
   const out = await fitLength(cfg, v, { chatFn: mock(long) });
   assert.equal(out.meta.lengthFit.improved, false);
-  assert.match(out.meta.lengthFitLog.at(-1).result, /no improvement/);
+  assert.match(out.meta.lengthFitLog.at(-1).result, /no improvement|stopped/);
+  assert.match(out.meta.lengthFit.reason, /could not be shortened safely/); assert.ok(out.meta.lengthFit.unchanged >= 5);
 });
 
 // ── voice calibration ──────────────────────────────────────────────────────────────────────────────────────────

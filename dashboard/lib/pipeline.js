@@ -3,15 +3,16 @@
 // copy in <workspace>/exports was verified and QA ran.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { PATHS, childEnv, rel, CHROME } from './workspace.js';
 import { getCatalog, whisperFor } from './catalog.js';
 import { validateGenerationConfig, scriptFingerprint, configHash } from './validate.js';
 import { projectDir, loadProject, updateProject, addScriptVersion, getScriptVersion, approveScriptVersion } from './projects.js';
-import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords, letters } from './scriptgen.js';
+import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords, letters, fitLength, qualityGates } from './scriptgen.js';
 import { planStoryboard } from './storyboard.js';
 import { scaffoldRuntime, characterSpec, writeRuntimeScript, writeScene } from './scene.js';
 import { generateImage, seedFor, freeVram, readImageIndex, writeImageIndex } from './imagegen.js';
-import { stopServer as stopLLM } from './llm.js';
+import { stopServer as stopLLM, ensureServer as startLLM } from './llm.js';
 import { imageStats, judgeImage, judgeShots, autoLevel } from './exposure.js';
 import { claimsGate } from './factcheck.js';
 import { run } from './proc.js';
@@ -159,34 +160,77 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     const r = await run(job, 'tts', PY, [path.join(SCRIPTS, 'voice.py'), '--script', path.join(dir, 'script.json'), '--out-dir', path.join(dir, 'audio'), '--voice', config.narration.voice, '--lang', config.narration.ttsLang, '--speed', String(speed)], { env });
     const res = r.results.find((x) => x.duration); if (!res) throw new Error('voice.py returned no result'); job.log(`  narration ${label}: ${res.duration.toFixed(2)} s at speed ${speed}`); return res;
   };
+  // stage-level resume: a retried render of the SAME narration input (script text, voice, language, speed, target)
+  // reuses the finished narration + word alignment instead of redoing them; any change → both run normally
+  const resumeFile = path.join(dir, 'audio', 'resume.json');
+  const fingerprint = crypto.createHash('sha256').update(JSON.stringify([fs.readFileSync(path.join(dir, 'script.json'), 'utf8'), config.narration.voice, config.narration.ttsLang, config.narration.speed, T, tol, config.language.code])).digest('hex');
+  const prev = (() => { try { const r = JSON.parse(fs.readFileSync(resumeFile, 'utf8')); return r.fingerprint === fingerprint && ['narration.wav', 'lines.json', 'words.json'].every((f) => fs.existsSync(path.join(dir, 'audio', f))) ? r : null; } catch { return null; } })();
+  let narr, speedUsed, al;
+  const wm = whisperFor(config.language.code, cat._internal.whisper);
+  if (prev) {
+    ({ narr, speedUsed, al } = prev);
+    job.startStage('tts', 'Reusing the narration from the previous attempt (same script, voice and speed)');
+    job.completeStage('tts', `${narr.duration.toFixed(2)} s narration reused (voice ${config.narration.voice}, speed ${speedUsed})`);
+    job.startStage('align', 'Reusing the word alignment from the previous attempt');
+    job.completeStage('align', `${al.words} words aligned (reused)`);
+  } else {
   job.startStage('tts', `Synthesizing ${config.language.name} narration with ${config.narration.voice} (${config.narration.ttsLang})`);
-  let narr = await tts(config.narration.speed, 'pass 1'), speedUsed = config.narration.speed;
-  // learn the real speaking rate from every first pass, including scripts that then fail the length check
-  { const cal = recordVoiceRate(config, { lines: script.lines, speechSeconds: narr.speechSeconds, speed: config.narration.speed, estimatedSeconds: estimateSeconds({ lines: script.lines }, config).seconds, actualSeconds: narr.duration }); if (!cal.recorded) job.log(`  calibration: run not used (${cal.reason})`); }
-  if (Math.abs(narr.duration - T) > tol * T) {
-    // aim for the exact target, but clamp to the personality's speed range: landing anywhere inside ±tol is a pass
-    const fixed = narr.duration - narr.speechSeconds, base = config.narration.delivery.speed;
-    const lo = Math.max(0.8, base - 0.15), hi = Math.min(1.25, base + 0.18);
-    const need = speedUsed * narr.speechSeconds / Math.max(1, T - fixed);
-    const s2 = Math.round(Math.min(hi, Math.max(lo, need)) * 100) / 100;
-    const predicted = fixed + narr.speechSeconds * speedUsed / s2;
-    if (Math.abs(predicted - T) <= tol * T) {
-      job.warn(`Narration was ${narr.duration.toFixed(1)} s for a ${T} s target; re-synthesizing at speed ${s2} (personality default ${base}) to fit ±${Math.round(tol * 100)}%`);
-      job.stageProgress('tts', { indeterminate: true, message: `Re-synthesizing at speed ${s2} to fit ${T} s` });
-      narr = await tts(s2, 'pass 2'); speedUsed = s2;
+  const voiceToTarget = async () => {
+    narr = await tts(config.narration.speed, 'pass 1'); speedUsed = config.narration.speed; const firstPass = narr;
+    // learn the real speaking rate from every first pass, including scripts that then fail the length check
+    { const cal = recordVoiceRate(config, { lines: script.lines, speechSeconds: narr.speechSeconds, speed: config.narration.speed, estimatedSeconds: estimateSeconds({ lines: script.lines }, config).seconds, actualSeconds: narr.duration }); if (!cal.recorded) job.log(`  calibration: run not used (${cal.reason})`); }
+    if (Math.abs(narr.duration - T) > tol * T) {
+      // aim for the exact target, but clamp to the personality's speed range: landing anywhere inside ±tol is a pass
+      const fixed = narr.duration - narr.speechSeconds, base = config.narration.delivery.speed;
+      const lo = Math.max(0.8, base - 0.15), hi = Math.min(1.25, base + 0.18);
+      const need = speedUsed * narr.speechSeconds / Math.max(1, T - fixed);
+      const s2 = Math.round(Math.min(hi, Math.max(lo, need)) * 100) / 100;
+      const predicted = fixed + narr.speechSeconds * speedUsed / s2;
+      if (Math.abs(predicted - T) <= tol * T) {
+        job.warn(`Narration was ${narr.duration.toFixed(1)} s for a ${T} s target; re-synthesizing at speed ${s2} (personality default ${base}) to fit ±${Math.round(tol * 100)}%`);
+        job.stageProgress('tts', { indeterminate: true, message: `Re-synthesizing at speed ${s2} to fit ${T} s` });
+        narr = await tts(s2, 'pass 2'); speedUsed = s2;
+      }
+      if (Math.abs(narr.duration - T) > tol * T) return Object.assign(new Error(`the narration reads ${narr.duration.toFixed(1)} s at a natural pace, outside ${T} s ±${Math.round(tol * 100)}%. Shorten/lengthen the script (≈${Math.round(est.words * T / narr.duration)} words) or change the target duration.`), { firstPass });
     }
-    if (Math.abs(narr.duration - T) > tol * T) throw new Error(`the narration reads ${narr.duration.toFixed(1)} s at a natural pace, outside ${T} s ±${Math.round(tol * 100)}%. Shorten/lengthen the script (≈${Math.round(est.words * T / narr.duration)} words) or change the target duration.`);
+    return null;
+  };
+  let miss = await voiceToTarget();
+  // A script this job wrote itself (one-click) that the voice reads far off target — beyond what the voice speed can
+  // absorb — is re-fitted ONCE using the MEASURED speaking rate, then voiced again. Seen end-to-end: English af_heart
+  // had no calibration yet; the script was estimated at 30.4 s but read in 23.7 s, and speed 0.85 (the personality's
+  // limit) only reached 26.0 s. A script the user approved in Script Studio is never changed here.
+  if (miss && !scriptVersion) {
+    const d1 = miss.firstPass.duration, estTarget = Math.round(est.seconds * T / Math.max(1, d1) * 10) / 10;
+    job.warn(`Narration read ${d1.toFixed(1)} s at the normal pace for a ${T} s target (script estimated ${est.seconds} s): re-fitting the script once with the measured speaking rate`);
+    job.stageProgress('tts', { indeterminate: true, message: 'Re-fitting the script length to the measured voice speed' });
+    await startLLM();
+    const refit = await fitLength({ ...config, durationSeconds: estTarget }, { script, meta: {} }, { stage: 'after narration' });
+    stopLLM();
+    const changed = refit.script.lines.some((l, i) => (l.say || l.text) !== (script.lines[i].say || script.lines[i].text));
+    const bad = (refit.meta.claimReview?.claims || []).filter((c) => c.status === 'contradicted');
+    if (!changed) throw new Error(`${miss.message} (automatic re-fit could not change the script safely: ${refit.meta.lengthFit?.reason || 'no accepted rewrite'})`);
+    if (bad.length) throw new Error(`the re-fitted script would contain a known factual error (line ${bad[0].line}); the render stops. ${miss.message}`);
+    const gates = qualityGates(config, refit);
+    const saved = addScriptVersion(projectId, refit.script, { source: 'refit-after-narration', basedOn: version, fingerprint: scriptFingerprint(config), configHash: configHash(config), language: config.language.id, personality: config.narration.personality, targetSeconds: T, estimatedTarget: estTarget, measuredFirstPass: d1, lengthFit: refit.meta.lengthFit, lengthFitLog: refit.meta.lengthFitLog, claimReview: refit.meta.claimReview, claimsApproved: true, claimsApprovedBy: 'render request (re-fit of an accepted script)', gates, generatedAt: new Date().toISOString() });
+    approveScriptVersion(projectId, saved.version);
+    job.warn(`Script v${saved.version} (re-fitted from v${version}) is now the rendered version; v${version} is kept`);
+    version = saved.version; script = refit.script;
+    writeRuntimeScript(dir, script, config);
+    miss = await voiceToTarget();
   }
+  if (miss) throw miss;
   rec((p) => { p.voice = { id: config.narration.voice, ttsLang: config.narration.ttsLang, speed: speedUsed, narrationSeconds: narr.duration, speechSeconds: narr.speechSeconds, model: 'Kokoro-82M v1.0 ONNX', synthSeconds: narr.synthSeconds }; });
   job.completeStage('tts', `${narr.duration.toFixed(2)} s narration (${narr.sentences} sentences, voice ${config.narration.voice}, speed ${speedUsed})`);
 
   // 5 · alignment ───────────────────────────────────────────────────────────────────────────────────────────
-  const wm = whisperFor(config.language.code, cat._internal.whisper);
   job.startStage('align', `Aligning words with ${wm.name}`);
-  const al = (await run(job, 'align', PY, [path.join(SCRIPTS, 'words.py'), '--project', dir, '--model', wm.dir, '--language', config.language.code], { env })).results.find((x) => x.words) || {};
+  al = (await run(job, 'align', PY, [path.join(SCRIPTS, 'words.py'), '--project', dir, '--model', wm.dir, '--language', config.language.code], { env })).results.find((x) => x.words) || {};
   if (wm.multilingual && al.detectedLanguage && al.detectedLanguage !== config.language.code) throw new Error(`Whisper identifies the synthesized narration as "${al.detectedLanguage}" (${Math.round((al.languageProbability || 0) * 100)}%), not ${config.language.code}`);
   rec((p) => { p.alignment = { model: wm.name, words: al.words, matchRate: al.matchRate, detectedLanguage: al.detectedLanguage, languageProbability: al.languageProbability, languageCheck: al.languageCheck, transcriptSample: (al.transcript || '').slice(0, 300) }; });
   job.completeStage('align', `${al.words} words aligned, ${Math.round((al.matchRate || 0) * 100)}% matched${al.detectedLanguage ? `, spoken language: ${al.detectedLanguage} (${Math.round((al.languageProbability || 0) * 100)}%)` : ''}`);
+  try { fs.writeFileSync(resumeFile, JSON.stringify({ fingerprint, narr, speedUsed, al, at: new Date().toISOString() })); } catch {}
+  }
 
   // 6 · storyboard ──────────────────────────────────────────────────────────────────────────────────────────
   job.startStage('storyboard', 'Planning shots from the narration');

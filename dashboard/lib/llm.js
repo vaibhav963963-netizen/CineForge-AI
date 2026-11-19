@@ -6,6 +6,7 @@ import { getCatalog } from './catalog.js';
 import { STUDIO_CONFIG } from './workspace.js';
 import { killTree } from './jobs.js';
 import { runtimeProfile } from './setup/settings.js';
+import { CONFIG } from './config.js';
 
 const PORT = STUDIO_CONFIG.services.llmPort || 8091;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -41,7 +42,7 @@ export async function ensureServer(onStatus = () => {}) {
 export function stopServer() { clearTimeout(idleTimer); if (proc) { killTree(proc, { sync: true }); proc = null; } }
 // never leave the model server (≈3 GB of VRAM) running after this process ends
 process.on('exit', () => { if (proc) killTree(proc, { sync: true }); });
-function scheduleIdleStop() { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (!busy) stopServer(); }, 90_000); }
+function scheduleIdleStop() { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (!busy) stopServer(); }, CONFIG.LLM_IDLE_STOP_SECONDS * 1000); }
 
 /**
  * Chat completion, streamed so progress is real (tokens generated so far).

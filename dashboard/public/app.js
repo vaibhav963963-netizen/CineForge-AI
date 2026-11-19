@@ -16,7 +16,7 @@ async function api(path, opts = {}) {
 }
 
 // ── navigation ────────────────────────────────────────────────────────────────────────────────────────────
-const TITLES = { dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
+const TITLES = { automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
 function go(id) {
   if (!TITLES[id]) id = 'dashboard';
   if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
@@ -25,6 +25,7 @@ function go(id) {
   $('#screen-title').textContent = TITLES[id][0]; $('#screen-subtitle').textContent = TITLES[id][1];
   if (id === 'jobs') renderJobHistory(); if (id === 'library') refreshProjects();
   if (id === 'setup' && window.SetupUI) window.SetupUI.show();
+  if (id === 'automation' && window.AutomationUI) window.AutomationUI.show();
 }
 
 // ── form ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -296,18 +297,23 @@ async function loadScript(projectId, version) {
 // ── local-model proof-read result (meta.llmReview) ──────────────────────────────────────────────────────────
 function renderReview(s) {
   const box = $('#script-review'); if (!box) return; const r = s.meta.llmReview, h = '<h4>Proof-read by local model</h4>';
-  if (!r) { box.innerHTML = `${h}<p class="muted">${/^llm/.test(s.meta.source || '') ? 'Written before proof-reading existed.' : 'Edited or hand-written version: you are the reviewer.'}</p>`; return; }
-  const G = s.meta.gates, GL = { language: 'Language', facts: 'Facts', coverage: 'Topic coverage', narrative: 'Story', terms: 'Terms', visuals: 'Visuals', duration: 'Duration', editorial: 'Editorial' };
+  if (!r && !s.meta.gates) { box.innerHTML = `${h}<p class="muted">${/^llm/.test(s.meta.source || '') ? 'Written before proof-reading existed.' : 'Edited or hand-written version: you are the reviewer.'}</p>`; return; }
+  const G = s.meta.gates, GL = { research: 'Research', language: 'Language', facts: 'Facts', coverage: 'Topic coverage', narrative: 'Story', terms: 'Terms', grammar: 'Grammar', meaning: 'Meaning', visuals: 'Visuals', duration: 'Duration', editorial: 'Editorial' };
   const gatesHtml = G ? `<div class="claims-sum">${Object.entries(GL).filter(([k]) => G[k]).map(([k, label]) => `<span class="claim-badge ${G[k].ok ? 'supported' : (k === 'facts' && G[k].needsResearch && !G[k].issues.some((x) => !/^needs research/.test(x)) ? 'unverified' : 'contradicted')}" title="${esc(G[k].issues.join(' • '))}">${G[k].ok ? '✓' : (k === 'facts' && G[k].needsResearch ? '?' : '✗')} ${label}</span>`).join('')}</div>${G.facts?.unverifiedClaims?.length ? `<details><summary>Needs research: claims from the model's own knowledge (${G.facts.unverifiedClaims.length})</summary><ul>${G.facts.unverifiedClaims.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></details>` : ''}` : '';
   // status of THIS version + claim ledger (claim ID, line, status, source / explanation)
-  const ST = { READY: ['supported', 'READY — ready for your review'], NEEDS_REVIEW: ['unverified', 'NEEDS REVIEW — generated, with issues to fix'], FAILED: ['contradicted', 'FAILED — not usable as it is'] };
+  const ST = { READY: ['supported', 'READY — ready for your review'], NEEDS_REVIEW: ['unverified', 'NEEDS REVIEW — generated, with issues to fix'], FAILED: ['contradicted', 'FAILED — not usable as it is'], NEEDS_RESEARCH: ['unverified', 'NEEDS RESEARCH — no verified source for these facts; add a fact file or check every claim'] };
   const st = s.meta.status && ST[s.meta.status];
   const when = s.meta.generatedAt || s.meta.createdAt;
-  const statusHtml = st ? `<p><span class="claim-badge ${st[0]}">${st[1]}</span> <span class="muted">v${s.version ?? ''}${when ? ` · ${new Date(when).toLocaleString()}` : ''}</span></p>` : '';
+  const statusHtml = st ? `<p><span class="claim-badge ${st[0]}">${st[1]}</span> <span class="muted">v${s.version ?? ''}${when ? ` · ${new Date(when).toLocaleString()}` : ''}${s.meta.validatedBy ? ` · ${esc(s.meta.validatedBy)}` : ''}</span></p>` : '';
   const L = (s.meta.claims || []).filter((c) => c.status !== 'VERIFIED');
   const ledgerHtml = (s.meta.claims || []).length ? `<details ${L.length ? 'open' : ''}><summary>Claims: ${(s.meta.claims || []).length - L.length} verified, ${L.length} to check</summary><ul>${(s.meta.claims || []).map((c) => `<li><code>${esc(c.id)}</code> line ${c.line} · <b>${esc(c.status)}</b> · ${esc(c.claim)}${c.source?.fact ? ` <span class="muted">← ${esc(c.source.fact)}</span>` : ''}${c.explanation ? ` <span class="muted">(${esc(c.explanation)})</span>` : ''}</li>`).join('')}</ul></details>` : '';
   const adv = s.meta.gates?.editorial?.advisory || [];
   const advHtml = adv.length ? `<details><summary>Editor notes (advisory — the local model cannot reliably judge storytelling; please read the script yourself)</summary><ul>${adv.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></details>` : '';
+  if (!r) {   // edited / hand-written version: deterministic gates only (no model review ran on this text)
+    const failed = Object.entries(GL).filter(([k]) => G[k] && !G[k].ok).flatMap(([k, label]) => G[k].issues.map((x) => `${label}: ${x}`));
+    box.innerHTML = statusHtml + ledgerHtml + `${h}${gatesHtml}${failed.length ? `<ul>${failed.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="text-emerald">All deterministic checks passed — read it once more before approving.</p>'}`;
+    return;
+  }
   box.innerHTML = statusHtml + ledgerHtml + advHtml + (r.confirmed && !G
     ? `${h}<p class="text-saffron">Older version: only grammar was proof-read (no fact, coverage, story or duration gates). Review it yourself or regenerate.</p>`
     : r.confirmed
@@ -392,12 +398,26 @@ function renderLibrary() {
   $('#library-grid').innerHTML = S.projects.length ? S.projects.map((p) => `<div class="video-card">
     <div class="video-thumb-container">${p.coverUrl ? `<img src="${p.coverUrl}" class="video-thumb-img" alt="">` : ''}${p.hasVideo ? `<div class="video-play-overlay" data-play="${p.id}"><div class="play-btn-circle">▶</div></div>` : ''}</div>
     <div class="video-info-box"><h4>${esc(p.title)}</h4><div class="video-meta-row"><span class="badge-count">${esc(p.status)}</span><span>${p.legacy ? 'legacy' : esc(p.id)}</span></div>${settingsSummary(p)}
-    <div class="form-actions">${p.hasVideo ? `<button class="btn btn-primary btn-sm" data-play="${p.id}">Watch</button>` : ''}${!p.legacy && p.config ? `<button class="btn btn-secondary btn-sm" data-reuse="${p.id}">Reuse settings</button>` : ''}${!p.legacy && p.script?.versions?.length ? `<button class="btn btn-secondary btn-sm" data-openscript="${p.id}">Script</button>` : ''}</div></div></div>`).join('') : '<div class="empty-state">No projects yet.</div>';
+    <div class="form-actions">${p.hasVideo ? `<button class="btn btn-primary btn-sm" data-play="${p.id}">Watch</button>` : ''}${!p.legacy && p.config ? `<button class="btn btn-secondary btn-sm" data-reuse="${p.id}">Reuse settings</button>` : ''}${!p.legacy && p.script?.versions?.length ? `<button class="btn btn-secondary btn-sm" data-openscript="${p.id}">Script</button>` : ''}<button class="btn btn-danger btn-sm" data-delete-project="${esc(p.id)}" title="Permanently delete this short and its video">Delete</button></div></div></div>`).join('') : '<div class="empty-state">No projects yet.</div>';
 }
 function renderDashboard() {
   $('#stat-total-videos').textContent = S.projects.filter((p) => p.hasVideo).length; $('#stat-projects').textContent = S.projects.length;
   $('#dashboard-recent-projects').innerHTML = S.projects.slice(0, 5).map((p) => `<div class="project-card"><div class="proj-left">${p.coverUrl ? `<img src="${p.coverUrl}" class="proj-thumb" alt="">` : '<div class="proj-thumb"></div>'}<div class="proj-info"><h4>${esc(p.title)}</h4><div class="proj-meta">${p.legacy ? 'legacy · settings not recorded' : `${esc(p.config?.language.name)} · ${esc(p.config?.visual.styleName)} · ${p.render?.durationSeconds ? p.render.durationSeconds + ' s' : esc(p.status)}`}</div></div></div><div class="proj-right">${p.hasVideo ? `<button class="btn btn-secondary btn-sm" data-play="${p.id}">▶</button>` : `<span class="badge-count">${esc(p.status)}</span>`}</div></div>`).join('') || '<div class="empty-state">No projects yet.</div>';
 }
+// permanent delete: confirmed by typing nothing extra, but the dialog names exactly what is removed
+async function deleteShort(id) {
+  const p = S.projects.find((x) => x.id === id);
+  if (!confirm(`Permanently delete "${p?.title || id}"?
+
+This removes the project folder (scripts, audio, images) and the exported video${p?.hasVideo ? '' : ' (if any)'}. It cannot be undone.`)) return;
+  try {
+    const r = await fetch(`/api/projects/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { alert(`Could not delete: ${j.error || r.statusText}`); return; }
+    S.projects = S.projects.filter((x) => x.id !== id); renderLibrary(); renderDashboard();
+  } catch (e) { alert(`Could not delete: ${e.message}`); }
+}
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-delete-project]'); if (b) { e.preventDefault(); e.stopPropagation(); deleteShort(b.dataset.deleteProject); } });
 function openVideo(id) {
   const p = S.projects.find((x) => x.id === id), url = p?.videoUrl || `/media/exports/${id}.mp4`;
   $('#modal-title').textContent = p?.title || id; $('#modal-player').src = url; $('#modal-download').href = url; $('#modal-download').setAttribute('download', `${id}.mp4`);

@@ -185,7 +185,13 @@ export class Job {
   }
   save() {
     const file = path.join(PATHS.jobs, `${this.id}.json`), tmp = file + '.tmp';
-    try { fs.writeFileSync(tmp, JSON.stringify(this.toJSON(true), null, 1)); fs.renameSync(tmp, file); } catch (e) { console.error('job save failed', e.message); }
+    // flush the data to disk BEFORE the rename: without it a power loss can keep the rename but not the bytes (seen:
+    // two job files of 2026-11-11 16:23 filled with zeros, which the server could no longer read at start-up)
+    try {
+      const fd = fs.openSync(tmp, 'w');
+      try { fs.writeSync(fd, JSON.stringify(this.toJSON(true), null, 1)); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
+      fs.renameSync(tmp, file);
+    } catch (e) { console.error('job save failed', e.message); }
   }
 
   elapsedSeconds() { return this.startedAt ? Math.round(((this.finishedAt ? Date.parse(this.finishedAt) : Date.now()) - Date.parse(this.startedAt)) / 1000) : 0; }

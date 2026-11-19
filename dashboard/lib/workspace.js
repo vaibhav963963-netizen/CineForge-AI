@@ -5,10 +5,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CONFIG } from './config.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CONFIG_FILE = path.join(ROOT, 'config', 'studio-config.json');
-export const STUDIO_CONFIG = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+// studio-config.json holds the workspace layout; ports / host come from the central configuration (.env overrides)
+const RAW_CONFIG = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+export const STUDIO_CONFIG = { ...RAW_CONFIG, port: CONFIG.PORT, host: CONFIG.HOST, services: { ...(RAW_CONFIG.services || {}), llmPort: CONFIG.LLM_PORT, comfyPort: CONFIG.COMFYUI_PORT } };
 
 const r = (p) => path.resolve(ROOT, p);
 const P = STUDIO_CONFIG.paths;
@@ -45,7 +48,7 @@ export const PATHS = {
 /** Directories known to belong to the pre-migration layout. They must never be used at runtime. */
 export const LEGACY_LOCATIONS = ['faceless-shorts', '.faceless-shorts', path.join('.cache', 'huggingface')];
 
-export const CHROME = [process.env.CHROME,
+export const CHROME = [CONFIG.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
   'C:/Program Files/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome', '/usr/bin/chromium'].find((p) => p && fs.existsSync(p)) || null;
@@ -82,6 +85,8 @@ export function childEnv(extra = {}) {
     PYTHONUTF8: '1',
     PATH: [PATHS.ffmpegBin, PATHS.pythonScripts, env.PATH || env.Path || ''].join(sep),
     ...(CHROME ? { CHROME } : {}),
+    // capture.mjs runs in its own process: the central setting reaches it through its environment
+    ...(CONFIG.SOFTWARE_GL ? { SOFTWARE_GL: '1' } : {}),
     ...extra,
   };
 }

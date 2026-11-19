@@ -39,6 +39,7 @@ pnpm-debug.log*
 # ------------------------------------------------------------------------------
 runtime/ffmpeg/bin/
 runtime/llama.cpp/*
+runtime/models/
 !runtime/llama.cpp/LICENSE*
 !runtime/llama.cpp/README*
 runtime/.downloads/
@@ -156,6 +157,7 @@ backups/
 
 youtube/tokens.json
 youtube/client_secret.json
+youtube/tokens.dpapi
 youtube/credentials.json
 credentials/
 secrets/

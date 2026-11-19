@@ -4,12 +4,15 @@
 //   duration  → a word budget from measured Kokoro speaking rates, and the number of lines (≈ one cut per line)
 // Every line also carries an English "visual" description (what the viewer should see) and an optional on-screen
 // text, which the storyboard planner turns into scenes.
-import { findTopicFacts, factsBlock, reviewClaims } from './factcheck.js';
+import { findTopicFacts, factsBlock, reviewClaims, listFactFiles } from './factcheck.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chat, ensureServer, modelInfo } from './llm.js';
 import { getCatalog, LANGUAGES } from './catalog.js';
 import { devanagariToHinglish, hinglishCaption, skeleton } from './translit.js';
+import { meaningDiff, blocking, semanticReview, verifyScriptMeaning } from './semantic.js';
+import { languageIssues, correctLanguage } from './langquality.js';
+import { visualReport, correctVisuals } from './visualsem.js';
 import { SCIENCE_TERMS } from './glossary.js';
 import { PATHS } from './workspace.js';
 
@@ -129,7 +132,9 @@ export function checkLanguage(script, config) {
     if (lang.script === 'Deva' && r.deva < 0.85) problems.push(`line ${i + 1} is not in Devanagari: "${l.text.slice(0, 50)}"`);
     // letters of any other script (seen: Cyrillic "бюдजीट" inside a Hindi line) are unreadable for voice and viewer
     const foreign = [...new Set(String(l.say || l.text).match(/[^\s\p{Script=Devanagari}\p{Script=Latin}\p{N}\p{P}\p{S}\p{M}]/gu) || [])];
-    if (foreign.length) problems.push(`line ${i + 1} contains letters from another script (${foreign.slice(0, 6).join('')}): rewrite that word`);
+    // quote the whole word: "rewrite that word" alone made the model copy the same line 5 times (seen: "दशक‌ها")
+    const fw = [...new Set(String(l.say || l.text).split(/\s+/).filter((w) => /[^\s\p{Script=Devanagari}\p{Script=Latin}\p{N}\p{P}\p{S}\p{M}]/u.test(w)))];
+    if (foreign.length) problems.push(`line ${i + 1} contains letters from another script (${foreign.slice(0, 6).join('')}) in "${fw.slice(0, 3).join('", "')}": write ${fw.length > 1 ? 'these words' : 'this word'} entirely in Devanagari (Hindi letters only)`);
     if (lang.script === 'Latn' && r.d > 0) problems.push(`line ${i + 1} contains Devanagari but ${lang.name} captions must be Roman script`);
     if (lang.id === 'hinglish') { const s = ratio(l.say || ''); if (!l.say || s.deva < 0.85) problems.push(`line ${i + 1} is missing its Devanagari "say" form`); }
   });
@@ -137,7 +142,12 @@ export function checkLanguage(script, config) {
     const hinglishMarkers = script.lines.filter((l) => /\b(hai|kya|aur|nahi|kaise|bhi|toh|yeh|woh|mein)\b/i.test(l.text)).length;
     if (hinglishMarkers > script.lines.length * 0.3) problems.push('the script reads as Hinglish, not English');
   } else if (lang.id === 'hinglish') {
-    const markers = script.lines.filter((l) => /\b(hai|kya|aur|nahi|kaise|bhi|toh|yeh|woh|mein|ka|ki|ke|se|ko|ne)\b/i.test(l.text)).length;
+    // Root cause of a false "reads as English" (seen: "गलतियाँ होने पर दुर्घटनाएँ हो सकती हैं।"): only the Roman caption was
+    // checked, against a short word list without "hain", "par", "ho" … — a short all-Hindi line had no marker. A line
+    // now counts as Hindi when its spoken Devanagari form has Hindi function words, or its caption has Roman ones.
+    const HI_DEVA = /(?:^|[\s,])(है|हैं|था|थे|थी|का|की|के|में|से|को|ने|पर|और|भी|तो|यह|ये|वह|वो|नहीं|कि|हो|होता|होती|होते|सकता|सकती|सकते|जाता|जाती|जाते|रहा|रही|रहे)(?=[\s,।!?]|$)/;
+    const HI_ROMAN = /\b(hai|hain|kya|aur|nahi|nahin|kaise|bhi|toh|yeh|ye|woh|wo|mein|ka|ki|ke|se|ko|ne|par|ho|hota|hoti|hote|sakta|sakti|sakte|jata|jati|jate|tha|thi|raha|rahi|rahe)\b/i;
+    const markers = script.lines.filter((l) => (l.say && HI_DEVA.test(l.say)) || HI_ROMAN.test(l.text)).length;
     if (markers < script.lines.length * 0.4) problems.push('the script reads as English, not Hinglish');
   }
   // Hindi / Hinglish voice text: Marathi shares Devanagari, so the script check cannot see it (seen in a Hindi script:
@@ -176,7 +186,7 @@ function prompt(config, n, budget, facts, topicFacts = null, plan = null, names 
     'STYLE: narrate like a calm, cinematic documentary storyteller speaking to one viewer. Each line carries a story beat with its cause or consequence, linked with natural connectors (but, then, because of this / लेकिन, इसके बाद, इसी वजह से). Use at most three exclamation marks in the whole script. No filler reactions ("you will be amazed", "very interesting", "really", "जानकर आप हैरान हो जाएंगे", "बहुत दिलचस्प है"). The last line says what the story MEANS — an emotional or thought-provoking payoff tied to this story.',
     'RELEVANCE AND REPETITION: every line must move the central story forward. Leave out true facts that do not serve it. Never state the same fact or number twice; a later line may compare numbers only to add meaning.',
     'FLOW (very important): all lines together are ONE continuous story told by one narrator. Each line is one story beat: ONE or TWO complete, grammatical sentences (never split a sentence across two lines) that follows naturally from the line before it — when useful, START a sentence with a connecting word (then, but, so, that is why, and yet). Every line ends with a full stop (। in Hindi), ? or ! — never end a line with a connecting word like "and", "so", "then" (तो, फिर, और, इससे). Never write a list of separate facts, never start every line with a date, and never write half-sentences or clipped telegraphic phrases ("Circulation’s complex, a powerful system.") — write the way a person explains something out loud.',
-    ...(config.language.script === 'Deva' ? ['HINDI QUALITY: use only real, common, correctly spelled Hindi words — never invent or misspell a word. Bronze is काँसा (never ताँका). Write directly and natively in Hindi (do not compose in English and translate). Write every name in Devanagari (Sher Shah Suri → शेर शाह सूरी, Harappa → हड़प्पा); for science and technology use the words Hindi speakers actually say (ग्रेविटी or गुरुत्वाकर्षण, वैक्सीन, एंटीबॉडी), never a misleading literal translation. Keep gender and number agreement correct (verb, adjective and postposition must agree with the noun). Prefer simple everyday sentences a native speaker would actually say; avoid literal translation from English. The hook must be an intriguing question or surprising statement about the topic itself.'] : []),
+    ...(config.language.script === 'Deva' ? ['HINDI QUALITY: use only real, common, correctly spelled Hindi words — never invent or misspell a word. Bronze is काँसा (never ताँका). Use ONLY Devanagari letters for Hindi — never Urdu, Arabic or Persian letters or endings (decades = दशकों, never दशकها). Write directly and natively in Hindi (do not compose in English and translate). Write every name in Devanagari (use the spellings given under NAMES when present); for science and technology use the words Hindi speakers actually say (the English loanword or the common Hindi term — see NAMES AND TERMS when given), never a misleading literal translation. Keep gender and number agreement correct (verb, adjective and postposition must agree with the noun). Prefer simple everyday sentences a native speaker would actually say; avoid literal translation from English. The hook must be an intriguing question or surprising statement about the topic itself.'] : []),
     'ACCURACY: only state facts you are confident are true. Prefer well-known facts. Do not invent quotes, statistics, sources, places, parks, people or organisations. If unsure of an exact number, say it approximately or leave it out.',
     'LEGENDS AND THEORIES: never tell a legend, myth or folklore as history: say "legend says" / "according to folklore". Present unproven explanations as theories: "scientists think", "may have". Keep the three apart: verified fact, theory, legend.',
     'Write numbers the way they are spoken in the narration language. Never copy any number, name or example from these instructions into the script: every fact must come from the topic itself.',
@@ -236,12 +246,14 @@ function repairHinglish(l) {
 }
 
 // a line that stops on a connector reads as cut off (seen after a bad edit: "…घंटा बजाते हैं, फिर")
-const DANGLING = /(?:^|[\s,])(?:तो|फिर|और|इससे|इसलिए|क्योंकि|लेकिन|पर|मगर|मानो|जैसे|शायद|कि|या|यानी|जिससे|ताकि|निश्चित रूप से|and|so|then|but|because|or|that)\s*[,;:–-]*\s*[।.!?]?\s*$/i;
+const DANGLING = /(?:^|[\s,])(?:तो|फिर|और|इससे|इसलिए|क्योंकि|लेकिन|पर|मगर|मानो|जैसे|शायद|कि|या|यानी|जिससे|ताकि|निश्चित रूप से|के लिए|के|का|ने|and|so|then|but|because|or|that)\s*[,;:–-]*\s*[।.!?]?\s*$/i;
 // a filler tacked on after a comma reads as padding (seen in English: "…, sadly.", "…, then.", "…, surely.", "but…")
 const FILLER_TAIL = /[,،]\s*(?:sadly|then|now|surely|indeed|roughly speaking|basically|actually|really|truly|of course|you know|you see|right|too|again|still|sure|सच में|वाकई|बिल्कुल|ना|है ना|समझे)\s*[।.!?…]*\s*$|\b(?:but|and|so)\s*(?:…|\.\.\.)\s*$/i;
 export const danglingLine = (t) => DANGLING.test(String(t || '').trim()) || /,\s*[।.]?\s*$/.test(String(t || '').trim());
 export const fillerTail = (t) => FILLER_TAIL.test(String(t || '').trim());
 /** CJK punctuation leaked by the model ("…in Uttarakhand。") → normal sentence marks. */
+/** Persian/Urdu plural suffix on a Devanagari word ("दशक‌ها", "दशकها") → Hindi oblique plural ("दशकों"). */
+export const persianPlural = (s) => String(s || '').replace(/([ऀ-ॿ]+)[​-‍]?ها(?=[\s,।.!?]|$)/g, (m, w) => w.replace(/[ािीुूेैोौ]$/, '') + 'ों');
 export const westernPunct = (s) => String(s || '').replace(/[​-‍﻿]/g, '').replace(/。/g, '.').replace(/！/g, '!').replace(/？/g, '?').replace(/，/g, ',').replace(/：/g, ':');
 
 /**
@@ -259,6 +271,18 @@ export function cleanEnd(t, deva = true) {
 
 // ── script quality ────────────────────────────────────────────────────────────────────────────────────────────
 const digitsOf = (s) => (String(s || '').replace(/(\d),(\d)/g, '$1$2').match(/\d+(?:\.\d+)?/g) || []);
+/**
+ * Model output → clean line: Unicode NFC, CJK punctuation → normal, then the list numbering the model may echo
+ * ("1.", "1।", "१.", "१।", "(1)", "(१)", "1)", "१)", "1:" and the "(about 30% shorter)" hint) is removed BEFORE digits
+ * are normalised and the no-new-numbers guard runs. A number that starts real narration ("1.6 million…", "1796 में…")
+ * is kept: numbering must be followed by a mark and then a non-digit.
+ */
+export function stripNumbering(raw) {
+  let t = westernPunct(String(raw || '').normalize('NFC')).trim();
+  t = t.replace(/^(?:[(\[]\s*[0-9०-९]{1,2}\s*[)\]]|[0-9०-९]{1,2}\s*[.)।:–-](?![0-9०-९]))\s*/, '');
+  t = t.replace(/^\((?:about )?[^)]*(?:shorter|longer)[^)]*\)\s*/i, '');
+  return t.trim();
+}
 /** Keep "onScreen" only when it repeats what the same line says: its numbers, or at least one of its words. */
 export function onScreenFor(l) {
   if (!l.onScreen) return l;
@@ -375,7 +399,7 @@ async function reviewScript(config, value, { signal, onProgress = () => {}, fact
       // apply each correction only if it passes the guards; otherwise the issue stays for the user
       const lines = src.map((l) => ({ ...l })); let applied = 0;
       for (const v of flagged) {
-        let fix = String(v.corrected || '').replace(/^\s*\d+[.)]\s+/, '').trim(); if (!fix) continue;
+        let fix = stripNumbering(v.corrected); if (!fix) continue;
         fix = deva ? cleanEnd(devanagarizeLatin(asciiDigits(westernPunct(fix))), true) : westernPunct(fix);
         // a correction may drop numbers (an irrelevant aside) but never introduce a number the script does not already contain
         const old = src[v.i].text, known = new Set(src.flatMap((l) => digitsOf(l.text)));
@@ -440,7 +464,16 @@ export async function generateScript(config, opts = {}) {
   const reviewed = await reviewScript(config, r, opts);
   // the proof-read and hook/ending rewrite may change line lengths: fit once more on the reviewed text
   const refit = await fitLength(config, reviewed, { ...opts, stage: 'after review' });
-  const visual = await describeVisuals(config, refit, opts);
+  // language correction (Step 5): only grammar ERRORS, only changes that leave the meaning untouched; the meaning and
+  // duration gates are computed afterwards on the saved text
+  const lc = await correctLanguage(config, refit, { signal: opts.signal, chatFn: opts.chatFn || chat, onLineChanged: (l) => (config.language.id === 'hinglish' ? repairHinglish({ ...l, text: l.say, say: undefined }) : onScreenFor(l)) });
+  const corrected = { ...lc.value, meta: { ...lc.value.meta, languageCorrection: { log: lc.log, calls: lc.calls } } };
+  const described = await describeVisuals(config, corrected, opts);
+  // visual correction (Step 6): only scenes with an error/uncertain finding, the narration is read-only, every new
+  // visual is re-validated; otherwise the scene is kept and stays NEEDS_REVIEW
+  const tf = findTopicFacts(config.topic);
+  const vc = await correctVisuals(config, described, { chatFn: opts.chatFn || chat, signal: opts.signal, topicFacts: tf, storyKind: storyType(config.topic, tf) });
+  const visual = { ...vc.value, meta: { ...vc.value.meta, visualCorrection: { log: vc.log, calls: vc.calls } } };
   return finalizeGates(config, visual, { facts: opts.facts || null });
 }
 
@@ -586,6 +619,9 @@ async function generateDirect(config, { onProgress = () => {}, signal, facts = n
     if (truncated) { tokenBoost = Math.min(3, tokenBoost * 1.6); last = `model output was cut off at ${tokens} tokens (attempt ${attempts})`; continue; }
     const script = parseJsonStrict(text);
     if (!script || !Array.isArray(script.lines) || !script.lines.length || script.lines.some((l) => typeof l?.text !== 'string')) { last = `model output was not valid, complete JSON (attempt ${attempts}, finish: ${finishReason || 'unknown'})`; continue; }
+    // Persian/Urdu plural "ها" on a Hindi word (seen in all 5 attempts: "दशक‌ها पहले" = दशकों पहले) → the Hindi plural,
+    // BEFORE captions are derived; logged. Any other foreign letter still fails the language check.
+    for (const l of script.lines || []) for (const f of ['text', 'say']) { if (typeof l?.[f] !== 'string') continue; const fixed = persianPlural(westernPunct(l[f])); if (fixed !== westernPunct(l[f])) { diagnostics.push({ attempt: attempts, repaired: `Persian plural suffix → Hindi plural: "${l[f]}" → "${fixed}"` }); l[f] = fixed; } }
     const raw = (script.lines || []).filter((l) => String(l.text || '').trim());
     script.lines = (script.lines || []).map((l) => ({ text: westernPunct(String(l.text || '').trim()), ...(l.say ? { say: westernPunct(String(l.say).trim()) } : {}), visual: String(l.visual || '').trim(), ...(l.onScreen && String(l.onScreen).trim() && !/^\s*(none|null|n\/?a|nil|nothing|-+|—|empty|no text|कुछ नहीं|कोई नहीं)?\s*$/i.test(String(l.onScreen)) ? { onScreen: String(l.onScreen).trim() } : {}) })).filter((l) => l.text);
     // English hints are pooled across the script, so a word is spelled the same on every line even where the model
@@ -756,6 +792,8 @@ export async function planStory(config, n, { facts = null, topicFacts = null, re
     'Choose ONE central story for the topic (a question the video answers, a problem and how it was solved, or a mystery and what was found). "centralStory" states the REAL answer concretely — the specific mechanism, cause, people or events (what exactly, how, why) — never a vague summary like "it helps them survive". Every beat must serve that story; leave out facts that do not, even if they are true.',
     'The beats must actually explain: name the specific parts, causes and consequences, so a viewer could repeat the explanation after watching.',
     `Plan exactly ${n} beats, one per narration line, in an order where each beat follows from the previous one (cause → effect, problem → solution, then → what happened next, claim → evidence). Each "point" is one short English sentence of what that line tells; "link" says how it connects to the previous beat (empty for beat 1).`,
+    // story architecture depends on the kind of topic (history ≠ science ≠ mystery)
+    `STORY SHAPE — ${STORY_SHAPES[storyType(config.topic, topicFacts)]}`,
     'Audience-first: the viewer may know nothing. Beat 1 is the hook — a curiosity question or surprising statement that names the specific idea of THIS topic (never an empty opener). Beat 2 is a short beginner bridge: what the subject is, in plain words. Then explain step by step, each unfamiliar term explained when first used, an analogy where it helps. The last beat is the conclusion — what it all means — optionally ending with a natural question to the viewer; never a generic "amazing achievement / proud moment" or "like and subscribe".',
     'A comparison (for example with a film budget) or a side fact (an address, a headquarters) belongs in the story only if it explains the central story; at most one comparison.',
     'No two beats may carry the same information. A number appears in only one beat unless a later beat compares it with another number.',
@@ -881,67 +919,174 @@ export async function fitLength(config, value, { signal, onProgress = () => {}, 
   const size = (t) => (hi ? letters(t) : countWords(t) + numberExtraWords(t));
   let cur = value;
   const log = [...(value.meta.lengthFitLog || [])], start = estimateSeconds(value.script, config).seconds;
-  for (let round = 1; round <= 3; round++) {
+  // ONE LINE PER REQUEST. Earlier versions sent several lines per call; the 4B model then rewrote different lines than
+  // the ones asked for (it restarted at line 1, or answered with the next line — the octopus script lost "three
+  // hearts"), and sometimes looped ("1.5, 1.5, …") until the token limit. Now every call names exactly one line, gives
+  // its budget and the facts it must keep, shows the rest of the script read-only, and asks for one sentence back.
+  // A line gets at most two attempts; the total is recalculated after every accepted line; fitting stops inside ±8 %.
+  // content words only — function words (अगर, यह, तो, और, the, and …) made an unrelated sentence look 36 % similar
+  const STOP = new Set('है हैं था थे थी का की के में से को ने पर और भी तो यह ये वह वो इस उस इसकी उसकी एक कि जो जब अगर या लेकिन फिर हम सब नहीं हो होता होती होते the a an and or of to in on at is are was were it this that for with by as from be'.split(' '));
+  const toks = (t) => new Set(String(t || '').toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter((w) => w.length > 1 && !STOP.has(w)));
+  const overlap = (cand, ref) => { const A = toks(cand), B = toks(ref); return A.size ? [...A].filter((w) => B.has(w)).length / A.size : 0; };
+  const same = (a, b) => String(a || '').replace(/[\s।.!?,]/g, '') === String(b || '').replace(/[\s।.!?,]/g, '');
+  const sentences = (t) => String(t || '').replace(/(\d)\.(\d)/g, '$1$2').split(/[।?!.]+/).filter((x) => countWords(x) >= 1).length;
+  // a token loop: one word is a third of a long answer, or a short chunk repeats 4+ times in a row ("1.5, 1.5, 1.5, 1.5")
+  const looping = (t) => {
+    const w = String(t || '').split(/[\s,]+/).filter(Boolean), c = {};
+    for (const x of w) c[x] = (c[x] || 0) + 1;
+    return (w.length >= 8 && Math.max(...Object.values(c)) / w.length > 0.3) || /(.{3,40}?)\1{3,}/.test(String(t || '').replace(/\s+/g, ' '));
+  };
+  const COMMENTARY = /\b(words?|line|sentence|rewritten|rewrite|output|shorter|longer)\b|शब्द|पंक्ति[:\s]|वाक्य:|^\s*["“']?\s*(?:LINE|Line)\b/i;
+  // facts a line must keep: its numbers, the topic's standard terms (fact file) and, in English, its proper names
+  const tf = findTopicFacts(config.topic);
+  // Seen in real rewrites: "दो ब्रांकियल हार्ट और एक सिस्टेमिक हार्ट" → "दो ब्रांकियल हार्ट" (the third heart lost: the fact
+  // file spells "सिस्टमिक", so an exact match missed it, and one remaining "हार्ट" satisfied a presence check), "दो" (two)
+  // dropped. Terms are now matched by spelling-tolerant key and COUNTED; number words are protected like digits.
+  const wordsOf = (t) => String(t || '').split(/[\s,।?!.:;–]+/).map((x) => x.replace(/[^\p{L}\p{M}\p{N}-]/gu, '')).filter(Boolean);
+  const keyOf = (x) => (/[ऀ-ॿ]/.test(x) ? skeleton(devanagariToHinglish(x).toLowerCase()) : x.toLowerCase());
+  const termKeys = new Set(Object.values(tf?.terms?.hi || {}).flatMap((v) => wordsOf(String(v).split('(')[0])).filter((x) => letters(x) >= 3).map(keyOf).filter((k) => k.length >= 2));
+  const NUMWORDS = new Set('दो तीन चार पाँच पांच छह छः सात आठ नौ दस बीस सौ हज़ार हजार लाख करोड़ दोनों पहला पहली पहले दूसरा दूसरी तीसरा तीसरी two three four five six seven eight nine ten hundred thousand million billion both first second third'.split(' '));
+  const termKey = (x) => { if (letters(x) < 3) return null; const k = keyOf(x); if (termKeys.has(k)) return k; return [...termKeys].find((tk) => k.startsWith(tk) && (tk.length >= 3 ? k.length - tk.length <= 2 : tk.length === 2 && k.length - tk.length === 1 && /s$/.test(k))) || null; };   // plural/inflected ("हार्ट्स" → "हार्ट")
+  const keyCounts = (t) => { const m = new Map(); for (const x of wordsOf(t)) { const num = NUMWORDS.has(x.toLowerCase()), tk = num ? null : termKey(x); if (!num && !tk) continue; const k = num ? x.toLowerCase() : tk; const e = m.get(k) || { word: x, n: 0 }; e.n++; m.set(k, e); } return m; };
+  const GLOSSES = [...new Set(Object.values(tf?.terms?.hi || {}).flatMap((v) => [...String(v).matchAll(/\(([^)]+)\)/g)].map((g) => g[1].trim().replace(/\s+(दिल|दिलों)$/, ''))).filter((g) => countWords(g) >= 2))];
+  const glossLost = (cand, orig) => GLOSSES.filter((g) => String(orig).split(g).length > String(cand).split(g).length);
+  const namesOf = (t) => (!hi ? (String(t || '').match(/(?<=\S\s+)[A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)*/g) || []) : []);
+  const protectedOf = (t) => [...new Set([...digitsOf(t), ...[...keyCounts(t).values()].map((e) => (e.n > 1 ? `${e.word} ×${e.n}` : e.word)), ...namesOf(t)])];
+  const lostOf = (cand, orig) => { const A = keyCounts(cand); return [...glossLost(cand, orig), ...[...keyCounts(orig)].filter(([k, e]) => (A.get(k)?.n || 0) < e.n).map(([, e]) => e.word), ...namesOf(orig).filter((nm) => !String(cand).includes(nm))]; };
+  // a Hindi sentence ends on its verb: a line that did must still do ("नेविगेशन मुश्किल।", "…के कारण दुर्घटनाएँ।" were accepted)
+  const hasVerb = (t) => wordsOf(t).some((x) => /^(है|हैं|था|थे|थी|थीं|होगा|होगी|होंगे)$/.test(x) || (letters(x) >= 3 && /(ता|ती|ते|गा|गी|गे|या|यी|ये)$/.test(x)));
+  const finiteEnd = (t) => { const last = wordsOf(t).at(-1) || ''; return /^(है|हैं|था|थे|थी|थीं|हो|होगा|होगी|होंगे|सकता|सकती|सकते)$/.test(last) || /(ता|ती|ते|तीं|गा|गी|गे|या|यी|ये|यीं|ई|ए|ईं)$/.test(last) || /^(हैं|करें|करो|दें|लें|रहें|चलें|सोचें|देखें)$/.test(last); };   // not "में"/"को" (postpositions)
+  // which line to change next: long and repetitive first; lines with numbers/names/terms, causal links, the hook and
+  // above all the conclusion last (never every line equally)
+  const CAUSAL = /क्योंकि|इसलिए|जिससे|इसी वजह|because|therefore|so that|which is why/i;
+  const valueOf = (i, src, shorten) => {
+    const t = form(src[i]); let v = shorten ? size(t) : 1000 / (1 + size(t));
+    v *= 1 + Math.max(0, ...src.map((y, j) => (j === i ? 0 : overlap(t, form(y)))));   // repeated context
+    if (protectedOf(t).length) v *= 0.7;
+    if (CAUSAL.test(t)) v *= 0.8;
+    if (i === src.length - 1) v *= 0.3; else if (i === 0) v *= 0.5;
+    return v;
+  };
+  const prevBase = value.meta.lengthFitBase, fitBase = Array.isArray(prevBase) && prevBase.length === value.script.lines.length ? prevBase : value.script.lines.map(form);
+  const tries = new Map(); let calls = 0, unchanged = 0, modelDown = null, reviews = 0;
+  const maxReviews = Math.min(cur.script.lines.length, 6);   // semantic reviews per stage (only for uncertain rewrites)
+  const maxCalls = Math.min(2 * cur.script.lines.length, 16);
+  for (;;) {
     const est = estimateSeconds(cur.script, config), off = est.speechSeconds / Math.max(1, est.targetSpeech);
-    if (off >= 0.92 && off <= 1.08) { log.push({ stage, round, before: est.seconds, result: 'within ±8 % — no change needed' }); break; }
-    onProgress({ indeterminate: true, message: `Fitting the length (${est.seconds} s for ${config.durationSeconds} s, round ${round})` });
-    const src = cur.script.lines, n = src.length, shorten = off > 1;
-    const pct = Math.round(Math.abs(1 - 1 / off) * 100);
+    if (off >= 0.92 && off <= 1.08) { log.push({ stage, call: calls, before: est.seconds, result: 'within ±8 % — no change needed' }); break; }
+    if (calls >= maxCalls) { log.push({ stage, call: calls, before: est.seconds, result: `stopped — call limit (${maxCalls}) reached` }); break; }
+    const src = cur.script.lines, shorten = off > 1;
+    const total = src.reduce((a, l) => a + size(form(l)), 0), need = Math.abs(total - total / off);
+    const order = src.map((l, i) => i).filter((i) => (tries.get(i) || 0) < 2).sort((x, y) => valueOf(y, src, shorten) - valueOf(x, src, shorten));
+    if (!order.length) { log.push({ stage, call: calls, before: est.seconds, result: 'stopped — every line has had its two attempts' }); break; }
+    const i = order[0], l = src[i], orig = form(l), a = size(orig), attempt = (tries.get(i) || 0) + 1;
+    // the line as it was when fitting started: repeated cuts must not erode it step by step (seen: "…शरीर के बाकी हिस्सों
+    // तक, जैसे भुजाएँ और मस्तिष्क" → "…शरीर में" → "…ऑक्सीजन रक्त पहुँचाता है", each step checked only against the last)
+    const base = (fitBase && fitBase[i]) || form(value.script.lines[i] || l);
+    tries.set(i, attempt); calls++;
+    // budget for this line: its share of what is left, never more than 40 % of the line (a safe minimum of 50 % stays)
+    const want = shorten ? Math.max(Math.ceil(a * 0.6), Math.round(a - need)) : Math.min(Math.round(a * 1.4), Math.round(a + need));
+    const minSize = shorten ? Math.ceil(a * 0.5) : a + 1, maxSize = shorten ? a - 1 : Math.round(a * 1.5);
+    const w = countWords(orig), targetWords = Math.max(3, Math.round(w * want / Math.max(1, a)));
+    // the schema cap only stops runaway output; the real length limits are minSize/maxSize below. Seen end-to-end: at
+    // 1.5× the line, every English lengthening was cut mid-sentence ("…a gradual braking effect, yo") and rejected as a
+    // fragment, so a short script could never be lengthened
+    const maxChars = shorten ? orig.length + 20 : Math.round(orig.length * 2) + 40;
+    const prot = protectedOf(orig), lineSecs = (y) => (y ? estimateSeconds({ lines: [y] }, config).speechSeconds : null);
     const sys = [
-      `You edit narration lines for length. ${shorten ? `Make the WHOLE script about ${pct}% shorter` : `Make the WHOLE script about ${pct}% longer`}: each numbered line shows its own target in (brackets). Keep its meaning, every name and fact, in the same language and script (${deva || hing ? 'Devanagari' : 'English'}). Keep every number exactly as digits.`,
-      `Each line stays one or two complete, natural spoken sentences ending with ${deva || hing ? '।, ? or !' : 'a full stop, ? or !'} and still follows from the line before it.`,
-      shorten ? 'Shorten in this order: repeated information, filler and needless words, long phrasing → shorter phrasing. Never remove an essential fact, name, date, number or the cause-and-effect link between lines.' : 'Lengthen with a natural explaining phrase — never a new fact, name or number.',
+      `You ${shorten ? 'shorten' : 'lengthen'} ONE narration line of a short video script. Rewrite only the line marked LINE — never any other line of the script.`,
+      shorten
+        ? (attempt > 1 ? 'Your last answer for this line was rejected. Say the SAME thing in clearly FEWER words: drop filler, repeated words, extra adjectives and long phrases. A copy of the original is rejected.' : `Use at most ${targetWords} words.`)
+        : `Use about ${targetWords} words: add a natural explaining phrase — never a new fact, name or number.`,
+      `Keep its meaning, every fact in MUST KEEP exactly, and every number as digits. Same language and script (${deva || hing ? 'Devanagari' : 'English'}). It must still follow from PREVIOUS and lead into NEXT.`,
+      `Answer with ${sentences(orig) > 1 ? 'one or two complete spoken sentences' : 'ONE complete spoken sentence'} ending with ${deva || hing ? '।, ? or !' : 'a full stop, ? or !'} — no numbering, no notes, no word counts.`,
       'Output ONLY JSON matching the schema.',
     ].join('\n');
-    const schema = { type: 'object', properties: { lines: { type: 'array', minItems: n, maxItems: n, items: { type: 'string', maxLength: 400 } } }, required: ['lines'], additionalProperties: false };
-    const entry = { stage, round, before: est.seconds, target: config.durationSeconds, direction: shorten ? 'shorten' : 'lengthen', lines: [] };
-    let out;
+    const user = [`Topic: ${config.topic}`, '', 'FULL SCRIPT (read-only context):', ...src.map((y, j) => `[${j + 1}] ${form(y)}`), '',
+      `PREVIOUS: ${i ? form(src[i - 1]) : '(start of the script)'}`, `NEXT: ${i < src.length - 1 ? form(src[i + 1]) : '(end of the script)'}`, '',
+      `LINE ID: [${i + 1}]`, ...(hing ? [`ORIGINAL (caption): ${l.text}`] : []), `  LINE: ${orig}`,
+      `NOW: ${w} words, about ${lineSecs(l)} s → ${shorten ? 'AT MOST' : 'ABOUT'} ${targetWords} words, at most ${maxChars} characters`,
+      `MUST KEEP: ${prot.length ? prot.join(', ') : '(the meaning)'}`].join('\n');
+    const schema = { type: 'object', properties: { line: { type: 'string', maxLength: maxChars } }, required: ['line'], additionalProperties: false };
+    const entry = { stage, call: calls, line: i + 1, attempt, direction: shorten ? 'shorten' : 'lengthen', before: est.seconds, target: config.durationSeconds, measure: hing ? 'say (Devanagari, spoken)' : 'text', budget: Math.round(need), targetWords, maxChars, mustKeep: prot, lines: [] };
+    let raw = '', cand = null, t = '';
+    const detail = () => ({ raw: raw.slice(0, 400), normalized: t.slice(0, 400), original: orig, candidate: cand ? cand.text : null, say: cand ? (cand.say || null) : null, originalSize: a, candidateSize: cand ? size(form(cand)) : null, originalWords: w, candidateWords: cand ? countWords(form(cand)) : null, originalSeconds: lineSecs(l), candidateSeconds: lineSecs(cand) });
+    const reject = (reason) => { entry.lines.push({ line: i + 1, result: 'rejected', reason, ...detail() }); entry.after = est.seconds; entry.result = 'rejected'; log.push(entry); };
     try {
-      const { text, truncated } = await chatFn({ messages: [{ role: 'system', content: sys }, { role: 'user', content: src.map((l, i) => `${i + 1}. (${shorten ? `about ${pct}% shorter` : `about ${pct}% longer`}) ${form(l)}`).join('\n') }], schema, temperature: 0.2, maxTokens: Math.round(src.reduce((a, l) => a + form(l).length, 0) * (hing || deva ? 2.2 : 1.2)) + 300, signal });
-      if (truncated) throw new Error('model output was cut off');
-      out = parseJsonStrict(text)?.lines;
-      if (!Array.isArray(out) || out.length !== n) throw new Error(`model returned ${Array.isArray(out) ? out.length : 0} lines for ${n}`);
-    } catch (e) { if (signal?.aborted) throw e; entry.result = `rewrite failed: ${String(e.message).slice(0, 120)}`; log.push(entry); break; }
-    // per-line decisions: a line is kept only if it is valid AND moves in the right direction
-    const lines = src.map((l, i) => {
-      const reject = (reason) => { entry.lines.push({ line: i + 1, result: 'rejected', reason }); return l; };
-      let t = stripLeaks(westernPunct(String(out[i] || '').replace(/^\s*\d+[.)]\s+/, '').replace(/^\((?:about )?[^)]*\)\s*/i, '').trim()));
-      if (!t) return reject('empty');
-      if (deva || hing) t = cleanEnd(devaNames(asciiDigits(t)), true);
-      const was = digitsOf(form(l)), now = digitsOf(t);
-      if (now.some((d) => !was.includes(d))) return reject(`introduced a number (${now.filter((d) => !was.includes(d)).join(', ')})`);
-      if (was.some((d) => !now.includes(d))) return reject(`dropped a number (${was.filter((d) => !now.includes(d)).join(', ')})`);
-      if (danglingLine(t) || fillerTail(t)) return reject('incomplete sentence');
-      if ((deva || hing) && !/[ऀ-ॿ]/.test(t)) return reject('not in Devanagari');
-      if (hi && marathiWords(t)) return reject('Marathi words');
-      const next = hing ? repairHinglish({ ...l, text: t, say: undefined }) : onScreenFor({ ...l, text: t });
-      if (checkLanguage({ lines: [next] }, config).length) return reject(`language: ${checkLanguage({ lines: [next] }, config)[0].slice(0, 80)}`);
-      const a = size(form(l)), b = size(form(next));
-      if (shorten ? b >= a : b <= a) return reject(shorten ? 'not shorter' : 'not longer');
-      if (shorten && b < a * 0.45) return reject('cut more than half the line (essential content at risk)');
-      entry.lines.push({ line: i + 1, result: 'accepted', from: a, to: b });
-      return next;
-    });
-    // apply accepted lines one by one (largest change first) and keep each only while it brings the script closer to
-    // the target — an over-shortened rewrite (47 s → 30 s for 39 s) then keeps just the lines that are needed
-    const offOf = (ls) => { const e = estimateSeconds({ ...cur.script, lines: ls }, config); return e.speechSeconds / Math.max(1, e.targetSpeech); };
-    const order = lines.map((l, i) => i).filter((i) => lines[i] !== src[i]).sort((a, b) => Math.abs(size(form(lines[b])) - size(form(src[b]))) - Math.abs(size(form(lines[a])) - size(form(src[a]))));
-    const pick = [...src];
-    for (const i of order) {
-      const trial = pick.map((l, k) => (k === i ? lines[i] : l));
-      if (Math.abs(offOf(trial) - 1) < Math.abs(offOf(pick) - 1)) pick[i] = lines[i];
-      else { const d = entry.lines.find((x) => x.line === i + 1); if (d) { d.result = 'not needed'; d.reason = 'the target was already reached without it'; } }
+      const { text, truncated } = await chatFn({ messages: [{ role: 'system', content: sys }, { role: 'user', content: user }], schema, temperature: attempt > 1 ? 0.4 : 0.2, maxTokens: Math.round(maxChars * (hi ? 1.3 : 0.5)) + 40, signal });
+      raw = String(parseJsonStrict(text)?.line ?? '');
+      if (truncated) { reject('output cut off at the length limit (runaway)'); continue; }
+    } catch (e) {
+      if (signal?.aborted) throw e;
+      // the model is not reachable: stop at once (seen: every line spent both attempts on "fetch failed" and the script
+      // was reported as "could not be shortened safely" — the wrong reason)
+      if (/fetch failed|ECONNREFUSED|ECONNRESET|socket hang up|not running/i.test(String(e.message))) { tries.set(i, attempt - 1); calls--; modelDown = String(e.message).slice(0, 100); log.push({ ...entry, result: `stopped — the local model is not reachable (${modelDown})` }); break; }
+      reject(`no valid answer: ${String(e.message).slice(0, 100)}`); continue;
     }
-    const script = { ...cur.script, lines: pick }, est2 = estimateSeconds(script, config), off2 = est2.speechSeconds / Math.max(1, est2.targetSpeech);
-    entry.after = est2.seconds;
-    if (Math.abs(off2 - 1) >= Math.abs(off - 1)) { entry.result = 'no improvement — kept the previous version'; log.push(entry); break; }
-    entry.result = `improved ${est.seconds}s → ${est2.seconds}s`; log.push(entry);
+    t = stripLeaks(stripNumbering(raw));
+    if (!t) { reject('empty'); continue; }
+    if (looping(raw)) { reject('repetitive output (token loop)'); continue; }
+    // a plain echoed number ("1।", "(१)") is stripped (Step 1); notes or labels mean the answer is not just the line
+    if (COMMENTARY.test(raw)) { reject('commentary or labels in the answer'); continue; }
+    if (deva || hing) t = cleanEnd(devaNames(asciiDigits(t)), true);
+    if (same(t, orig)) { unchanged++; reject('unchanged (copy of the original)'); continue; }
+    if (sentences(t) > Math.max(1, sentences(orig))) { reject(`${sentences(t)} sentences for a ${sentences(orig)}-sentence line`); continue; }
+    const own = overlap(t, orig), other = src.map((y, j) => (j === i ? 0 : overlap(t, form(y)))), best = Math.max(0, ...other);
+    if (best >= 0.5 && best > own) { reject(`answered with another line (matches line ${other.indexOf(best) + 1})`); continue; }
+    const was = digitsOf(orig), now = digitsOf(t);
+    if (now.some((d) => !was.includes(d))) { reject(`introduced a number (${now.filter((d) => !was.includes(d)).join(', ')})`); continue; }
+    if (was.some((d) => !now.includes(d))) { reject(`dropped a number (${was.filter((d) => !now.includes(d)).join(', ')})`); continue; }
+    const lost = [...new Set([...lostOf(t, orig), ...lostOf(t, base)])];
+    if (lost.length) { reject(`lost an essential term, name or number word (${lost.join(', ')})`); continue; }
+    // cause-and-effect: a line that explained WHY must still do ("…, जिससे कंपासें भ्रमित हो सकती हैं" was cut off)
+    const causal = String(orig).match(CAUSAL) || String(base).match(CAUSAL);
+    if (causal && !CAUSAL.test(t)) { reject(`dropped the cause-and-effect link ("${causal[0]}")`); continue; }
+    if (own < 0.3) { reject(`meaning changed (only ${Math.round(own * 100)} % of the words come from the original)`); continue; }
+    // and the original must survive: at least half of its content words (seen: "गलतियाँ … दुर्घटनाओं का कारण बन सकती हैं"
+    // → "गलतियाँ पायलटों और कप्तानों से होती हैं" — 75 % of the answer came from the original, but "accidents" was gone)
+    const kept = Math.min(overlap(orig, t), overlap(base, t));
+    if (kept < 0.5) { reject(`too much of the original lost (only ${Math.round(kept * 100)} % of its content words kept)`); continue; }
+    if (danglingLine(t) || fillerTail(t) || !/[।.?!]["'”’)]*$/.test(t)) { reject('incomplete sentence or fragment'); continue; }
+    if (hi && (hasVerb(orig) || hasVerb(base)) && !hasVerb(t)) { reject('fragment — no verb left in the sentence'); continue; }
+    if (hi && (finiteEnd(orig) || finiteEnd(base)) && !finiteEnd(t)) { reject(`fragment — the sentence no longer ends on a verb ("${wordsOf(t).at(-1)}")`); continue; }
+    if ((deva || hing) && !/[ऀ-ॿ]/.test(t)) { reject('not in Devanagari'); continue; }
+    if (hi && marathiWords(t)) { reject('Marathi words'); continue; }
+    // MEANING (Step 4): deterministic comparison with the line as fitting found it (and as it is now); a semantic review
+    // only when the rules cannot explain dropped/added words. Unverifiable → rejected, the original is kept.
+    const md = meaningDiff(base, t), mdo = base === orig ? md : meaningDiff(orig, t), blk = [...blocking(md), ...blocking(mdo)];
+    entry.meaning = { changes: md.changes, dropped: md.dropped, added: md.added };
+    if (blk.length) { reject(`meaning: ${blk[0].detail}`); continue; }
+    if (md.uncertain || mdo.uncertain) {
+      if (reviews >= maxReviews) { entry.meaning.review = { verdict: 'unknown', error: 'review limit reached' }; reject('meaning could not be verified (review limit reached)'); continue; }
+      reviews++;
+      const rv = await semanticReview({ original: base, rewrite: t, dropped: md.dropped, added: md.added, language: hi ? 'Hindi' : 'English', chatFn, signal });
+      entry.meaning.review = rv;
+      if (rv.verdict !== 'same') { reject(rv.verdict === 'changed' ? `meaning changed (review: ${rv.lost.slice(0, 100)})` : `meaning could not be verified (${rv.error || 'no clear answer'})`); continue; }
+    }
+    cand = hing ? repairHinglish({ ...l, text: t, say: undefined }) : onScreenFor({ ...l, text: t });
+    const lp = checkLanguage({ lines: [cand] }, config);
+    if (lp.length) { reject(`language: ${lp[0].slice(0, 80)}`); continue; }
+    const b = size(form(cand));
+    if (b > maxSize) { reject(shorten ? 'not shorter' : `too long (${b} > ${maxSize})`); continue; }
+    if (b < minSize) { reject(shorten ? `too short (${b} < ${minSize}: essential content at risk)` : 'not longer'); continue; }
+    // accepted only if the whole script moves closer to the target; then the total is recalculated
+    const lines2 = src.map((y, j) => (j === i ? cand : y)), script = { ...cur.script, lines: lines2 };
+    const est2 = estimateSeconds(script, config), off2 = est2.speechSeconds / Math.max(1, est2.targetSpeech);
+    if (Math.abs(off2 - 1) >= Math.abs(off - 1)) { reject('overshoots — the script would be further from the target'); continue; }
+    entry.lines.push({ line: i + 1, result: 'accepted', from: a, to: b, ...detail() });
+    entry.after = est2.seconds; entry.result = `accepted: ${est.seconds}s → ${est2.seconds}s`; log.push(entry);
     cur = { script, meta: { ...cur.meta, wordCount: est2.words, estimatedSeconds: est2.seconds } };
   }
+  const endEst = estimateSeconds(cur.script, config), endOff = endEst.speechSeconds / Math.max(1, endEst.targetSpeech);
+  const stuck = [...tries].filter(([j, n]) => n >= 2 && !log.some((e) => e.stage === stage && e.line === j + 1 && /^accepted/.test(e.result || ''))).map(([j]) => j + 1).sort((x, y) => x - y);
+  const reason = endOff >= 0.9 && endOff <= 1.1 ? null
+    : modelDown ? `length fitting could not run — the local model is not reachable (${modelDown}); ${endEst.seconds} s for ${config.durationSeconds} s`
+    : `length fitting stopped at ${endEst.seconds} s for ${config.durationSeconds} s without removing essential content${stuck.length ? `; lines ${stuck.join(', ')} could not be ${endOff > 1 ? 'shortened' : 'lengthened'} safely in two attempts` : ''} — shorten by hand or choose a longer duration`;
+  const fitCalls = calls, fitReviews = reviews;
   const end = estimateSeconds(cur.script, config).seconds;
   // changed lines → the fact review must describe the text that is actually saved
   if (cur !== value) cur = { ...cur, meta: { ...cur.meta, claimReview: reviewClaims(cur.script, { topic: config.topic, topicFacts: findTopicFacts(config.topic), userFacts: null }), claimsToVerify: extractClaims(cur.script) } };
-  return { ...cur, meta: { ...cur.meta, lengthFitLog: log, lengthFit: { from: value.meta.lengthFit?.from ?? start, to: end, improved: end !== start && Math.abs(end - config.durationSeconds) < Math.abs(start - config.durationSeconds), stage } } };
+  return { ...cur, meta: { ...cur.meta, lengthFitLog: log, lengthFitBase: fitBase, lengthFit: { from: value.meta.lengthFit?.from ?? start, to: end, unchanged, calls: fitCalls, reviews: fitReviews, reason, improved: end !== start && Math.abs(end - config.durationSeconds) < Math.abs(start - config.durationSeconds), stage } } };
 }
 
 // ── quality gates (separate; any failed gate keeps the script out of "Ready") ─────────────────────────────────
@@ -961,7 +1106,10 @@ export function qualityGates(config, value, modelIssues = []) {
     ? ungrounded(config.language.id === 'hinglish' ? s.lines.map((l) => `x ${(l.english || []).join(' ')} ${digitsOf(l.text).join(' ')}`) : s.lines.map((l) => l.text), m.groundText)
     : (m.ungrounded || []);
   const unframedNow = m.plan?.lineFacts ? unframedLines(config, s.lines, { beats: m.plan.lineFacts }) : (m.unframed || []);
-  const lang = [...checkLanguage(s, config), ...(config.language.id === 'hinglish' ? hinglishProblems(s) : [])];
+  // FAILED is for unusable output (wrong script, Marathi, junk). Plain Hindi in Hinglish mode is usable → editorial review
+  const hp = config.language.id === 'hinglish' ? hinglishProblems(s) : [];
+  const lang = [...checkLanguage(s, config), ...hp.filter((p) => !/plain Hindi/.test(p))];
+  const styleIssues = hp.filter((p) => /plain Hindi/.test(p));
   const judged = m.editorialJudgment || null;
   const judgedIssues = judged ? [
     ...(judged.hook !== 'strong' ? [`hook is ${judged.hook}${judged.hookNote ? ` — ${judged.hookNote}` : ''}`] : []),
@@ -975,9 +1123,16 @@ export function qualityGates(config, value, modelIssues = []) {
   const coverText = m.englishDraft?.lines?.join(' ') || s.lines.map((l) => l.text).join(' ');
   const missing = missingEssentials(research, coverText);
   const g = (ok, issues, extra = {}) => ({ ok, issues, ...extra });
+  // names that belong to ANOTHER topic's fact file (prompt contamination: "Sher Shah Suri" in a vaccines script)
+  const foreignNames = crossTopicNames(s.lines.map((l) => `${l.say || ''} ${l.text}`).join(' '), config.topic, [config.topic, ...(research?.evidence || []).map((e) => e.text)].join(' '));
+  const tf0 = findTopicFacts(config.topic);
   return {
+    // RESEARCH: is there verified evidence for this topic at all? (separate from whether the script respects it)
+    research: g(!needsResearch, needsResearch ? [`needs research: ${sourced ? `${modelClaims.length} claim(s) come only from the model's own knowledge` : 'no verified fact file for this topic — every fact comes from the model\'s own knowledge'}`] : [],
+      { needsResearch, brief: researchBrief(tf0, research), unverifiedClaims: modelClaims.map((e) => e.text) }),
     language: g(lang.length === 0, lang),
-    facts: g(!bad.length && !needsResearch && !groundNow.length && !unframedNow.length && !unsupportedNums.length, [
+    facts: g(!bad.length && !needsResearch && !groundNow.length && !unframedNow.length && !unsupportedNums.length && !foreignNames.length, [
+      ...foreignNames.map((n) => `"${n.name}" belongs to another topic (${n.topic}) — not supported by this topic's sources`),
       ...unsupportedNums.map((c) => `line ${c.line}: "${c.value}" is not in the verified facts — remove it or use the sourced value`),
       ...unframedNow.map((u) => `line ${u.line}: theory or legend stated as fact — the plan's source says: "${String(u.fact).slice(0, 100)}"`),
       ...groundNow.map((u) => `line ${u.line}: not in any source — ${u.terms.join(', ')}`),
@@ -995,26 +1150,41 @@ export function qualityGates(config, value, modelIssues = []) {
     })(),
     // Hindi/Hinglish lines are compared through their English plan beat (same line, same story point)
     terms: (() => { const beats = m.plan?.beats?.length === s.lines.length ? m.plan.beats : null; const tp = termProblems(config, s, { beats, englishLines: m.englishDraft?.lines || null, topicFacts: findTopicFacts(config.topic) }); return g(!tp.length, tp); })(),
-    visuals: (() => { const beats = m.plan?.beats?.length === s.lines.length ? m.plan.beats : null; const tf = findTopicFacts(config.topic); const vp = visualProblems(s, { englishLines: m.englishDraft?.lines || null, beats, topic: config.topic, keyTerms: [...Object.keys(tf?.terms?.hi || {}), ...(research?.essentials || [])], shots: m.visuals?.shots?.length === s.lines.length ? m.visuals.shots : null }); return g(!vp.length, vp); })(),
-    duration: g(off >= 0.9 && off <= 1.1, off >= 0.9 && off <= 1.1 ? [] : [`about ${est.seconds} s for a ${config.durationSeconds} s target`], { estimatedSeconds: est.seconds, target: config.durationSeconds }),
+    visuals: (() => { const beats = m.plan?.beats?.length === s.lines.length ? m.plan.beats : null; const tf = findTopicFacts(config.topic); const vp = visualProblems(s, { englishLines: m.englishDraft?.lines || null, beats, topic: config.topic, keyTerms: [...Object.keys(tf?.terms?.hi || {}), ...(research?.essentials || [])], shots: m.visuals?.shots?.length === s.lines.length ? m.visuals.shots : null });
+      // Step 6: the engine below replaces this legacy check in the gate (visualProblems stays exported for its tests);
+      // its exact-word matching failed almost every script ("the line is about uttarapath, the visual shows an ancient road")
+      void vp; void beats;
+      const vr = visualReport(config, value, { topicFacts: tf, storyKind: storyType(config.topic, tf) });
+      const issues = Object.entries(vr.categories).flatMap(([c, x]) => x.issues.map((t) => `${t} [${c}]`));
+      return g(vr.ok, issues, { categories: vr.categories, scenes: vr.scenes, advisory: Object.values(vr.categories).flatMap((x) => x.advisory), corrections: m.visualCorrection?.log || [] }); })(),
+    // grammar (Step 5): errors fail the gate (NEEDS_REVIEW); warnings and notes are advisory
+    grammar: (() => { const li = languageIssues(config, s); const err = li.filter((x) => x.severity === 'error'); return g(!err.length, err.map((x) => `line ${x.line}: ${x.rule} — ${x.detail}`), { advisory: li.filter((x) => x.severity !== 'error').map((x) => `line ${x.line}: ${x.rule} — ${x.detail}`), corrections: (m.languageCorrection?.log || []).filter((e) => e.changed).map((e) => ({ line: e.line, from: e.original, to: e.final })) }); })(),
+    meaning: (() => { const vm = verifyScriptMeaning(config, value, findTopicFacts(config.topic)); return g(vm.ok, vm.findings.filter((f) => f.decision !== 'preserved').map((f) => `${f.lineId}: ${f.changes.filter((c) => c.severity !== 'low').map((c) => c.detail).join('; ') || `unverified change (dropped: ${f.dropped.join(', ')})`}`), { findings: vm.findings }); })(),
+    duration: g(off >= 0.9 && off <= 1.1, off >= 0.9 && off <= 1.1 ? [] : [`about ${est.seconds} s for a ${config.durationSeconds} s target`, ...(m.lengthFit?.reason ? [m.lengthFit.reason] : [])], { estimatedSeconds: est.seconds, target: config.durationSeconds }),
     // editorial = line-level proof-read + deterministic sentence checks + the whole-script judgment (hook, flow, ending);
     // the judgment can only hold a script back, never pass one the other checks failed
     // the whole-script model judgment is ADVISORY only: calibrated against the user's reference script it rated that script
     // exactly like a flat 4-line fact list (twice, Hindi and English), so it cannot decide READY; its notes are shown
-    editorial: g(!modelIssues.length && !qualityProblems(s, config).length, [...modelIssues.map((x) => `line ${x.line}: ${x.problem}`), ...qualityProblems(s, config)], { judgment: judged, advisory: judgedIssues }),
+    editorial: g(!modelIssues.length && !qualityProblems(s, config).length && !styleIssues.length, [...styleIssues, ...modelIssues.map((x) => `line ${x.line}: ${x.problem}`), ...qualityProblems(s, config)], { judgment: judged, advisory: judgedIssues }),
   };
 }
 
-/** READY: every gate passes · FAILED: unusable (wrong language/script) · NEEDS_REVIEW: generated, correctable issues */
+/**
+ * READY: every gate passes · FAILED: unusable (wrong language/script) · NEEDS_RESEARCH: no verified evidence for the
+ * topic (a fluent script is still unverified) · NEEDS_REVIEW: generated, correctable issues. A failed gate is never
+ * averaged away by the others.
+ */
 export function readiness(gates) {
   if (!gates) return 'NEEDS_REVIEW';
   if (!gates.language?.ok) return 'FAILED';
+  if (gates.research && !gates.research.ok) return 'NEEDS_RESEARCH';
+  if (gates.facts?.needsResearch) return 'NEEDS_RESEARCH';
   return Object.values(gates).every((g) => g.ok) ? 'READY' : 'NEEDS_REVIEW';
 }
 /** the six gates grouped into the five reported results */
 export function gateGroups(g) {
   const ok = (...k) => k.every((x) => !g[x] || g[x].ok);
-  return { technical: ok('language', 'duration'), factual: ok('facts', 'coverage'), language: ok('language') && !(g.editorial?.issues || []).some((x) => /textbook|Devanagari|grammar|spelling|word order/i.test(x)), story: ok('narrative', 'visuals'), editorial: ok('editorial') };
+  return { technical: ok('language', 'duration'), factual: ok('facts', 'coverage'), language: ok('language', 'grammar') && !(g.editorial?.issues || []).some((x) => /textbook|Devanagari|grammar|spelling|word order/i.test(x)), story: ok('narrative', 'visuals'), editorial: ok('editorial') };
 }
 
 /** last-resort spelling of a leftover Latin word (an unlisted name like "Tycho") in Devanagari, so one name cannot fail a script */
@@ -1176,7 +1346,11 @@ export function claimLedger(value, topicFacts = null, userFacts = null) {
     const explanation = status === 'VERIFIED' ? '' : status === 'CONTRADICTED' ? (c.correction || c.note || 'matches a known error')
       : status === 'UNSUPPORTED' ? (c.status === 'needs-attribution' ? `${c.note || 'theory or belief'} stated as fact — keep "scientists think" / "माना जाता है"` : 'not in the verified facts for this topic')
       : status === 'NEEDS_RESEARCH' ? 'no verified source for this topic; check against a reliable source' : 'framed as uncertain';
-    return { id: `C${k + 1}`, line: c.line, claim: c.value || '', kind: c.kind || null, lineText: c.text || '', status,
+    // risk: names, years and numbers are high-risk (a wrong one is a factual error); confidence is about the evidence,
+    // never about the model's own opinion
+    const risk = status === 'CONTRADICTED' || ['name / place', 'year', 'number'].includes(c.kind) ? 'high' : status === 'VERIFIED' ? 'low' : 'medium';
+    const confidence = { VERIFIED: 0.9, UNCERTAIN: 0.5, UNSUPPORTED: 0.3, NEEDS_RESEARCH: 0.2, CONTRADICTED: 0 }[status];
+    return { id: `C${k + 1}`, sentenceId: `L${c.line}`, line: c.line, claim: c.value || '', kind: c.kind || null, lineText: c.text || '', status, risk, confidence,
       source: status === 'VERIFIED' ? { file: m.factFile || (m.factsProvided ? 'facts given by the user' : null), fact: factFor(c.value) } : null, explanation };
   });
 }
@@ -1319,7 +1493,7 @@ export async function improveHookEnding(config, value, judged, { signal } = {}) 
   if (!out) return { value, judged };
   const known = new Set(lines.flatMap((l) => digitsOf(form(l))));
   const accept = (t, old) => {
-    let x = westernPunct(String(t || '').replace(/^\s*\d+[.)]\s+/, '').trim());
+    let x = stripNumbering(t);
     if (!x || x === old) return null;
     if (deva || hing) x = cleanEnd(devaNames(asciiDigits(x)), true);
     if (digitsOf(x).some((d) => !known.has(d)) || danglingLine(x) || fillerTail(x)) return null;
@@ -1391,9 +1565,95 @@ export function termProblems(config, script, { beats = null, englishLines = null
     }
     for (const w of new Set(voice.match(/[ऀ-ॣ]{4,}/g) || [])) {
       if (vocab.includes(w)) continue;
-      const k = sk(w), hit = k.length >= 3 && vocabSk.find((x) => x.k === k && x.v !== w && !w.startsWith(x.v.slice(0, -1)));
+      const k = sk(w), hit = k.length >= 4 && vocabSk.find((x) => x.k === k && x.v !== w && !w.startsWith(x.v.slice(0, -1)) && Math.abs([...x.v].length - [...w].length) <= 2);   // short outlines collide (रखते ≠ रॉकेट)
       if (hit) out.push(`line ${i + 1}: "${w}" — the standard spelling is "${hit.v}"`);
     }
   });
   return [...new Set(out)];
+}
+
+// ── research brief (deterministic, from the fact file + research) ─────────────────────────────────────────────
+/**
+ * Structured research output: what is verified, what is only the model's memory, what is missing, which
+ * misconceptions to avoid. status: VERIFIED (fact file, no model-only claims) · PARTIAL (fact file + model claims)
+ * · NEEDS_RESEARCH (no verified source).
+ */
+export function researchBrief(tf, research = null) {
+  const txt = (x) => (typeof x === 'string' ? x : x.text);
+  const verified = (tf?.verified || []).map(txt), model = (research?.evidence || []).filter((e) => e.source === 'model').map((e) => e.text);
+  const all = verified.join(' ');
+  const names = [...new Set((all.match(/\b[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*/g) || []).filter((n) => n.length > 3 && !/^(The|This|It|In|An|A|After|Each|Some|Many|Because|Long|When|Today)$/.test(n)))].slice(0, 20);
+  const dates = [...new Set(all.match(/\b(1[0-9]{3}|20[0-9]{2})s?\b|\b\d+(st|nd|rd|th) century( BCE)?\b|\b\d{3,4} BCE\b/g) || [])];
+  // a model claim that matches a known error is a contradiction between "sources"
+  const contradictions = tf && model.length ? reviewClaims({ lines: model.map((t) => ({ text: t })) }, { topic: tf.title, topicFacts: tf }).claims.filter((c) => c.status === 'contradicted').map((c) => `${model[c.line - 1]} ↔ ${c.note}`) : [];
+  const missing = (research?.essentials || []).filter((e) => !all.toLowerCase().includes(String(e).toLowerCase().split(/\s+/)[0]));
+  return {
+    status: !tf ? 'NEEDS_RESEARCH' : model.length ? 'PARTIAL' : 'VERIFIED',
+    overview: tf?.title || null,
+    coreFacts: verified, theories: (tf?.theories || []).map(txt), legends: (tf?.legends || []).map(txt),
+    modelOnlyClaims: model, namesAndDates: { names, dates }, terminology: Object.keys(tf?.terms?.hi || {}),
+    misconceptions: (tf?.knownErrors || []).map((e) => ({ wrong: e.text, correct: e.correction || null })),
+    sources: tf?.sources || [], essentials: research?.essentials || [], missingResearch: missing, contradictions,
+  };
+}
+
+// ── named entities from ANOTHER topic (prompt contamination / cross-topic leakage) ───────────────────────────────
+const GENERIC_NAMES = new Set('earth moon sun mars india asia asian nasa british hollywood gravity world'.split(' '));
+// phonetic key that keeps vowels (consonant outlines are too lossy for short names: "Shah" → "s")
+const nameKey = (w) => String(w).toLowerCase().replace(/ph/g, 'f').replace(/sh|ch/g, 's').replace(/w/g, 'v').replace(/z/g, 'j').replace(/[cq]/g, 'k').replace(/h/g, '')
+  .replace(/aa/g, 'a').replace(/ee|ii/g, 'i').replace(/oo|uu/g, 'u').replace(/(.)\1+/g, '$1').replace(/(.{3,})a$/, '$1');   // final "a" dropped only on longer words ("shah" must stay "sa")
+const near = (x, y) => { if (x === y) return true; if (Math.min(x.length, y.length) < 6 || Math.abs(x.length - y.length) > 1) return false;   // short keys must match exactly ("arap" ≠ "aram")
+  let i = 0, j = 0, e = 0; while (i < x.length && j < y.length) { if (x[i] === y[j]) { i++; j++; continue; } if (++e > 1) return false; if (x.length > y.length) i++; else if (y.length > x.length) j++; else { i++; j++; } } return e + (x.length - i) + (y.length - j) <= 1; };
+/** names from other fact files that appear in this script but nowhere in this topic or its evidence */
+export function crossTopicNames(scriptText, topic, ownText = '') {
+  const own = findTopicFacts(topic), files = (() => { try { return listFactFiles(); } catch { return []; } })();
+  const keys = (t) => String(t).replace(/[ऀ-ॿ]+/g, (d) => ' ' + devanagariToHinglish(d) + ' ').toLowerCase().split(/[^a-z]+/).filter(Boolean).map(nameKey);
+  const textK = keys(scriptText), ownK = keys(ownText + ' ' + (own ? JSON.stringify(own) : ''));
+  const inOwn = (k) => ownK.some((o) => near(o, k));
+  const has = (seq) => textK.some((_, i) => seq.every((k, n) => textK[i + n] && near(textK[i + n], k)));
+  const out = [];
+  for (const f of files) {
+    if (own && f.id === own.id) continue;
+    for (const name of f.aliases || []) {
+      const toks = String(name).toLowerCase().split(/[^a-z]+/).filter(Boolean);
+      if (!toks.length || toks.every((t) => GENERIC_NAMES.has(t))) continue;
+      if (toks.length === 1 && toks[0].length < 6) continue;           // short single words are too ambiguous
+      const seq = toks.map(nameKey);
+      if (seq.some((k) => k.length < 2) || seq.every(inOwn)) continue;
+      if (has(seq)) out.push({ name, topic: f.title || f.id });
+    }
+  }
+  return out.filter((x, i, a) => a.findIndex((y) => y.name === x.name) === i);
+}
+
+// ── story architecture: the structure depends on the kind of topic ──────────────────────────────────────────────
+export function storyType(topic, tf = null) {
+  const t = `${topic} ${tf?.title || ''}`.toLowerCase();
+  if (/mystery|mysterious|unexplained|disappear|vanish|haunted|secret|what really|bermuda|skeleton lake|roopkund/.test(t)) return 'mystery';
+  if (/history|ancient|empire|king|queen|emperor|war|battle|civili[sz]ation|dynasty|mughal|road|fort|temple|independence|revolution|\b1[0-9]{3}\b|century/.test(t)) return 'history';
+  if (/why (do|does|is|are)|how (do|does|is|are)|science|biology|physics|chemistry|planet|moon|space|cell|heart|vaccine|immune|gravity|energy|climate|weather/.test(t)) return 'science';
+  return 'explainer';
+}
+export const STORY_SHAPES = {
+  history: 'HISTORY: chronological and causal — the situation before, the people who changed it and what they did (in order), what followed, why it still matters. Never jump back and forth in time.',
+  science: 'SCIENCE: a question the viewer can picture → the simple idea behind it → the mechanism step by step (each step uses only what was already explained) → a surprising consequence → what it means.',
+  mystery: 'MYSTERY: open with the unexplained fact → the evidence, revealed piece by piece → the explanations, clearly separating what is proven from what is theory → the most convincing answer, and what is still unknown.',
+  explainer: 'EXPLAINER: what it is and why it matters → how it works step by step → one concrete example → the takeaway.',
+};
+
+// ── visual period + repetition checks ───────────────────────────────────────────────────────────────────────────
+const HISTORICAL = /\b(ancient|medieval|mughal|maurya|empire|emperor|king|queen|dynasty|colonial|century|bce|\b1[0-8][0-9]{2}\b|\b19[0-4][0-9]\b|harappa|mohenjo|caravan|sarai)\b/i;
+const MODERN = /\b(smartphone|phone|laptop|computer|tablet|car|cars|truck|bus|highway|asphalt|skyscraper|neon|drone|airplane|aeroplane|modern hospital|television|tv screen|led screen|plastic)\b/i;
+/** a modern object in a historical line, and near-identical visuals on different lines */
+export function visualPeriodAndRepetition(script, refs = []) {
+  const out = [], W = script.lines.map((l) => new Set(words(String(l.visual || '').toLowerCase()).filter((w) => !FRAMING.has(w))));
+  script.lines.forEach((l, i) => {
+    const ref = String(refs[i] || '');
+    if (HISTORICAL.test(ref) && !/\btoday|now|modern\b/i.test(ref) && MODERN.test(String(l.visual || ''))) out.push(`line ${i + 1}: period mismatch — a historical line shown with ${String(l.visual).match(MODERN)[0]}`);
+  });
+  for (let i = 0; i < W.length; i++) for (let j = i + 1; j < W.length; j++) {
+    const inter = [...W[i]].filter((w) => W[j].has(w)).length, uni = new Set([...W[i], ...W[j]]).size;
+    if (uni >= 5 && inter / uni >= 0.75) out.push(`lines ${i + 1} and ${j + 1}: nearly the same visual — vary the shot`);
+  }
+  return out;
 }

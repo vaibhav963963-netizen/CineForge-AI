@@ -9,19 +9,21 @@ import { PATHS, ROOT, STUDIO_CONFIG, ensureDirs, rel, CHROME } from './lib/works
 import { publicCatalog, getCatalog } from './lib/catalog.js';
 import { validateGenerationConfig, scriptFingerprint, configHash } from './lib/validate.js';
 import { JobManager } from './lib/jobs.js';
-import { createProject, loadProject, updateProject, listProjects, addScriptVersion, getScriptVersion, approveScriptVersion, updateScriptMeta, projectDir } from './lib/projects.js';
+import { createProject, loadProject, updateProject, listProjects, addScriptVersion, getScriptVersion, approveScriptVersion, updateScriptMeta, projectDir, deleteProject } from './lib/projects.js';
 import { reviewClaims, findTopicFacts, listFactFiles, claimsGate, confirmClaims, pendingClaims } from './lib/factcheck.js';
 import { runScriptJob, runRenderJob, renderPlan, scriptPlan, inputFromConfig } from './lib/pipeline.js';
-import { checkLanguage, estimateSeconds } from './lib/scriptgen.js';
+import { checkLanguage, estimateSeconds, qualityGates, readiness, gateGroups, claimLedger } from './lib/scriptgen.js';
 import { generateImage, seedFor, readImageIndex, writeImageIndex, freeVram } from './lib/imagegen.js';
 import { TRENDING_TOPICS } from './lib/trends.js';
 import { createSetupRoutes } from './lib/setup/routes.js';
+import { CONFIG, assertConfig } from './lib/config.js';
+assertConfig('The studio server');   // invalid .env values stop here with an actionable message
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // never die silently: log and keep serving (a crashed server would also orphan the running job)
 process.on('uncaughtException', (e) => { console.error('[uncaughtException]', e && e.stack || e); try { fs.appendFileSync(path.join(PATHS.logs, 'server-errors.log'), `${new Date().toISOString()} ${e && e.stack || e}\n`); } catch {} });
 process.on('unhandledRejection', (e) => { console.error('[unhandledRejection]', e && e.stack || e); try { fs.appendFileSync(path.join(PATHS.logs, 'server-errors.log'), `${new Date().toISOString()} ${e && e.stack || e}\n`); } catch {} });
-const PORT = +(process.env.PORT || STUDIO_CONFIG.port || 3000);
+const PORT = CONFIG.PORT;   // central configuration (.env / environment / studio-config.json)
 ensureDirs();
 // one server per workspace: two servers sharing logs/jobs would mark each other's running jobs "interrupted" and
 // could run two GPU jobs at once
@@ -139,6 +141,14 @@ async function api(req, res, url) {
     return send(res, 201, { project: pr });
   }
   let r;
+  // permanent delete of one short (project folder + exported video); refused while a job for it is queued or running.
+  // (Placed after "let r": declared above it, it threw "Cannot access 'r' before initialization" for every later route.)
+  if ((r = m(/^\/api\/projects\/([A-Za-z0-9][\w.-]{0,120})$/)) && method === 'DELETE') {
+    const busy = jobs.list({ projectId: r[1], limit: 200 }).filter((j) => j.status === 'running' || j.status === 'queued');
+    if (busy.length) throw new HttpError(409, `a ${busy[0].kind} job is still ${busy[0].status} for this short — cancel it or wait for it to finish first`);
+    try { const removed = deleteProject(r[1]); console.log(`[library] deleted ${r[1]} (${removed.length} item(s))`); return send(res, 200, { deleted: r[1], removed: removed.map((x) => rel(x)) }); }
+    catch (e) { throw new HttpError(e.status || 500, e.message); }
+  }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)$/))) { const pr = loadProject(r[1]); if (!pr) throw new HttpError(404, 'project not found'); return send(res, 200, pr); }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/scripts\/(\d+)$/)) && method === 'GET') { const s = getScriptVersion(r[1], +r[2]); if (!s) throw new HttpError(404, 'script version not found'); return send(res, 200, s); }
   if ((r = m(/^\/api\/projects\/([a-z0-9-]+)\/scripts$/)) && method === 'POST') {
@@ -153,7 +163,12 @@ async function api(req, res, url) {
     const saved = addScriptVersion(pr.id, script, { source: b.baseVersion ? 'edited' : 'manual', baseVersion: b.baseVersion || null, fingerprint: scriptFingerprint(pr.config), configHash: configHash(pr.config), wordCount: est.words, estimatedSeconds: est.seconds, language: pr.config.language.id, personality: pr.config.narration.personality, targetSeconds: pr.config.durationSeconds });
     // hand-written and edited scripts get the same fact review as model scripts
     const tf = findTopicFacts(pr.config.topic), review = reviewClaims(script, { topic: pr.config.topic, topicFacts: tf });
-    let meta = updateScriptMeta(pr.id, saved.version, { claimReview: review, factFile: tf?.file || null, claimsApproved: review.summary.needsReview === 0 }).meta;
+    // the edited text is validated as ITSELF (deterministic gates only — no model pass): a READY status can never carry
+    // over from the version it was edited from
+    const base = { script, meta: { claimReview: review, factFile: tf?.file || null, factsProvided: false } };
+    const gates = qualityGates(pr.config, base, []);
+    let meta = updateScriptMeta(pr.id, saved.version, { claimReview: review, factFile: tf?.file || null, claimsApproved: review.summary.needsReview === 0,
+      gates, status: readiness(gates), gateGroups: gateGroups(gates), claims: claimLedger(base, tf), validatedBy: 'deterministic checks (edited version; no model review)', generatedAt: new Date().toISOString() }).meta;
     if (b.approveClaims) {
       let patch; try { patch = confirmClaims(meta, 'all'); } catch (e) { throw new HttpError(e.status || 409, e.message, { factCheck: true, claimReview: review, version: saved.version }); }
       meta = updateScriptMeta(pr.id, saved.version, { ...patch, claimsApprovedBy: 'author (approveClaims)' }).meta;
@@ -167,7 +182,9 @@ async function api(req, res, url) {
     if (method === 'POST') {   // the user confirms flagged claims: { confirm: [claimId, …] | 'all' }
       const b = await readBody(req);
       let patch; try { patch = confirmClaims(sv.meta, b.confirm === 'all' ? 'all' : Array.isArray(b.confirm) ? b.confirm.map(String) : []); } catch (e) { throw new HttpError(e.status || 409, e.message, { factCheck: true }); }
-      const meta = updateScriptMeta(r[1], +r[2], { ...patch, ...(patch.claimsApproved ? { claimsApprovedBy: 'user (Script Studio)' } : {}) }).meta;
+      // unattended automation confirms only scripts whose gates passed, and is recorded as such (never as the user)
+      const by = b.by === 'automation' ? 'automation (script gates passed)' : 'user (Script Studio)';
+      const meta = updateScriptMeta(r[1], +r[2], { ...patch, ...(patch.claimsApproved ? { claimsApprovedBy: by } : {}) }).meta;
       return send(res, 200, { confirmedClaims: meta.confirmedClaims, claimsApproved: !!meta.claimsApproved, pending: pendingClaims(meta), gate: claimsGate(meta) });
     }
   }
@@ -220,6 +237,8 @@ async function api(req, res, url) {
     req.on('close', cleanup);
     return;
   }
+  // ── automation (scheduler state lives in logs/automation/automation.db; the scheduler is a separate process) ──
+  if (p === '/api/automation' || p.startsWith('/api/automation/')) return automationApi(req, res, url, p, method);
   throw new HttpError(404, `unknown endpoint ${method} ${p}`);
 }
 
@@ -254,3 +273,39 @@ server.listen(PORT, STUDIO_CONFIG.host || '127.0.0.1', () => {
   console.log(`  job store: ${PATHS.jobs}`);
   console.log('======================================================\n');
 });
+
+// ── automation API ────────────────────────────────────────────────────────────────────────────────────────────────
+let autoDb = null;
+async function automationApi(req, res, url, p, method) {
+  const A = await import('../automation/db.mjs'), S = await import('../automation/settings.mjs');
+  autoDb = autoDb || A.openDb();
+  const db = autoDb, settings = () => S.validateSettings(A.getSettings(db)).value;
+  if (p === '/api/automation' && method === 'GET') {
+    const hb = db.prepare('SELECT * FROM heartbeat WHERE id = 1').get() || null;
+    const state = db.prepare("SELECT value FROM settings WHERE key = 'state'").get();
+    const runs = db.prepare('SELECT * FROM runs ORDER BY created_at DESC LIMIT 30').all();
+    const cps = Object.fromEntries(runs.map((r) => [r.id, db.prepare('SELECT stage, status, at FROM checkpoints WHERE run_id = ?').all(r.id)]));
+    const events = db.prepare('SELECT * FROM events ORDER BY id DESC LIMIT 80').all();
+    const attempts = db.prepare('SELECT * FROM attempts ORDER BY id DESC LIMIT 40').all();
+    let health = null;
+    if (url.searchParams.get('health') === '1') { try { health = await (await import('../automation/health.mjs')).healthReport(settings()); } catch (e) { health = { ok: false, error: e.message }; } }
+    let youtube = null; try { youtube = (await import('../automation/youtube.mjs')).status(); } catch {}
+    return send(res, 200, { heartbeat: hb ? { ...hb, ageSeconds: Math.round((Date.now() - Date.parse(hb.at)) / 1000) } : null, mode: state ? JSON.parse(state.value) : 'running',
+      settings: settings(), defaults: S.DEFAULTS, runs, checkpoints: cps, events, attempts, health, youtube });
+  }
+  if (p === '/api/automation/settings' && method === 'POST') {
+    const b = await readBody(req), upd = b.settings || {};
+    for (const k of Object.keys(upd)) if (!(k in S.DEFAULTS)) throw new HttpError(422, `unknown setting "${k}"`);
+    const v = S.validateSettings({ ...settings(), ...upd });
+    if (!v.ok) throw new HttpError(422, 'Invalid automation settings', { errors: v.errors });
+    A.putSettings(db, upd);
+    return send(res, 200, { saved: Object.keys(upd), settings: settings() });
+  }
+  if (p === '/api/automation/command' && method === 'POST') {
+    const b = await readBody(req), c = String(b.command || '');
+    if (!/^(pause|resume|stop|run-now|requeue:run_[\w-]+)$/.test(c)) throw new HttpError(422, `unknown command "${c}"`);
+    db.prepare('INSERT INTO commands (at, command) VALUES (?, ?)').run(new Date().toISOString(), c);
+    return send(res, 202, { queued: c, note: 'applied by the scheduler on its next tick (≤ 30 s)' });
+  }
+  throw new HttpError(404, `unknown automation endpoint ${method} ${p}`);
+}

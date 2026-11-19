@@ -93,6 +93,20 @@ shapes the script's wording plus speaking speed and pauses. Mumbai Conversationa
 
 The local script model can state wrong facts: review every script before publishing.
 
+## Automation (unattended production and publishing)
+
+A background scheduler produces, verifies, uploads and publishes Shorts on a schedule — with the dashboard closed —
+and recovers from failures (retries, checkpoints, dead-letter queue). Full guide: [docs/automation.md](docs/automation.md).
+
+```powershell
+node automationcli.mjs status                                          # state, active runs, dead-letter queue
+node automationscheduler.mjs                                           # run the scheduler (or install it below)
+powershell -ExecutionPolicy Bypass -File automationinstall-startup.ps1  # start with Windows (-Uninstall to remove)
+node automationyoutube.mjs authorize                                   # one-time YouTube authorization
+```
+
+The dashboard's **Automation** page shows the schedule, runs, health and events, with pause / resume / emergency stop.
+
 ## How to run — command cheat sheet
 
 All commands run from the workspace folder (`Shorts Studio`). Windows; Node 22 required.

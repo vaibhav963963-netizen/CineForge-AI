@@ -1,0 +1,3 @@
+#!/bin/sh
+# CineForge: refuse to commit secrets (see tools/check-secrets.mjs)
+exec node tools/check-secrets.mjs

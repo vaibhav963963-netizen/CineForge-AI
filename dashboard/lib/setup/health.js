@@ -15,6 +15,7 @@ import { PATHS, STUDIO_CONFIG, CHROME, childEnv } from '../workspace.js';
 import { execText } from './system.js';
 import { SETUP_DIR, logEvent, newId } from './log.js';
 import { getCatalog } from '../catalog.js';
+import { CONFIG } from '../config.js';
 
 const H = (status, summary, extra = {}) => ({ status, summary, ...extra });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -59,7 +60,7 @@ export async function checkWebGL() {
   if (!CHROME) return H('not-configured', 'Chrome / Edge not found', { repair: { action: 'manual', componentId: 'browser' } });
   const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-health-chrome-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${prof}`, '--no-first-run', '--no-default-browser-check', '--ignore-gpu-blocklist', '--force_high_performance_gpu',
-    ...(process.env.SOFTWARE_GL ? ['--use-angle=swiftshader'] : []), '--disable-background-networking', '--disable-component-update', '--disable-sync', '--no-pings', '--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE 127.0.0.1', 'about:blank'], { stdio: 'ignore', windowsHide: true });
+    ...(CONFIG.SOFTWARE_GL ? ['--use-angle=swiftshader'] : []), '--disable-background-networking', '--disable-component-update', '--disable-sync', '--no-pings', '--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE 127.0.0.1', 'about:blank'], { stdio: 'ignore', windowsHide: true });
   try {
     let port; for (let i = 0; i < 150 && !port; i++) { try { port = fs.readFileSync(path.join(prof, 'DevToolsActivePort'), 'utf8').split('\n')[0].trim(); } catch { await sleep(100); } }
     if (!port) return H('failed', 'browser did not start in headless mode', { repair: { action: 'manual', componentId: 'browser' } });
@@ -87,7 +88,7 @@ async function listeners() {
   for (const l of r.stdout.split(/\r?\n/)) { const m = l.trim().match(/^TCP\s+(\S+):(\d+)\s+\S+\s+LISTENING\s+(\d+)/i); if (m) map.set(+m[2], +m[3]); }
   return map;
 }
-export async function checkPorts(owned = {}, dashboardPort = +(process.env.PORT || STUDIO_CONFIG.port || 3000)) {
+export async function checkPorts(owned = {}, dashboardPort = CONFIG.PORT) {
   const ls = await listeners();
   const ports = [{ name: 'Dashboard', port: dashboardPort, ownPid: process.pid }, { name: 'Script model (llama-server)', port: STUDIO_CONFIG.services.llmPort, ownPid: owned.llm }, { name: 'ComfyUI', port: STUDIO_CONFIG.services.comfyPort, ownPid: owned.comfy }];
   return ports.map((p) => {

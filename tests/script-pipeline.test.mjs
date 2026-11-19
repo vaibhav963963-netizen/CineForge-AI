@@ -101,3 +101,8 @@ test('gates are computed on the FINAL visuals and FINAL lines (not the draft)', 
   assert.ok(!out.meta.gates.facts.issues.some((x) => /Wide/.test(x)));
   assert.equal(out.meta.llmReview.confirmed, false);
 });
+test('writer rules contain no real topic names as examples (seen: "Sher Shah Suri" leaking into a vaccines script)', () => {
+  const src = fs.readFileSync(new URL('../dashboard/lib/scriptgen.js', import.meta.url), 'utf8');
+  const hindiRule = src.slice(src.indexOf("'HINDI QUALITY:"), src.indexOf("'HINDI QUALITY:") + 1500);
+  for (const leak of ['Sher Shah', 'शेर शाह', 'Harappa', 'हड़प्पा', 'वैक्सीन', 'एंटीबॉडी']) assert.ok(!hindiRule.includes(leak), leak);
+});

@@ -34,13 +34,26 @@ const RETEST = [
   ['interesting-facts', 'Why do octopuses have three hearts?', [['hinglish', 30]]],
   ['current-affairs', 'Why are heatwaves in India getting longer?', [['hinglish', 60]]],
 ];
+// small diverse benchmark (SET=bench): history / science / mystery / biology × Hindi / English / Hinglish, different durations
+// and voices; one topic without a fact file (must end NEEDS_RESEARCH)
+const BENCH = [
+  ['history', 'How the Grand Trunk Road connected India for centuries', [['hi-conversational', 45]]],
+  ['science', 'Why does the Moon always show the same face to Earth?', [['en', 30]]],
+  ['biology', 'Why do octopuses have three hearts?', [['hinglish', 30]]],
+  ['history-2', 'Why did the cities of the Indus Valley Civilisation decline?', [['en', 45]]],
+  ['biology-2', 'How do vaccines train the immune system?', [['hi-conversational', 30]]],
+  ['mystery', 'The mystery of the Bermuda Triangle — what really happens there?', [['hinglish', 45]]],
+];
 const only = process.argv[2] ? new RegExp(process.argv[2]) : null;
+import crypto from 'node:crypto';
+const PROMPT_VERSION = crypto.createHash('sha256').update(fs.readFileSync(new URL('../dashboard/lib/scriptgen.js', import.meta.url))).digest('hex').slice(0, 12);   // code + prompt version of this run
 const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const outJson = `logs/tests/script-eval-${stamp}.json`, outMd = `logs/tests/script-eval-${stamp}.md`;
 const results = [];
 let k = 0;
-const JOBS = process.env.SET === 'retest'
-  ? RETEST.flatMap(([cat, topic, ls]) => ls.map(([lang, d], j) => { const L = LANGS.find((x) => x.language === lang); return { cat, topic, L, personality: L.personalities[(k++ + j) % 3], durationSeconds: d }; }))
+const SETS = { retest: RETEST, bench: BENCH };
+const JOBS = SETS[process.env.SET]
+  ? SETS[process.env.SET].flatMap(([cat, topic, ls]) => ls.map(([lang, d], j) => { const L = LANGS.find((x) => x.language === lang); return { cat, topic, L, personality: L.personalities[(k++ + j) % 3], durationSeconds: d }; }))
   : CASES.flatMap(([cat, topic]) => LANGS.map((L) => { const o = { cat, topic, L, personality: L.personalities[k % 3], durationSeconds: DUR[(k + LANGS.indexOf(L)) % 3] }; k++; return o; }));
 for (const { cat, topic, L, personality, durationSeconds } of JOBS) {
   const id = `${cat}/${L.language}`; if (only && !only.test(id)) continue;
@@ -51,11 +64,11 @@ for (const { cat, topic, L, personality, durationSeconds } of JOBS) {
     const r = await generateScript(v.config, { onProgress: () => {} });
     const est = estimateSeconds(r.script, v.config);
     const rec = { id, topic, language: L.language, personality, durationSeconds, secs: Math.round((Date.now() - t0) / 1000),
-      estimatedSeconds: est.seconds, plan: r.meta.plan || null, lines: r.script.lines.map((l) => ({ text: l.text, visual: l.visual, onScreen: l.onScreen })),
+      estimatedSeconds: est.seconds, plan: r.meta.plan || null, lines: r.script.lines.map((l) => ({ text: l.text, ...(l.say ? { say: l.say } : {}), visual: l.visual, onScreen: l.onScreen })),
       englishDraft: r.meta.englishDraft?.lines || null, story: storyProblems(r.script), quality: qualityProblems(r.script, v.config),
       review: r.meta.llmReview, claims: (r.meta.claimReview?.claims || []).filter((c) => c.status !== 'verified').map((c) => ({ line: c.line, status: c.status, text: c.text })),
-      visualsFromFinal: !!r.meta.visuals, gates: r.meta.gates, research: r.meta.research, lengthFit: r.meta.lengthFit || null, languageOk: r.meta.gates?.language?.ok };
-    results.push(rec); console.log(`${rec.secs}s, ~${est.seconds}s speech, gates ${Object.entries(rec.gates || {}).map(([k, v]) => (v.ok ? '+' : '-') + k).join(' ')}`);
+      visualsFromFinal: !!r.meta.visuals, status: r.meta.status, researchStatus: r.meta.gates?.research?.brief?.status, claimsHighRisk: (r.meta.claims || []).filter((c) => c.risk === 'high' && c.status !== 'VERIFIED').length, lengthFitLog: r.meta.lengthFitLog || null, promptVersion: PROMPT_VERSION, model: r.meta.model || null, gates: r.meta.gates, research: r.meta.research, lengthFit: r.meta.lengthFit || null, languageOk: r.meta.gates?.language?.ok };
+    results.push(rec); console.log(`${rec.secs}s, ~${est.seconds}s, ${rec.status}, gates ${Object.entries(rec.gates || {}).map(([k, v]) => (v.ok ? '+' : '-') + k).join(' ')}`);
   } catch (e) { results.push({ id, error: String(e.message) }); console.log('ERROR', e.message); }
   fs.writeFileSync(outJson, JSON.stringify(results, null, 2));
   fs.writeFileSync(outMd, results.map((r) => r.error ? `## ${r.id}\nERROR ${r.error}\n` :
