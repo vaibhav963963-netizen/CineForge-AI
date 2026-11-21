@@ -57,11 +57,13 @@ test('claim ledger: IDs, lines, statuses, sources and explanations; no source �
   assert.equal(none[0].status, 'NEEDS_RESEARCH');
 });
 
-test('readiness: language failure → FAILED; any other failed gate → NEEDS_REVIEW; all pass → READY', () => {
+test('readiness: language failure → FAILED; any other failed gate → NEEDS_REVIEW; all pass → READY', async () => {
   const ok = { ok: true, issues: [] }, no = { ok: false, issues: ['x'] };
   assert.equal(readiness({ language: no, facts: ok }), 'FAILED');
   assert.equal(readiness({ language: ok, facts: ok, editorial: no }), 'NEEDS_REVIEW');
-  assert.equal(readiness({ language: ok, facts: ok, editorial: ok }), 'READY');
+  assert.equal(readiness({ language: ok, facts: ok, editorial: ok }), 'NEEDS_REVIEW');   // checks missing → not READY
+  const { REQUIRED_SCRIPT_CHECKS } = await import('../dashboard/lib/scriptgen.js');
+  assert.equal(readiness(Object.fromEntries(REQUIRED_SCRIPT_CHECKS.map((k) => [k, ok]))), 'READY');
 });
 
 test('editorial: the whole-script model judgment is advisory (calibration showed it cannot discriminate) — its notes are kept, it does not decide READY', () => {
@@ -105,4 +107,13 @@ test('writer rules contain no real topic names as examples (seen: "Sher Shah Sur
   const src = fs.readFileSync(new URL('../dashboard/lib/scriptgen.js', import.meta.url), 'utf8');
   const hindiRule = src.slice(src.indexOf("'HINDI QUALITY:"), src.indexOf("'HINDI QUALITY:") + 1500);
   for (const leak of ['Sher Shah', 'शेर शाह', 'Harappa', 'हड़प्पा', 'वैक्सीन', 'एंटीबॉडी']) assert.ok(!hindiRule.includes(leak), leak);
+});
+
+test('render report: image technical checks never stand in for image content; approval is separate from video QA', () => {
+  const src = fs.readFileSync(new URL('../dashboard/lib/pipeline.js', import.meta.url), 'utf8');
+  assert.match(src, /report\.imageContent = \{ inspected: false/);
+  assert.match(src, /const review = \['image content not inspected'/);   // content not inspected → never APPROVED
+  assert.match(src, /decision: \(critical\.length \|\| visualCritical\.length\) \? 'REJECTED' : review\.length \? 'NEEDS_REVIEW' : 'APPROVED'/);
+  assert.match(src, /script v\$\{version\} is \$\{report\.scriptStatus\}/);
+  assert.ok(!/Video ready:/.test(src), 'the job no longer reports a plain "Video ready"');
 });

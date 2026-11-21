@@ -100,10 +100,14 @@ export async function checkPorts(owned = {}, dashboardPort = CONFIG.PORT) {
 }
 
 async function checkService(kind, { loadTest, busy }) {
+  if (kind === 'llm' && ['gemini', 'groq'].includes(getCatalog(true).engines.llm.provider)) {   // script writing = Groq API: check key + model, nothing local
+    try { const g = await import('../scriptmodel.js'); const r = await g.ensureReady(); return H('healthy', `${g.providerName()} API reachable, model ${r.model} available`); }
+    catch (e) { return H(e.code === 'network' ? 'warning' : 'not-configured', `${e.message} (videos from saved scripts still work offline)`); }
+  }
   const port = kind === 'llm' ? STUDIO_CONFIG.services.llmPort : STUDIO_CONFIG.services.comfyPort;
   const url = kind === 'llm' ? `http://127.0.0.1:${port}/health` : `http://127.0.0.1:${port}/system_stats`;
   const cat = getCatalog(true), eng = kind === 'llm' ? cat.engines.llm : cat.engines.comfyui;
-  if (!eng.ready) return H('not-configured', eng.reason, { repair: { action: 'install', componentId: kind === 'llm' ? 'gemma-3-4b' : 'comfyui' } });
+  if (!eng.ready) return H('not-configured', eng.reason, { repair: { action: 'install', componentId: kind === 'llm' ? null : 'comfyui' } });
   if (await httpOk(url)) return H('healthy', `running and answering on 127.0.0.1:${port}`);
   if (!loadTest) return H('healthy', 'installed; starts on demand (run the load test to start and stop it once)', { loadTest: true });
   if (busy) return H('warning', `load test skipped: ${busy}`);
@@ -141,7 +145,7 @@ export async function runHealth({ which, loadTest = false, busy = null, statuses
     folders: async () => { const w = system?.permissions?.writable || {}; const bad = Object.entries(w).filter(([, ok]) => !ok).map(([k]) => k); return bad.length ? H('failed', `not writable: ${bad.join(', ')}`, { hint: 'Move the workspace to a folder you own (not Program Files).' }) : H('healthy', 'workspace, runtime, models, logs, projects and exports are writable'); },
     storage: async () => { const g = system?.workspaceDisk?.freeGB; return g == null ? H('warning', 'free space unknown') : g < 5 ? H('failed', `${g} GB free — renders and downloads will fail`) : g < 15 ? H('warning', `${g} GB free — tight for model downloads`) : H('healthy', `${g} GB free on the workspace drive`); },
     gpu: async () => { const nv = system?.gpu?.nvidia; if (!nv) return H('warning', 'not scanned'); if (!nv.present) return H('warning', 'no NVIDIA GPU: CPU profile (image generation impractical; WebGL uses the integrated GPU)'); return H(nv.cudaCapable ? 'healthy' : 'warning', `${nv.name}, ${nv.vramGB} GB VRAM, driver ${nv.driver}${nv.cudaCapable ? '' : ` (< ${nv.minDriverForCuda126} for CUDA 12.6)`}`); },
-    models: async () => { const ids = ['kokoro-model', 'kokoro-voices', 'whisper-small-en', 'whisper-small', 'gemma-3-4b', 'dreamshaper-8']; const s = ids.map((i) => [i, statuses[i]]).filter(([, x]) => x); const bad = s.filter(([, x]) => x.integrity === 'corrupted'); const unv = s.filter(([, x]) => x.integrity === 'unverified'); return bad.length ? H('failed', `corrupted: ${bad.map(([i]) => i).join(', ')}`, { repair: { action: 'repair', componentId: bad[0][0] } }) : unv.length ? H('warning', `${unv.length} model file set(s) not hash-verified yet (sizes match)`, { hint: 'Run Verify on the AI Models tab (hashes multi-GB files, takes a minute).' }) : H('healthy', 'all installed models match their checksums'); },
+    models: async () => { const ids = ['kokoro-model', 'kokoro-voices', 'whisper-small-en', 'whisper-small', 'dreamshaper-8']; /* scripts: Groq (online), no local LLM file */ const s = ids.map((i) => [i, statuses[i]]).filter(([, x]) => x); const bad = s.filter(([, x]) => x.integrity === 'corrupted'); const unv = s.filter(([, x]) => x.integrity === 'unverified'); return bad.length ? H('failed', `corrupted: ${bad.map(([i]) => i).join(', ')}`, { repair: { action: 'repair', componentId: bad[0][0] } }) : unv.length ? H('warning', `${unv.length} model file set(s) not hash-verified yet (sizes match)`, { hint: 'Run Verify on the AI Models tab (hashes multi-GB files, takes a minute).' }) : H('healthy', 'all installed models match their checksums'); },
   };
   await Promise.all(Object.entries(tasks).filter(([id]) => want(id)).map(async ([id, fn]) => { const t = Date.now(); try { all[id] = { ...(await fn()), ms: Date.now() - t }; } catch (e) { all[id] = H('failed', e.message, { ms: Date.now() - t }); } }));
   logEvent({ kind: 'health', opId, results: Object.fromEntries(Object.entries(all).map(([k, v]) => [k, v.status])), ms: Date.now() - t0 });

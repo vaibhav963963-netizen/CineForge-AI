@@ -193,21 +193,13 @@
       "features": ["script-generation"], "diskBytes": 110000000
     },
     {
-      "id": "gemma-3-4b", "name": "Gemma 3 4B Instruct Q4_K_M", "category": "models", "level": "recommended", "scope": "workspace",
-      "description": "Writes scripts in Hindi, Hinglish and English.", "provider": "Google (GGUF quantization by bartowski)", "format": "GGUF", "quantization": "Q4_K_M", "version": "gemma-3-4b-it",
+      "id": "gemma-3-4b", "name": "Gemma 3 4B Instruct Q4_K_M (not used — scripts are written with Groq)", "category": "models", "level": "optional", "scope": "workspace",
+      "description": "Previous local script model, kept on disk for now. Not used: script writing runs on Groq and never falls back to a local model.", "provider": "Google (GGUF quantization by bartowski)", "format": "GGUF", "quantization": "Q4_K_M", "version": "gemma-3-4b-it",
       "license": "Gemma Terms of Use + Prohibited Use Policy", "homepage": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF",
       "dependsOn": ["llama-cpp"],
       "detect": { "type": "files", "base": "{models.llm}", "files": [ { "path": "google_gemma-3-4b-it-Q4_K_M.gguf", "size": 2489758112, "sha256": "4996030242583a40aa151ff93f49ed787ac8c25e4120c3ae4588b2e2a7d1ae94", "checksumSource": "official",
         "url": "https://huggingface.co/bartowski/google_gemma-3-4b-it-GGUF/resolve/main/google_gemma-3-4b-it-Q4_K_M.gguf" } ] },
-      "install": { "type": "files" }, "features": ["script-generation"], "hardware": { "vramGBRecommended": 4, "ramGBMin": 8 }
-    },
-    {
-      "id": "gemma-3-12b", "name": "Gemma 3 12B Instruct Q4_K_M (evaluation only — not active)", "category": "models", "level": "optional", "scope": "workspace",
-      "description": "Downloaded for a future review-model evaluation only. Not used by script generation: Gemma 3 4B stays the active model until it is evaluated and approved.", "provider": "Google (GGUF by ggml-org, the llama.cpp maintainers)", "format": "GGUF", "quantization": "Q4_K_M", "version": "gemma-3-12b-it",
-      "license": "Gemma Terms of Use + Prohibited Use Policy", "homepage": "https://huggingface.co/ggml-org/gemma-3-12b-it-GGUF",
-      "detect": { "type": "files", "base": "{root}/runtime/models/gemma3-12b", "files": [ { "path": "gemma-3-12b-it-Q4_K_M.gguf", "size": 7300574976, "sha256": "7bb69bff3f48a7b642355d64a90e481182a7794707b3133890646b1efa778ff5", "checksumSource": "official",
-        "url": "https://huggingface.co/ggml-org/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf" } ] },
-      "install": { "type": "files" }, "features": [], "hardware": { "vramGBRecommended": 8, "ramGBMin": 16 }
+      "install": { "type": "files" }, "features": [], "hardware": { "vramGBRecommended": 4, "ramGBMin": 8 }
     },
     {
       "id": "git", "name": "Git", "category": "tools", "level": "optional", "scope": "system",

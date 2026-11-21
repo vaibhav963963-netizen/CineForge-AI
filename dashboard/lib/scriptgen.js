@@ -12,9 +12,11 @@ import { getCatalog, LANGUAGES } from './catalog.js';
 import { devanagariToHinglish, hinglishCaption, skeleton } from './translit.js';
 import { meaningDiff, blocking, semanticReview, verifyScriptMeaning } from './semantic.js';
 import { languageIssues, correctLanguage } from './langquality.js';
+import { runtimeProfile, getSettings } from './setup/settings.js';
 import { visualReport, correctVisuals } from './visualsem.js';
 import { SCIENCE_TERMS } from './glossary.js';
 import { PATHS } from './workspace.js';
+import { CONFIG } from './config.js';
 
 // Words per second of speech at speed 1.0. Defaults measured from completed renders (Hindi hm_omega/hf_alpha ≈ 2.5,
 // English am_michael ≈ 2.5, bm_george ≈ 2.2); refined per voice after every TTS stage (logs/calibration/voices.json).
@@ -157,7 +159,9 @@ export function checkLanguage(script, config) {
     if (mr.length) problems.push(`lines ${mr.join(', ')} are Marathi, not Hindi: rewrite them in Hindi`);
   }
   // emoji or stray quoted fragments in a narration line are read aloud or break the voice
-  const junk = script.lines.map((l, i) => (/\p{Extended_Pictographic}/u.test(String(l.say || l.text)) || /[”"]\s*,\s*[“"”]/.test(String(l.say || l.text)) ? i + 1 : 0)).filter(Boolean);
+  // also with a number between the quotes — leaked JSON array items (seen in a RENDERED English short, 2026-11-19:
+  // "…same side to Earth.”, 13, “Because of tidal locking,”, 14")
+  const junk = script.lines.map((l, i) => (/\p{Extended_Pictographic}/u.test(String(l.say || l.text)) || /[”"]\s*,\s*(?:[\d.]+\s*,\s*)?[“"”]|[”"]\s*,\s*[\d.]+\s*$/.test(String(l.say || l.text)) ? i + 1 : 0)).filter(Boolean);
   if (junk.length) problems.push(`lines ${junk.join(', ')} contain emoji or stray quoted fragments`);
   return problems;
 }
@@ -353,7 +357,7 @@ async function polishScript(config, value, { topicFacts, facts, signal, onProgre
     return { script: { ...script, lines: lines.map(onScreenFor) }, meta: { ...value.meta, claimReview: review, claimsToVerify: extractClaims(script), wordCount: after.words, estimatedSeconds: after.seconds, polish: { applied: true, changedLines: changed, draft: src.lines.map((l) => l.text) } } };
   } catch (e) {
     if (signal?.aborted) throw e;
-    return note(value, `editor failed: ${e.message.slice(0, 120)}`);
+    return failedPass(note(value, `editor failed: ${e.message.slice(0, 120)}`), `proof-read could not run: ${String(e.message).slice(0, 120)}`);
   }
   function note(v, why) { onProgress({ message: `Proofreading skipped (${why}); keeping the draft` }); return { ...v, meta: { ...v.meta, polish: { applied: false, reason: why } } }; }
 }
@@ -460,6 +464,13 @@ export function finalizeGates(config, value, { topicFacts = findTopicFacts(confi
 }
 
 export async function generateScript(config, opts = {}) {
+  if ((opts.single ?? SINGLE_REQUEST) && !opts.chatFn) {
+    // ONE API request; length, language, grammar, facts, visuals and meaning are then checked locally (no model calls)
+    const rep = repairSentences(config, await generateDirect(config, { ...opts, single: true }));
+    const sceneIssues = sceneSchemaIssues(config, rep.script);
+    const core = sceneIssues.length ? { ...rep, meta: { ...rep.meta, passFailures: [...(rep.meta.passFailures || []), ...sceneIssues.map((x) => `render input: ${x}`)] } } : rep;
+    return finalizeGates(config, { ...core, meta: { ...core.meta, runtime: runtimeInfo() } }, { facts: opts.facts || null });
+  }
   const r = await fitLength(config, await generateCore(config, opts), opts);
   const reviewed = await reviewScript(config, r, opts);
   // the proof-read and hook/ending rewrite may change line lengths: fit once more on the reviewed text
@@ -468,7 +479,8 @@ export async function generateScript(config, opts = {}) {
   // duration gates are computed afterwards on the saved text
   const lc = await correctLanguage(config, refit, { signal: opts.signal, chatFn: opts.chatFn || chat, onLineChanged: (l) => (config.language.id === 'hinglish' ? repairHinglish({ ...l, text: l.say, say: undefined }) : onScreenFor(l)) });
   const corrected = { ...lc.value, meta: { ...lc.value.meta, languageCorrection: { log: lc.log, calls: lc.calls } } };
-  const described = await describeVisuals(config, corrected, opts);
+  const described0 = await describeVisuals(config, corrected, opts);
+  const described = { ...described0, meta: { ...described0.meta, runtime: runtimeInfo() } };
   // visual correction (Step 6): only scenes with an error/uncertain finding, the narration is read-only, every new
   // visual is re-validated; otherwise the scene is kept and stays NEEDS_REVIEW
   const tf = findTopicFacts(config.topic);
@@ -499,7 +511,7 @@ export async function describeVisuals(config, value, { signal, onProgress = () =
     onProgress({ indeterminate: true, message: 'Local model is matching a visual to every final line' });
     const { text } = await chat({ messages: [{ role: 'system', content: sys }, { role: 'user', content: user }], schema, temperature: 0.2, maxTokens: 200 + lines.length * 110, signal });
     const shots = JSON.parse(text).shots;
-    if (!Array.isArray(shots) || shots.length !== lines.length) return value;
+    if (!Array.isArray(shots) || shots.length !== lines.length) return failedPass(value, `visual description returned ${Array.isArray(shots) ? shots.length : 0} shots for ${lines.length} lines`);
     const latin = visualText;
     const out = lines.map((l, i) => {
       const s = shots[i]; const objs = (s.objects || []).map(latin).filter(Boolean);
@@ -510,7 +522,7 @@ export async function describeVisuals(config, value, { signal, onProgress = () =
       return countWords(best) >= 4 && latin(s.subject) ? { ...l, visual: best } : l;
     }).map((l, i, a) => (i && l.visual === a[i - 1].visual && lines[i].visual !== l.visual ? { ...l, visual: lines[i].visual } : l));
     return { script: { ...value.script, lines: out }, meta: { ...value.meta, visuals: { from: 'final narration', shots: shots.map((s) => ({ subject: latin(s.subject), action: latin(s.action), environment: latin(s.environment), objects: (s.objects || []).map(latin), camera: latin(s.camera) })) } } };
-  } catch (e) { if (signal?.aborted) throw e; return value; }
+  } catch (e) { if (signal?.aborted) throw e; return failedPass(value, `visual description could not run: ${String(e.message).slice(0, 120)}`); }
 }
 
 async function generateCore(config, opts = {}) {
@@ -591,7 +603,117 @@ async function viaEnglish(config, { onProgress = () => {}, signal, facts = null 
   throw new Error(`translation failed: ${last.slice(0, 200)}`);
 }
 
-async function generateDirect(config, { onProgress = () => {}, signal, facts = null } = {}) {
+/**
+ * Local, deterministic sentence repair (no model call): a Hindi habitual verb that ends a sentence without its
+ * auxiliary ("…पंप करता।" → "…पंप करता है।") and the agreement fixes languageIssues() proposes. Negatives keep the
+ * dropped auxiliary ("नहीं होता।" is correct). Hinglish: the Devanagari say-form is repaired and the Roman caption
+ * rebuilt from it. Every change is logged in meta.localRepairs.
+ */
+export function repairSentences(config, value) {
+  if (config.language.code !== 'hi') return value;
+  const hing = config.language.id === 'hinglish', log = [];
+  const AUX = { 'ता': 'है', 'ती': 'है', 'ते': 'हैं' };
+  const fix = (t) => {
+    let out = String(t).replace(/(\S{2,}?)(ता|ती|ते)(\s*)([।!?])(?=\s|$)/g, (m, stem, end, sp, p, off, str) => {
+      const before = str.slice(0, off).trim().split(/\s+/).pop() || '';
+      if (/^(नहीं|न|कभी)$/.test(before)) return m;
+      if (!/^(रह|सक|जा|हो|कर|ले|दे|आ|बह|बन|लग|भेज|दिखा|बता|बना|रख|चल|मिल|सिखा|बचा|समझा|ला|पा|थक|पहचान|बदल|पहुँचा|पहुंचा|जोड़|तैर|सोच|खा|पी|उड़|गिर|बढ़|घट|फैल|डाल|मार|ढूँढ|ढूंढ|बचाता)$/.test(stem.replace(/^.*\s/, ''))) return m;
+      return `${stem}${end} ${AUX[end]}${p}`;
+    });
+    for (const x of languageIssues(config, { lines: [{ text: out }] }).filter((i) => i.fix?.from && i.fix?.to && i.severity === 'error')) out = out.replace(x.fix.from, x.fix.to);
+    return out;
+  };
+  const lines = value.script.lines.map((l, i) => {
+    const src = hing ? (l.say || '') : l.text; if (!src) return l;
+    // everyday words instead of textbook Hindi (the narrative gate flags these: "use the words people actually say")
+    const plain = (t) => String(t).replace(/(^|[\s(])रक्त(?=[\s,।!?)]|$)/g, '$1खून').replace(/(^|[\s(])हृदय(?=[\s,।!?)]|$)/g, '$1दिल').replace(/(^|[\s(])प्रणाली(?=[\s,।!?)]|$)/g, '$1सिस्टम');
+    // Hinglish: a hyphen joining two Devanagari words ("ऑक्सीजन‑समृद्ध") hid the English word from the caption builder ("oksijna")
+    const unjoin = (t) => (hing ? String(t).replace(/([ऀ-ॿ])[‑-]([ऀ-ॿ])/g, '$1 $2') : t);
+    const next = fix(unjoin(plain(src))); if (next === src) return l;
+    log.push({ line: i + 1, from: src, to: next });
+    if (!hing) return { ...l, text: next };
+    const cap = hinglishCaption(next, l.english);
+    return { ...l, say: next, text: cap.text, english: cap.english };
+  });
+  return log.length ? { ...value, script: { ...value.script, lines }, meta: { ...value.meta, localRepairs: log } } : value;
+}
+
+/**
+ * Render input contract (what the video pipeline reads from each scene): "text" (caption / narration), "say" (Hinglish:
+ * the Devanagari form the Hindi voice reads), "visual" (English image prompt), optional "onScreen", Hinglish "english".
+ * Scene timing comes from the local TTS and the character from the project settings, so neither is in the script.
+ */
+export function sceneSchemaIssues(config, script) {
+  const out = [], hing = config.language.id === 'hinglish';
+  if (!script || !Array.isArray(script.lines) || !script.lines.length) return ['the script has no scenes'];
+  if (!String(script.title || '').trim()) out.push('the script has no title');
+  script.lines.forEach((l, i) => {
+    const n = `scene ${i + 1}`;
+    if (typeof l.text !== 'string' || !l.text.trim()) out.push(`${n}: narration text is missing`);
+    if (typeof l.visual !== 'string' || countWords(l.visual) < 4) out.push(`${n}: visual description is missing or too short`);
+    else if (/[^\x20-\x7E‘’“”–—‑°]/.test(l.visual)) out.push(`${n}: visual description is not plain English`);
+    if (l.onScreen != null && (typeof l.onScreen !== 'string' || l.onScreen.length > 48)) out.push(`${n}: on-screen text is longer than 48 characters`);
+    if (hing && !(typeof l.say === 'string' && /[ऀ-ॿ]/.test(l.say))) out.push(`${n}: Hinglish scene has no Devanagari voice text ("say")`);
+    if (hing && !Array.isArray(l.english)) out.push(`${n}: Hinglish scene has no English word list`);
+    if (config.language.script === 'Deva' && !/[ऀ-ॿ]/.test(l.text || '')) out.push(`${n}: Hindi narration is not in Devanagari`);
+    if (/\//.test(`${l.text || ''} ${l.say || ''}`)) out.push(`${n}: narration contains "/" (the voice cannot read it)`);
+  });
+  return out;
+}
+
+// -- single-request generation --------------------------------------------------------------------------------
+export const SINGLE_REQUEST = CONFIG.SCRIPT_GENERATION_MODE !== 'multi-pass';
+/** the line schema plus the research notes, plan beat and storyboard parts that earlier took separate calls */
+function singleSchema(config, n, perLine) {
+  const base = schemaFor(config, n, perLine), line = base.properties.lines.items;
+  // strict structured output (Groq) needs EVERY property in "required": onScreen is required too and may be "" (dropped locally)
+  const L = { ...line, properties: { beat: { type: 'string', maxLength: 140 }, ...line.properties }, required: ['beat', ...Object.keys(line.properties)] };
+  const out = { type: 'object', properties: {
+    centralStory: { type: 'string', maxLength: 200 },
+    // kinds are free strings here and normalised locally (an off-list kind made Groq refuse the whole script)
+    essentials: { type: 'array', maxItems: 6, items: { type: 'object', properties: { name: { type: 'string' }, kind: { type: 'string' } }, required: ['name', 'kind'], additionalProperties: false } },
+    claims: { type: 'array', maxItems: 10, items: { type: 'object', properties: { text: { type: 'string' }, kind: { type: 'string' } }, required: ['text', 'kind'], additionalProperties: false } },
+    title: base.properties.title, lines: { ...base.properties.lines, items: L } }, required: ['centralStory', 'essentials', 'claims', 'title', 'lines'], additionalProperties: false };
+  // no character caps here: on Groq they caused "Failed to validate JSON" refusals (each one a wasted request and a wait
+  // for the per-minute token budget) and pushed Hindi into clipped lines without auxiliaries; length is checked locally
+  const uncap = (o) => (Array.isArray(o) ? o.map(uncap) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([k]) => k !== 'maxLength').map(([k, v]) => [k, uncap(v)])) : o);
+  return uncap(out);
+}
+/** the research, planning, self-review and storyboard instructions of the former separate passes, in one prompt */
+function singleRequestMessages(messages, n, sourced = false, hinglish = false) {
+  const add = [
+    'WORK IN THIS ORDER INSIDE THIS ONE ANSWER (all fields in the same JSON):',
+    `1. RESEARCH: "essentials" = the people, events, places or concepts without which this topic cannot be explained correctly (short English names, at most 6, each with a kind). ${sourced ? '"claims" = [] (empty): VERIFIED FACTS are given above; every fact, name and number in the script must come from them, and nothing else may be added.' : '"claims" = up to 10 short English factual statements the story relies on, each with a kind (established = textbook fact, estimate, reported, speculation). Be conservative: only what you are certain of.'}`,
+    `2. PLAN: "centralStory" = one English sentence stating the real answer concretely. Then exactly ${n} lines in story order (hook, beginner bridge, cause or mechanism, consequence, payoff ending); each line's "beat" is a short English sentence of the story point that line carries. No two beats repeat information.`,
+    '3. WRITE: each line\'s narration follows its beat, in the narration language, under all the rules above. HOOK: line 1 names the exact subject of the topic (the word itself, e.g. "rainbow", "octopus") and opens a specific mystery or surprising fact about it. MIDDLE: each line answers the question the previous line raised, joined by a natural spoken transition (but, so, that is why / लेकिन, इसीलिए, तभी); never a list of facts, never the same sentence pattern twice in a row. ENDING: a concrete payoff that closes the opening question, never a generic moral.',
+    '4. STORYBOARD: each line\'s "visual" (no digits or numbers in it) starts with the shot type and names the concrete subject, what it is doing and the place and era, showing the line\'s own subject, historically and scientifically correct, never text or captions. "onScreen" is "" when the line has no key number.',
+    ...(hinglish ? ['HINGLISH: write the way people in Indian cities actually talk (Hindi grammar, everyday English words like heart, blood, oxygen, system); list EVERY English word you used in that line\'s "english" array, spelled in English.'] : []),
+    '5. SELF-CHECK before answering (do not output it) and fix every line that fails: grammar and spelling; every Hindi verb phrase is complete with its auxiliary (करते हैं, रहते हैं, थे; never a clipped "करते।" or "रहते।"); complete natural sentences, never telegraphic fragments; everyday spoken words, not textbook Hindi (दिल not हृदय, खून not रक्त); Hindi narration in Devanagari only (B cells = बी सेल्स; an acronym letter by letter: mRNA = एम आर एन ए; never "/" in narration); every theory or legend framed as such; no invented numbers; total length fits the duration; line 1 is a strong hook that names this topic; the last line is a concrete payoff; every "visual" shows the line\'s own subject, never an onlooker looking at it.',
+  ].join('\n');
+  return [{ ...messages[0], content: messages[0].content + '\n' + add }, ...messages.slice(1)];
+}
+/** research + plan in the same shape researchTopic()/planStory() return, built from the single answer */
+function singleFoundation(out, topicFacts, facts) {
+  const txt = (x) => (typeof x === 'string' ? x : x.text);
+  const pool = [
+    ...(topicFacts?.verified || []).map((x) => ({ kind: 'established', text: txt(x), source: `fact file: ${topicFacts.file || 'topic facts'}` })),
+    ...(topicFacts?.theories || []).map((x) => ({ kind: 'speculation', text: txt(x), source: `fact file (theory): ${topicFacts.file || 'topic facts'}` })),
+    ...(topicFacts?.legends || []).map((x) => ({ kind: 'legend', text: txt(x), source: `fact file (legend): ${topicFacts.file || 'topic facts'}` })),
+    ...String(facts || '').split(/\n+/).map((t) => t.trim()).filter(Boolean).map((t) => ({ kind: 'established', text: t, source: 'facts given by the user' })),
+  ];
+  // the model's own claims are NOT verified by a second call: they stay source "model", so the research gate asks for review
+  const pick = (k, list, dflt) => { const x = String(k || '').toLowerCase(); return list.find((v) => x.includes(v)) || dflt; };
+  // with verified facts the script must use only them: claims the model adds anyway are not evidence and are dropped
+  // (the script itself is still checked against the facts: numbers, names, other-topic names, theory framing)
+  const claims = pool.length ? [] : (out.claims || []).map((c) => ({ text: String(c?.text || '').trim(), kind: pick(c?.kind, ['established', 'estimate', 'reported', 'speculation'], 'established'), source: 'model' })).filter((c) => c.text);
+  const ess = (out.essentials || []).filter((e) => String(e?.name || '').trim());
+  const research = { essentials: ess.map((e) => String(e.name).trim()), essentialKinds: Object.fromEntries(ess.map((e) => [String(e.name).trim(), pick(e.kind, ['person', 'place', 'event', 'concept'], 'concept')])), evidence: [...pool, ...claims], rejected: [], needsResearch: claims.length > 0 || !pool.length, singleRequest: true, ignoredModelClaims: pool.length ? (out.claims || []).length : 0 };
+  const lines = out.lines || [];
+  const plan = lines.length && lines.every((l) => String(l?.beat || '').trim()) ? { centralStory: String(out.centralStory || ''), beats: lines.map((l) => ({ point: String(l.beat).trim(), factTexts: [], factKinds: [] })), usedFacts: claims.map((c) => c.text), restricted: pool.length > 0 } : null;
+  return { research, plan };
+}
+
+async function generateDirect(config, { onProgress = () => {}, signal, facts = null, single = false } = {}) {
   await ensureServer((m) => onProgress({ indeterminate: true, message: m }));
   const n = lineCount(config), budget = wordBudget(config, n);
   const tokensPerWord = config.language.code === 'hi' ? (config.language.id === 'hinglish' ? 9 : 4.5) : 2.6;   // Hinglish: Devanagari say-form + Roman text + English list per line
@@ -602,23 +724,30 @@ async function generateDirect(config, { onProgress = () => {}, signal, facts = n
   // Stage A: coverage checklist + claims, each mapped to a source; claims from the model's own memory are self-checked
   // and kept only when judged true (they stay marked "needs research" — never treated as verified evidence)
   onProgress({ indeterminate: true, message: 'Researching the topic (essential facts, people, events; checking claims)' });
-  const research = await researchTopic(config, { facts, topicFacts, signal });
-  const plan = await planStory(config, n, { facts, topicFacts, research, signal });
+  // single-request mode: research notes, story plan, narration and storyboard come back in ONE API call
+  // (singleSchema / singleRequestMessages); the separate research, fact-check, plan and spelling calls are not made
+  let research = single ? null : await researchTopic(config, { facts, topicFacts, signal });
+  let plan = single ? null : await planStory(config, n, { facts, topicFacts, research, signal });
   // names (asked of the model) + established technical terms from the fact file ("terms": { "tidal locking": "…" })
-  const names = config.language.code === 'hi' ? { ...(await topicNameSpellings(research, config.topic, { signal })), ...(topicFacts?.terms?.hi || {}) } : {};
+  const names = config.language.code === 'hi' ? { ...(single ? {} : await topicNameSpellings(research, config.topic, { signal })), ...(topicFacts?.terms?.hi || {}) } : {};
   let messages = prompt(config, n, budget, facts, topicFacts, plan, names), last = null, attempts = 0, review = null, best = null, tokenBoost = 1;
   const diagnostics = [];
-  for (attempts = 1; attempts <= 5; attempts++) {
+  if (single) messages = singleRequestMessages(messages, n, !!(topicFacts || facts), config.language.id === 'hinglish');
+  const t0 = Date.now(), usage = { calls: 0, promptTokens: 0, completionTokens: 0 };
+  // single mode: one request; a second one ONLY when the first answer was cut off or was not parseable JSON
+  for (attempts = 1; attempts <= (single ? 2 : 5); attempts++) {
     // Hindi at 0.75 produced invented words ("जहंके", "सूनो"); a cooler first attempt keeps the wording real
     const t1 = config.language.code === 'hi' ? 0.7 : 0.75;
-    const { text, tokens, truncated, finishReason } = await chat({ messages, schema: schemaFor(config, n, Math.round(budget / n) + 7), temperature: attempts === 1 ? t1 : 0.45, maxTokens: Math.round(expected * (attempts === 1 ? 1.8 : 2.6) * tokenBoost) + 300,   // retries carry feedback; truncated JSON was seen on Hindi retries signal,
+    const { text, tokens, truncated, finishReason, promptTokens, reasoningEffort } = await chat({ messages, schema: single ? singleSchema(config, n, Math.round(budget / n) + 7) : schemaFor(config, n, Math.round(budget / n) + 7), temperature: attempts === 1 ? t1 : 0.45, maxTokens: Math.round(expected * (attempts === 1 ? 1.8 : 2.6) * tokenBoost) + 300 + (single ? 450 + n * 45 : 0),   // retries carry feedback; truncated JSON was seen on Hindi retries signal,
       onToken: (k) => { if (k % 8 === 0) onProgress({ current: Math.min(k, expected), total: expected, message: `Writing script (attempt ${attempts}): ${k} tokens` }); } });
+    usage.calls++; if (reasoningEffort) usage.reasoningEffort = reasoningEffort; usage.completionTokens += tokens || 0; usage.promptTokens += promptTokens || 0;
     diagnostics.push({ attempt: attempts, finishReason, tokens, chars: text.length, raw: text.slice(0, 6000) });
     // truncated output (max_tokens reached) is never parsed or fed back: retry with a larger budget (seen: Hinglish,
     // whose Devanagari say-forms + English lists + visuals cost ~2× the tokens, "not valid JSON" on every retry)
     if (truncated) { tokenBoost = Math.min(3, tokenBoost * 1.6); last = `model output was cut off at ${tokens} tokens (attempt ${attempts})`; continue; }
     const script = parseJsonStrict(text);
     if (!script || !Array.isArray(script.lines) || !script.lines.length || script.lines.some((l) => typeof l?.text !== 'string')) { last = `model output was not valid, complete JSON (attempt ${attempts}, finish: ${finishReason || 'unknown'})`; continue; }
+    if (single) ({ research, plan } = singleFoundation(script, topicFacts, facts));
     // Persian/Urdu plural "ها" on a Hindi word (seen in all 5 attempts: "दशक‌ها पहले" = दशकों पहले) → the Hindi plural,
     // BEFORE captions are derived; logged. Any other foreign letter still fails the language check.
     for (const l of script.lines || []) for (const f of ['text', 'say']) { if (typeof l?.[f] !== 'string') continue; const fixed = persianPlural(westernPunct(l[f])); if (fixed !== westernPunct(l[f])) { diagnostics.push({ attempt: attempts, repaired: `Persian plural suffix → Hindi plural: "${l[f]}" → "${fixed}"` }); l[f] = fixed; } }
@@ -684,10 +813,16 @@ async function generateDirect(config, { onProgress = () => {}, signal, facts = n
       const factFor = (c) => { const d = (String(c.value).match(/\d[\d,]*/) || [''])[0].replace(/,/g, ''); return d && (topicFacts?.verified || []).map((x) => (typeof x === 'string' ? x : x.text)).find((tx) => tx.replace(/,/g, '').includes(d)); };
       if (nums.length) soft.push(`numbers not in the VERIFIED FACTS (narration or on-screen text): ${nums.map((c) => { const f = factFor(c); return `line ${c.line} "${c.value}"${f ? ` (the verified fact says: "${f}" — use exactly that, with its unit and currency)` : ''}`; }).join(', ')}. Use only numbers and years exactly as the verified facts give them (years in full, e.g. 1942), or leave the number out`);
     }
-    const result = () => ({ script: { title: String(script.title || config.topic).trim(), lines: script.lines }, meta: { plan: plan ? { centralStory: plan.centralStory, beats: plan.beats.map((b) => b.point), usedFacts: plan.usedFacts, lineFacts: plan.beats.map((b) => ({ factTexts: b.factTexts || [], factKinds: b.factKinds || [] })) } : null, research, ungrounded: ug, groundText: allowed + ' ' + (config.language.id === 'hinglish' ? COMMON_EN : ''), unframed, generationMode: 'native', generationLog: diagnostics.map(({ attempt, finishReason, tokens, chars }) => ({ attempt, finishReason, tokens, chars })), model: modelInfo(), attempts, tokens, factsProvided: !!facts, factFile: topicFacts?.file || null, claimReview: review, factRetryOpen: soft, claimsToVerify: extractClaims({ lines: script.lines }), transliteratedLines: script.lines.filter((l) => l.transliterated).length, wordBudget: budget, wordCount: est.words, estimatedSeconds: est.seconds, lineCount: script.lines.length } });
+    const result = () => ({ script: { title: String(script.title || config.topic).trim(), lines: script.lines }, meta: { passFailures: [...(plan ? [] : ['story plan did not run (later checks lose their English reference)'])], plan: plan ? { centralStory: plan.centralStory, beats: plan.beats.map((b) => b.point), usedFacts: plan.usedFacts, lineFacts: plan.beats.map((b) => ({ factTexts: b.factTexts || [], factKinds: b.factKinds || [] })) } : null, research, ungrounded: ug, groundText: allowed + ' ' + (config.language.id === 'hinglish' ? COMMON_EN : ''), unframed, generationMode: 'native', generationLog: diagnostics.map(({ attempt, finishReason, tokens, chars }) => ({ attempt, finishReason, tokens, chars })), model: modelInfo(), attempts, tokens, factsProvided: !!facts, factFile: topicFacts?.file || null, claimReview: review, factRetryOpen: soft, claimsToVerify: extractClaims({ lines: script.lines }), transliteratedLines: script.lines.filter((l) => l.transliterated).length, wordBudget: budget, wordCount: est.words, estimatedSeconds: est.seconds, lineCount: script.lines.length } });
     // length is aimed at ±10 %; a script within ±20 % is still usable as a fallback because TTS duration control
     // re-times the narration within the personality's speed range (only the language checks are truly hard)
     // wider window than before: fitLength() shortens/expands line by line afterwards (seen: valid English at 1.33× failed outright)
+    if (single) {
+      // no feedback round-trip: every check still runs locally afterwards (gates -> READY / NEEDS_REVIEW / FAILED)
+      const v = result(), secs = +((Date.now() - t0) / 1000).toFixed(1);
+      onProgress({ message: `Script written in ${usage.calls} API request${usage.calls > 1 ? 's' : ''} (${secs} s); running local checks` });
+      return { ...v, meta: { ...v.meta, generationMode: 'single-request', localProblems: [...problems, ...soft], visuals: { from: 'single request' }, apiUsage: { ...usage, seconds: secs }, retryReason: attempts > 1 ? last : null } };
+    }
     const lengthOnly = problems.length > 0 && problems.every((p) => /^the script is too (short|long)/.test(p)) && off >= 0.6 && off <= 1.8;   // fitLength() rescues over-long native scripts (seen: Hinglish 1.6×)
     if (!problems.length || lengthOnly) {
       const score = bad.length * 3 + review.summary.needsReview + (lengthOnly ? 2 : 0) + quality.length * 2;
@@ -1089,6 +1224,11 @@ export async function fitLength(config, value, { signal, onProgress = () => {}, 
   return { ...cur, meta: { ...cur.meta, lengthFitLog: log, lengthFitBase: fitBase, lengthFit: { from: value.meta.lengthFit?.from ?? start, to: end, unchanged, calls: fitCalls, reviews: fitReviews, reason, improved: end !== start && Math.abs(end - config.durationSeconds) < Math.abs(start - config.durationSeconds), stage } } };
 }
 
+/** a model pass that did not run (error, cut-off, wrong shape): recorded so the pipeline gate refuses READY */
+/** the hardware profile the model ran under — a reduced-quality mode is recorded and shown, never silent */
+export function runtimeInfo() { let profile = 'auto', hw = {}, llm = {}; try { profile = getSettings().hardwareProfile || 'auto'; hw = runtimeProfile(); llm = getCatalog()._internal.llm || {}; } catch {} return { profile, model: llm.name || null, llmContext: hw.llmContext || llm.context || 8192, gpuLayers: hw.llmGpuLayers ?? llm.gpuLayers ?? 99, reducedQuality: profile === 'low-memory' }; }
+export function failedPass(value, why) { return { ...value, meta: { ...value.meta, passFailures: [...(value.meta?.passFailures || []), why] } }; }
+
 // ── quality gates (separate; any failed gate keeps the script out of "Ready") ─────────────────────────────────
 export function qualityGates(config, value, modelIssues = []) {
   const s = value.script, m = value.meta, research = m.research || null;
@@ -1121,7 +1261,9 @@ export function qualityGates(config, value, modelIssues = []) {
   const modelClaims = (research?.evidence || []).filter((e) => e.source === 'model' && (!m.plan?.usedFacts || used.has(e.text)));
   const needsResearch = !sourced || modelClaims.length > 0;
   const coverText = m.englishDraft?.lines?.join(' ') || s.lines.map((l) => l.text).join(' ');
-  const missing = missingEssentials(research, coverText);
+  // single request, Devanagari narration: an English essential cannot be matched in Hindi text ("Smallpox eradication"
+  // vs "चेचक समाप्त"); it counts as covered when the English story beats (one per line) name it
+  const missing = missingEssentials(research, coverText).filter((x) => !(m.generationMode === 'single-request' && config.language.script === 'Deva' && m.plan?.beats?.length && !missingEssentials({ ...research, essentials: [x] }, m.plan.beats.join(' ')).length));
   const g = (ok, issues, extra = {}) => ({ ok, issues, ...extra });
   // names that belong to ANOTHER topic's fact file (prompt contamination: "Sher Shah Suri" in a vaccines script)
   const foreignNames = crossTopicNames(s.lines.map((l) => `${l.say || ''} ${l.text}`).join(' '), config.topic, [config.topic, ...(research?.evidence || []).map((e) => e.text)].join(' '));
@@ -1150,13 +1292,15 @@ export function qualityGates(config, value, modelIssues = []) {
     })(),
     // Hindi/Hinglish lines are compared through their English plan beat (same line, same story point)
     terms: (() => { const beats = m.plan?.beats?.length === s.lines.length ? m.plan.beats : null; const tp = termProblems(config, s, { beats, englishLines: m.englishDraft?.lines || null, topicFacts: findTopicFacts(config.topic) }); return g(!tp.length, tp); })(),
-    visuals: (() => { const beats = m.plan?.beats?.length === s.lines.length ? m.plan.beats : null; const tf = findTopicFacts(config.topic); const vp = visualProblems(s, { englishLines: m.englishDraft?.lines || null, beats, topic: config.topic, keyTerms: [...Object.keys(tf?.terms?.hi || {}), ...(research?.essentials || [])], shots: m.visuals?.shots?.length === s.lines.length ? m.visuals.shots : null });
+    visuals: (() => { const tf = findTopicFacts(config.topic);
       // Step 6: the engine below replaces this legacy check in the gate (visualProblems stays exported for its tests);
       // its exact-word matching failed almost every script ("the line is about uttarapath, the visual shows an ancient road")
-      void vp; void beats;
       const vr = visualReport(config, value, { topicFacts: tf, storyKind: storyType(config.topic, tf) });
       const issues = Object.entries(vr.categories).flatMap(([c, x]) => x.issues.map((t) => `${t} [${c}]`));
       return g(vr.ok, issues, { categories: vr.categories, scenes: vr.scenes, advisory: Object.values(vr.categories).flatMap((x) => x.advisory), corrections: m.visualCorrection?.log || [] }); })(),
+    // pipeline: every model pass must actually have run, at full quality (a pass that failed, or the low-memory mode
+    // with its smaller context, keeps the script out of READY and says so)
+    pipeline: (() => { const iss = [...(m.passFailures || []), ...(m.runtime?.reducedQuality ? [`low-memory mode: the model ran with a ${m.runtime.llmContext}-token context (reduced quality) — switch System Setup → hardware profile to Auto for full quality`] : [])]; return g(!iss.length, iss, { runtime: m.runtime || null }); })(),
     // grammar (Step 5): errors fail the gate (NEEDS_REVIEW); warnings and notes are advisory
     grammar: (() => { const li = languageIssues(config, s); const err = li.filter((x) => x.severity === 'error'); return g(!err.length, err.map((x) => `line ${x.line}: ${x.rule} — ${x.detail}`), { advisory: li.filter((x) => x.severity !== 'error').map((x) => `line ${x.line}: ${x.rule} — ${x.detail}`), corrections: (m.languageCorrection?.log || []).filter((e) => e.changed).map((e) => ({ line: e.line, from: e.original, to: e.final })) }); })(),
     meaning: (() => { const vm = verifyScriptMeaning(config, value, findTopicFacts(config.topic)); return g(vm.ok, vm.findings.filter((f) => f.decision !== 'preserved').map((f) => `${f.lineId}: ${f.changes.filter((c) => c.severity !== 'low').map((c) => c.detail).join('; ') || `unverified change (dropped: ${f.dropped.join(', ')})`}`), { findings: vm.findings }); })(),
@@ -1174,11 +1318,15 @@ export function qualityGates(config, value, modelIssues = []) {
  * topic (a fluent script is still unverified) · NEEDS_REVIEW: generated, correctable issues. A failed gate is never
  * averaged away by the others.
  */
+/** checks every script must have passed for READY (a check that did not run counts as not passed) */
+export const REQUIRED_SCRIPT_CHECKS = ['research', 'language', 'facts', 'coverage', 'narrative', 'terms', 'visuals', 'grammar', 'meaning', 'duration', 'editorial', 'pipeline'];
+export const missingChecks = (gates) => REQUIRED_SCRIPT_CHECKS.filter((k) => !gates?.[k] || typeof gates[k].ok !== 'boolean');
 export function readiness(gates) {
   if (!gates) return 'NEEDS_REVIEW';
   if (!gates.language?.ok) return 'FAILED';
   if (gates.research && !gates.research.ok) return 'NEEDS_RESEARCH';
   if (gates.facts?.needsResearch) return 'NEEDS_RESEARCH';
+  if (missingChecks(gates).length) return 'NEEDS_REVIEW';
   return Object.values(gates).every((g) => g.ok) ? 'READY' : 'NEEDS_REVIEW';
 }
 /** the six gates grouped into the five reported results */

@@ -35,10 +35,10 @@ function draw(t) {
     buildCaptions(script, scene.style.captions, scene.language);
     let E = null, three = null;
     if (scene.style.renderer === 'webgl') {
-      const [THREE, eng, stage] = await Promise.all([import('three'), import('./core/engine.js'), import('./director/stage3d.js')]);
+      const [THREE, eng, stage, setpieces] = await Promise.all([import('three'), import('./core/engine.js'), import('./director/stage3d.js'), import('./director/setpieces3d.js')]);
       GL.width = Math.round(1080 * eng.RES); GL.height = Math.round(1920 * eng.RES);
       E = eng.makeEngine(GL, { w: GL.width, h: GL.height, samples: eng.AA });
-      three = { THREE, stage, camera: eng.camera };
+      three = { THREE, stage, camera: eng.camera, setpieces };
     }
     const { shots, cues } = await buildDirector({ scene, E, three });
     shots.sort((a, b) => a.at - b.at);

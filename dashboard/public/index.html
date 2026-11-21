@@ -23,6 +23,7 @@
         <button class="nav-item active" data-screen="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
         <button class="nav-item" data-screen="create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>Create Video</span><span class="badge-accent" id="nav-job-badge" hidden>Running</span></button>
         <button class="nav-item" data-screen="scripts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Script Studio</span></button>
+        <button class="nav-item" data-screen="scriptbook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg><span>Script Book</span></button>
         <button class="nav-item" data-screen="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Topic Ideas</span></button>
         <button class="nav-item" data-screen="characters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Characters</span></button>
         <button class="nav-item" data-screen="voices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><span>Voices</span></button>
@@ -35,7 +36,7 @@
       </nav>
       <div class="sidebar-footer">
         <div class="gpu-badge"><div class="gpu-indicator online" id="engine-dot"></div><div class="gpu-info"><span class="gpu-title" id="engine-title">Local engines</span><span class="gpu-sub" id="engine-sub">checking…</span></div></div>
-        <div class="cost-badge">100% local · no cloud APIs</div>
+        <div class="cost-badge">Scripts: Gemini API · Video: 100% local</div>
       </div>
     </aside>
 
@@ -162,6 +163,8 @@
       <section class="screen" id="screen-jobs"><div class="section-intro"><h2>Job history</h2><p>Every script and render job with its real stage timings. Stored in <code>logs/jobs/</code>.</p></div><div class="job-history" id="job-history"></div></section>
 
       <!-- SETTINGS -->
+      <!-- SCRIPT BOOK (scriptbook.js) -->
+      <section class="screen" id="screen-scriptbook"><div id="scriptbook-root"><p class="muted">Loading…</p></div></section>
       <!-- AUTOMATION (automation.js) -->
       <section class="screen" id="screen-automation"><div id="automation-root"><p class="muted">Loading…</p></div></section>
 
@@ -201,5 +204,6 @@
   <script type="module" src="charpreview.js"></script>
   <script src="setup.js"></script>
   <script src="automation.js"></script>
+  <script src="scriptbook.js"></script>
 </body>
 </html>

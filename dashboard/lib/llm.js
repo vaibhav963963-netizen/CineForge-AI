@@ -7,6 +7,12 @@ import { STUDIO_CONFIG } from './workspace.js';
 import { killTree } from './jobs.js';
 import { runtimeProfile } from './setup/settings.js';
 import { CONFIG } from './config.js';
+import * as online from './scriptmodel.js';
+
+// Script writing runs on Groq (SCRIPT_GENERATION_PROVIDER=groq). There is NO fallback to a local model: when Groq is
+// unavailable script generation stops with the reason, and saved scripts stay usable for (offline) video production.
+export const PROVIDER = CONFIG.SCRIPT_GENERATION_PROVIDER;
+const ONLINE = ['gemini', 'groq'].includes(PROVIDER);
 
 const PORT = STUDIO_CONFIG.services.llmPort || 8091;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -16,6 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function healthy() { try { const r = await fetch(`${BASE}/health`, { signal: AbortSignal.timeout(1500) }); return r.ok; } catch { return false; } }
 
 export async function ensureServer(onStatus = () => {}) {
+  if (ONLINE) { await online.ensureReady(onStatus); return; }
   clearTimeout(idleTimer);
   if (proc && proc.exitCode === null && await healthy()) return;
   if (starting) return starting;
@@ -26,7 +33,7 @@ export async function ensureServer(onStatus = () => {}) {
     const log = [];
     // hardware profile (System Setup): 'auto' keeps these defaults; CPU-only → no GPU layers, low-memory → smaller context
     const hw = runtimeProfile();
-    proc = spawn(llm.exe, ['-m', llm.model, '--host', '127.0.0.1', '--port', String(PORT), '-c', String(hw.llmContext || 8192), '-ngl', String(hw.llmGpuLayers ?? 99), '--no-webui', '-np', '1'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    proc = spawn(llm.exe, ['-m', llm.model, '--host', '127.0.0.1', '--port', String(PORT), '-c', String(hw.llmContext || llm.context || 8192), '-ngl', String(hw.llmGpuLayers ?? llm.gpuLayers ?? 99), '--no-webui', '-np', '1'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     const keep = (b) => { log.push(...b.toString().split(/\r?\n/).filter(Boolean)); if (log.length > 60) log.splice(0, log.length - 60); };
     proc.stdout.on('data', keep); proc.stderr.on('data', keep);
     for (let i = 0; i < 240; i++) {
@@ -39,7 +46,9 @@ export async function ensureServer(onStatus = () => {}) {
   try { await starting; } finally { starting = null; }
 }
 
-export function stopServer() { clearTimeout(idleTimer); if (proc) { killTree(proc, { sync: true }); proc = null; } }
+export function stopServer() {
+  if (ONLINE) return;   // nothing local to stop
+  clearTimeout(idleTimer); if (proc) { killTree(proc, { sync: true }); proc = null; } }
 // never leave the model server (≈3 GB of VRAM) running after this process ends
 process.on('exit', () => { if (proc) killTree(proc, { sync: true }); });
 function scheduleIdleStop() { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (!busy) stopServer(); }, CONFIG.LLM_IDLE_STOP_SECONDS * 1000); }
@@ -49,6 +58,7 @@ function scheduleIdleStop() { clearTimeout(idleTimer); idleTimer = setTimeout(()
  * schema → constrained JSON output (llama.cpp converts it to a grammar).
  */
 export async function chat({ messages, schema, temperature = 0.8, maxTokens = 2048, onToken, signal }) {
+  if (ONLINE) return online.chat({ messages, schema, temperature, maxTokens, onToken, signal });
   busy++;
   try {
     const body = { messages, temperature, top_p: 0.95, max_tokens: maxTokens, stream: true, cache_prompt: true,
@@ -72,4 +82,6 @@ export async function chat({ messages, schema, temperature = 0.8, maxTokens = 20
   } finally { busy--; scheduleIdleStop(); }
 }
 
-export function modelInfo() { const l = getCatalog()._internal.llm; return { name: l.name, file: l.model ? l.model.split(/[\\/]/).pop() : null, license: l.license, runtime: 'llama.cpp (Vulkan)' }; }
+export function modelInfo() {
+  if (ONLINE) return online.modelInfo();
+  const l = getCatalog()._internal.llm; return { name: l.name, file: l.model ? l.model.split(/[\\/]/).pop() : null, license: l.license, runtime: 'llama.cpp (Vulkan)' }; }

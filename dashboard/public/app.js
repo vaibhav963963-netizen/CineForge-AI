@@ -16,7 +16,7 @@ async function api(path, opts = {}) {
 }
 
 // ── navigation ────────────────────────────────────────────────────────────────────────────────────────────
-const TITLES = { automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
+const TITLES = { scriptbook: ['Script Book', 'Write scripts online (Groq), save them, and make videos offline'], automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
 function go(id) {
   if (!TITLES[id]) id = 'dashboard';
   if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
@@ -26,6 +26,7 @@ function go(id) {
   if (id === 'jobs') renderJobHistory(); if (id === 'library') refreshProjects();
   if (id === 'setup' && window.SetupUI) window.SetupUI.show();
   if (id === 'automation' && window.AutomationUI) window.AutomationUI.show();
+  if (id === 'scriptbook' && window.ScriptBookUI) window.ScriptBookUI.show();
 }
 
 // ── form ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -391,7 +392,7 @@ async function refreshProjects() { try { S.projects = await api('/api/projects')
 function settingsSummary(p) {
   if (p.legacy) return `<div class="legacy">${esc(p.note)}${p.voiceUsed ? ` Voice used: <code>${esc(p.voiceUsed)}</code>.` : ''}</div>`;
   const c = p.config; if (!c) return '';
-  return `<dl class="settings-dl"><dt>Language</dt><dd>${esc(c.language.name)}</dd><dt>Personality</dt><dd>${esc(c.narration.personalityName)}</dd><dt>Voice</dt><dd>${esc(c.narration.voiceName)}${p.voice ? ` · speed ${p.voice.speed}` : ''}</dd><dt>Style</dt><dd>${esc(c.visual.styleName)}</dd><dt>Character</dt><dd>${esc(c.visual.characterName)}</dd><dt>Visual mode</dt><dd>${c.visual.visualMode}</dd><dt>Duration</dt><dd>${p.render?.durationSeconds ? `${p.render.durationSeconds} s actual / ${c.durationSeconds} s target` : `${c.durationSeconds} s target`}</dd><dt>Script</dt><dd>v${p.script?.approvedVersion ?? '–'} of ${p.script?.versions?.length || 0}</dd><dt>Storyboard</dt><dd>${p.storyboard ? `v${p.storyboard.version}, ${p.storyboard.shots} shots` : '–'}</dd><dt>QA</dt><dd>${p.qa?.status || '–'}</dd><dt>Export</dt><dd><code>${esc(p.exportPath || '–')}</code></dd></dl>`;
+  return `<dl class="settings-dl"><dt>Language</dt><dd>${esc(c.language.name)}</dd><dt>Personality</dt><dd>${esc(c.narration.personalityName)}</dd><dt>Voice</dt><dd>${esc(c.narration.voiceName)}${p.voice ? ` · speed ${p.voice.speed}` : ''}</dd><dt>Style</dt><dd>${esc(c.visual.styleName)}</dd><dt>Character</dt><dd>${esc(c.visual.characterName)}</dd><dt>Visual mode</dt><dd>${c.visual.visualMode}</dd><dt>Duration</dt><dd>${p.render?.durationSeconds ? `${p.render.durationSeconds} s actual / ${c.durationSeconds} s target` : `${c.durationSeconds} s target`}</dd><dt>Script</dt><dd>v${p.script?.approvedVersion ?? '–'} of ${p.script?.versions?.length || 0}</dd><dt>Storyboard</dt><dd>${p.storyboard ? `v${p.storyboard.version}, ${p.storyboard.shots} shots` : '–'}</dd><dt>QA</dt><dd>${p.qa?.status || '–'}${p.qa?.approval ? ` · <strong class="${p.qa.approval.decision === 'APPROVED' ? 'ok' : 'warn'}">${esc(p.qa.approval.decision)}</strong>` : ''}</dd>${p.qa ? `<dt>Image content</dt><dd>${p.qa.imageContent?.inspected ? 'inspected' : 'not inspected — review each image'}</dd>` : ''}<dt>Export</dt><dd><code>${esc(p.exportPath || '–')}</code></dd></dl>`;
 }
 function renderLibrary() {
   $('#nav-video-count').textContent = S.projects.filter((p) => p.hasVideo).length;

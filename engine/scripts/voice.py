@@ -59,6 +59,21 @@ def silences(x, thr=0.012, min_len=0.06):
     return out
 
 
+def sentence_gap(text, default):
+    """pause after a sentence by its closing mark: a question and a full stop breathe longer than an exclamation"""
+    t = (text or '').rstrip()
+    return {'?': 0.52, '।': 0.44, '.': 0.44, '!': 0.36}.get(t[-1:], default)
+
+def human_speed(base, gi, n, text):
+    """natural variation: a deterministic ±3 % per sentence, a question a little slower, the closing sentence deliberate"""
+    import hashlib
+    h = int(hashlib.md5(f'{gi}|{text}'.encode('utf-8')).hexdigest()[:6], 16) / 0xFFFFFF
+    sp = base * (1 + (h - 0.5) * 0.06)
+    if (text or '').rstrip().endswith('?'): sp *= 0.97
+    if gi == n - 1: sp *= 0.94
+    return round(min(2.0, max(0.5, sp)), 3)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--script'); ap.add_argument('--out-dir'); ap.add_argument('--voice'); ap.add_argument('--lang')
@@ -95,7 +110,7 @@ def main():
     progress(0, 1, 'Loading Kokoro model')
     t0 = time.time()
     k = Kokoro(str(ONNX), str(VOICES)); tok = Tokenizer()
-    say = lambda text: trim(np.asarray(k.create(text, voice=a.voice, speed=a.speed, lang=a.lang)[0], dtype=np.float64))
+    say = lambda text, sp: trim(np.asarray(k.create(text, voice=a.voice, speed=sp, lang=a.lang)[0], dtype=np.float64))
     phon_len = lambda text: max(1, len(re.sub(r'[ˈˌ\s]', '', tok.phonemize(text, a.lang))))
 
     groups, cur = [], []
@@ -105,7 +120,8 @@ def main():
     out = [np.zeros(int(float(S.get('lead', 0.4)) * SR))]; t = len(out[0]) / SR; lines = [None] * len(L)
     for gi, g in enumerate(groups):
         progress(gi, len(groups), f'Synthesizing sentence {gi + 1} of {len(groups)}')
-        x = say(' '.join(spoken[i] for i in g))
+        joined = ' '.join(spoken[i] for i in g)
+        x = say(joined, human_speed(a.speed, gi, len(groups), joined))
         cuts = [0.0]
         if len(g) > 1:                                    # each cut inside the sentence: phoneme share, snapped to a pause
             lens = np.array([phon_len(spoken[i]) for i in g], dtype=float)
@@ -119,7 +135,8 @@ def main():
             a0 = 0.0 if j == 0 else cuts[j][1]; b0 = n if j == len(g) - 1 else cuts[j + 1][0]
             lines[i] = {'i': i, 'text': L[i]['text'], 'say': spoken[i], 'start': round(t + a0, 3), 'end': round(t + b0, 3)}
             print(f'{i:2d} {lines[i]["start"]:6.2f}-{lines[i]["end"]:6.2f}  {spoken[i]}', flush=True)
-        gap = np.zeros(int(float(L[g[-1]].get('gap', S.get('gap', 0.3))) * SR))
+        gap_s = float(L[g[-1]]['gap']) if 'gap' in L[g[-1]] else sentence_gap(spoken[g[-1]], float(S.get('gap', 0.3)))
+        gap = np.zeros(int(gap_s * SR))
         out += [x, gap]; t += (len(x) + len(gap)) / SR
     out.append(np.zeros(int(float(S.get('outro', 0.9)) * SR)))
     y = np.concatenate(out); y = y / (np.abs(y).max() + 1e-9) * 0.9

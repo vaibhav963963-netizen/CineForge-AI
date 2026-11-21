@@ -8,13 +8,14 @@ import { PATHS, childEnv, rel, CHROME } from './workspace.js';
 import { getCatalog, whisperFor } from './catalog.js';
 import { validateGenerationConfig, scriptFingerprint, configHash } from './validate.js';
 import { projectDir, loadProject, updateProject, addScriptVersion, getScriptVersion, approveScriptVersion } from './projects.js';
-import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords, letters, fitLength, qualityGates } from './scriptgen.js';
+import { generateScript, checkLanguage, estimateSeconds, recordVoiceRate, countWords, letters } from './scriptgen.js';
 import { planStoryboard } from './storyboard.js';
 import { scaffoldRuntime, characterSpec, writeRuntimeScript, writeScene } from './scene.js';
 import { generateImage, seedFor, freeVram, readImageIndex, writeImageIndex } from './imagegen.js';
-import { stopServer as stopLLM, ensureServer as startLLM } from './llm.js';
+import { stopServer as stopLLM } from './llm.js';
 import { imageStats, judgeImage, judgeShots, autoLevel } from './exposure.js';
 import { claimsGate } from './factcheck.js';
+import { measureImage, technicalFindings, setFindings } from './imageqa.js';
 import { run } from './proc.js';
 
 // Stage weights: proportional to measured wall-clock time on the reference machine (i5-12450H + RTX 3050 6 GB)
@@ -27,7 +28,7 @@ export const WEIGHTS = { validate: 1, scriptGenerate: 16, scriptLoad: 1, prepare
 export function renderPlan({ approved, hybrid }) {
   return [
     { id: 'validate', weight: WEIGHTS.validate },
-    approved ? { id: 'script', name: 'Approved script loading', weight: WEIGHTS.scriptLoad } : { id: 'script', name: 'Script generation (local LLM)', weight: WEIGHTS.scriptGenerate },
+    approved ? { id: 'script', name: 'Approved script loading', weight: WEIGHTS.scriptLoad } : { id: 'script', name: 'Script generation', weight: WEIGHTS.scriptGenerate },
     { id: 'prepare', weight: WEIGHTS.prepare },
     { id: 'tts', weight: WEIGHTS.tts },
     { id: 'align', weight: WEIGHTS.align },
@@ -40,7 +41,7 @@ export function renderPlan({ approved, hybrid }) {
     { id: 'qa', weight: WEIGHTS.qa },
   ];
 }
-export const scriptPlan = () => [{ id: 'validate', weight: 1 }, { id: 'script', name: 'Script generation (local LLM)', weight: 20 }, { id: 'prepare', name: 'Language check & duration estimate', weight: 1 }];
+export const scriptPlan = () => [{ id: 'validate', weight: 1 }, { id: 'script', name: 'Script generation', weight: 20 }, { id: 'prepare', name: 'Language check & duration estimate', weight: 1 }];
 
 export const inputFromConfig = (c) => ({ topic: c.topic, language: c.language.id, personality: c.narration.personality, voice: c.narration.voice, speed: c.narration.speed, style: c.visual.style, character: c.visual.character, ...(c.visual.look ? { look: c.visual.look } : {}), durationSeconds: c.durationSeconds, durationTolerance: c.durationTolerance, visualMode: c.visual.visualMode });
 
@@ -57,25 +58,39 @@ async function ffprobe(job, stage, file) {
 }
 
 // ── SCRIPT PREVIEW JOB ──────────────────────────────────────────────────────────────────────────────────────
+/** show every Groq call and wait in the job (progress + log); returns the unsubscribe function */
+async function watchGroq(job, stage) {
+  const { activity } = await import('./scriptmodel.js'); let n = 0;
+  const on = (e) => {
+    if (e.type === 'request') { n++; job.log(`  script API call ${n}: sent, waiting for reply…`); job.stageProgress(stage, { indeterminate: true, message: `Waiting for script API reply (call ${n})` }); }
+    if (e.type === 'note') job.log(`  script API: ${e.message}`);
+    if (e.type === 'error') job.log(`  script API call ${n} refused (HTTP ${e.status}): ${e.detail}`);
+    if (e.type === 'wait') { job.stageProgress(stage, { indeterminate: true, message: `Waiting ${Math.round(e.ms / 1000)} s for the script API (${e.reason})` }); job.log(`  script API: waiting ${Math.round(e.ms / 1000)} s — ${e.reason}`); }
+    if (e.type === 'response') job.log(`  script API call ${n}: HTTP ${e.status} in ${(e.ms / 1000).toFixed(1)} s${e.remainingTokens != null ? ` · ${e.remainingTokens} tokens left this minute` : ''}`);
+  };
+  activity.on('event', on); return () => activity.off('event', on);
+}
+
 export async function runScriptJob(job, { projectId, config, facts = null }) {
   job.startStage('validate', 'Checking the selected options against installed models');
   const v = validateGenerationConfig(inputFromConfig(config), { purpose: 'script' });
   if (!v.ok) throw new Error(v.errors.map((e) => e.message).join(' '));
   job.completeStage('validate', `${config.language.name} · ${config.narration.personalityName} · ${config.durationSeconds} s`);
 
-  job.startStage('script', `Writing a ${config.language.name} script with the local model`);
+  job.startStage('script', `Writing a ${config.language.name} script online`);
+  const unwatch = await watchGroq(job, 'script');
   const ac = new AbortController(); const cancelPoll = setInterval(() => { if (job.cancelRequested) ac.abort(); }, 300);
   let res;
   try { res = await generateScript(config, { facts, signal: ac.signal, onProgress: (p) => job.stageProgress('script', p) }); }
   catch (e) { if (job.cancelRequested) throw Object.assign(new Error('Job cancelled by user'), { cancelled: true }); throw e; }
-  finally { clearInterval(cancelPoll); }
+  finally { clearInterval(cancelPoll); unwatch(); }
   job.completeStage('script', `${res.meta.lineCount} lines, ${res.meta.wordCount} words (${res.meta.tokens} tokens, ${res.meta.attempts} attempt${res.meta.attempts > 1 ? 's' : ''})`);
 
   job.startStage('prepare', 'Verifying language and estimating narration length');
   const problems = checkLanguage(res.script, config);
   if (problems.length) throw new Error(problems.join('; '));
   const est = estimateSeconds(res.script, config);
-  const saved = addScriptVersion(projectId, res.script, { factsProvided: !!facts, factFile: res.meta.factFile, claimReview: res.meta.claimReview, claimsApproved: res.meta.claimReview.summary.needsReview === 0, claimsToVerify: res.meta.claimsToVerify, ...(res.meta.polish ? { polish: res.meta.polish } : {}), ...(res.meta.viaEnglish ? { viaEnglish: true, englishDraft: res.meta.englishDraft } : {}), ...(res.meta.llmReview ? { llmReview: res.meta.llmReview } : {}), attempts: res.meta.attempts, source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds,
+  const saved = addScriptVersion(projectId, res.script, { factsProvided: !!facts, factFile: res.meta.factFile, claimReview: res.meta.claimReview, claimsApproved: res.meta.claimReview.summary.needsReview === 0, claimsToVerify: res.meta.claimsToVerify, ...(res.meta.polish ? { polish: res.meta.polish } : {}), ...(res.meta.viaEnglish ? { viaEnglish: true, englishDraft: res.meta.englishDraft } : {}), ...(res.meta.llmReview ? { llmReview: res.meta.llmReview } : {}), attempts: res.meta.attempts, ...(res.meta.apiUsage ? { apiUsage: res.meta.apiUsage, generationMode: res.meta.generationMode, retryReason: res.meta.retryReason || null } : {}), source: 'llm', fingerprint: scriptFingerprint(config), configHash: configHash(config), model: res.meta.model, wordCount: est.words, estimatedSeconds: est.seconds, language: config.language.id, personality: config.narration.personality, targetSeconds: config.durationSeconds,
     // the validation results of THIS version (Script Studio shows exactly these for the version it previews)
     topic: config.topic, generatedAt: new Date().toISOString(), status: res.meta.status || null, gates: res.meta.gates || null, gateGroups: res.meta.gateGroups || null,
     claims: res.meta.claims || null, draftFlags: res.meta.draftFlags || null, editorialJudgment: res.meta.editorialJudgment || null,
@@ -113,8 +128,9 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     script = { title: s.title, lines: s.lines };
     job.completeStage('script', `approved v${scriptVersion}: ${script.lines.length} lines${s.meta.claimReview ? ` · facts: ${s.meta.claimReview.summary.supported} supported, ${(s.meta.confirmedClaims || []).length} confirmed by you` : ''}`);
   } else {
-    job.startStage('script', `Writing a ${config.language.name} script with the local model`);
-    const res = await generateScript(config, { onProgress: (p) => job.stageProgress('script', p) });
+    job.startStage('script', `Writing a ${config.language.name} script online`);
+    const unwatchR = await watchGroq(job, 'script');
+    let res; try { res = await generateScript(config, { onProgress: (p) => job.stageProgress('script', p) }); } finally { unwatchR(); }
     script = res.script;
     // one-click render: no preview to review, so flagged claims need an explicit acceptance in the request; a known
     // factual error is never rendered
@@ -163,7 +179,7 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   // stage-level resume: a retried render of the SAME narration input (script text, voice, language, speed, target)
   // reuses the finished narration + word alignment instead of redoing them; any change → both run normally
   const resumeFile = path.join(dir, 'audio', 'resume.json');
-  const fingerprint = crypto.createHash('sha256').update(JSON.stringify([fs.readFileSync(path.join(dir, 'script.json'), 'utf8'), config.narration.voice, config.narration.ttsLang, config.narration.speed, T, tol, config.language.code])).digest('hex');
+  const fingerprint = crypto.createHash('sha256').update(JSON.stringify(['pacing-v2', fs.readFileSync(path.join(dir, 'script.json'), 'utf8'), config.narration.voice, config.narration.ttsLang, config.narration.speed, T, tol, config.language.code])).digest('hex');
   const prev = (() => { try { const r = JSON.parse(fs.readFileSync(resumeFile, 'utf8')); return r.fingerprint === fingerprint && ['narration.wav', 'lines.json', 'words.json'].every((f) => fs.existsSync(path.join(dir, 'audio', f))) ? r : null; } catch { return null; } })();
   let narr, speedUsed, al;
   const wm = whisperFor(config.language.code, cat._internal.whisper);
@@ -196,29 +212,10 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     return null;
   };
   let miss = await voiceToTarget();
-  // A script this job wrote itself (one-click) that the voice reads far off target — beyond what the voice speed can
-  // absorb — is re-fitted ONCE using the MEASURED speaking rate, then voiced again. Seen end-to-end: English af_heart
-  // had no calibration yet; the script was estimated at 30.4 s but read in 23.7 s, and speed 0.85 (the personality's
-  // limit) only reached 26.0 s. A script the user approved in Script Studio is never changed here.
-  if (miss && !scriptVersion) {
-    const d1 = miss.firstPass.duration, estTarget = Math.round(est.seconds * T / Math.max(1, d1) * 10) / 10;
-    job.warn(`Narration read ${d1.toFixed(1)} s at the normal pace for a ${T} s target (script estimated ${est.seconds} s): re-fitting the script once with the measured speaking rate`);
-    job.stageProgress('tts', { indeterminate: true, message: 'Re-fitting the script length to the measured voice speed' });
-    await startLLM();
-    const refit = await fitLength({ ...config, durationSeconds: estTarget }, { script, meta: {} }, { stage: 'after narration' });
-    stopLLM();
-    const changed = refit.script.lines.some((l, i) => (l.say || l.text) !== (script.lines[i].say || script.lines[i].text));
-    const bad = (refit.meta.claimReview?.claims || []).filter((c) => c.status === 'contradicted');
-    if (!changed) throw new Error(`${miss.message} (automatic re-fit could not change the script safely: ${refit.meta.lengthFit?.reason || 'no accepted rewrite'})`);
-    if (bad.length) throw new Error(`the re-fitted script would contain a known factual error (line ${bad[0].line}); the render stops. ${miss.message}`);
-    const gates = qualityGates(config, refit);
-    const saved = addScriptVersion(projectId, refit.script, { source: 'refit-after-narration', basedOn: version, fingerprint: scriptFingerprint(config), configHash: configHash(config), language: config.language.id, personality: config.narration.personality, targetSeconds: T, estimatedTarget: estTarget, measuredFirstPass: d1, lengthFit: refit.meta.lengthFit, lengthFitLog: refit.meta.lengthFitLog, claimReview: refit.meta.claimReview, claimsApproved: true, claimsApprovedBy: 'render request (re-fit of an accepted script)', gates, generatedAt: new Date().toISOString() });
-    approveScriptVersion(projectId, saved.version);
-    job.warn(`Script v${saved.version} (re-fitted from v${version}) is now the rendered version; v${version} is kept`);
-    version = saved.version; script = refit.script;
-    writeRuntimeScript(dir, script, config);
-    miss = await voiceToTarget();
-  }
+  // Video production is fully local and offline: no model / Groq call happens here. A narration that misses the target
+  // beyond what the voice speed can absorb stops the render; the script is re-fitted online in Script Book / Script
+  // Studio (where every length change goes through the meaning and grammar checks) and rendered again.
+  if (miss) miss.message += ' — fit the script in Script Book or Script Studio (online), then render again';
   if (miss) throw miss;
   rec((p) => { p.voice = { id: config.narration.voice, ttsLang: config.narration.ttsLang, speed: speedUsed, narrationSeconds: narr.duration, speechSeconds: narr.speechSeconds, model: 'Kokoro-82M v1.0 ONNX', synthSeconds: narr.synthSeconds }; });
   job.completeStage('tts', `${narr.duration.toFixed(2)} s narration (${narr.sentences} sentences, voice ${config.narration.voice}, speed ${speedUsed})`);
@@ -242,6 +239,11 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   writeSB();
   const methods = sb.shots.reduce((m, s) => ((m[s.method] = (m[s.method] || 0) + 1), m), {});
   rec((p) => { p.storyboard = { version: sbVersion, shots: sb.shots.length, planner: sb.planner, methods, environments: [...new Set(sb.shots.map((s) => s.environment))] }; });
+  // visual-plan validation (before rendering): every shot must show what its own line narrates
+  if (sb.validation) {
+    for (const v of sb.validation.shots) job.log(`  ${v.id} ${v.ok ? '✓' : '✗'} ${v.plan}${v.ok ? '' : ' — ' + v.issues.join('; ')}`);
+    if (!sb.validation.ok) job.warn(`Visual plan: ${sb.validation.failed} of ${sb.shots.length} shots do not show their own line (see the storyboard log) — the video will be NEEDS_REVIEW`);
+  }
   job.completeStage('storyboard', `${sb.shots.length} shots · ${Object.entries(methods).map(([k, n]) => `${n} ${k}`).join(', ')}`);
 
   // 7 · images ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -358,6 +360,23 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   const fr = fs.readdirSync(path.join(dir, 'review', 'frames')).find((f) => f.endsWith('.jpg')); if (fr) fs.copyFileSync(path.join(dir, 'review', 'frames', fr), path.join(dir, 'review', 'cover.jpg'));
   await run(job, 'qa', node, ['tools/capture.mjs', 'sheet', 'review/sheet.jpg', '1', '8'], { cwd: dir, env, quiet: true });
   const report = { project: projectId, video: rel(final), status: failed.length ? 'FAIL' : Object.values(checks).every(Boolean) ? 'PASS' : 'PASS_WITH_WARNINGS', metrics: { ...info, meanVolumeDb: meanDb, meanLuma: +meanLuma.toFixed(1), darkFrameShare: +darkShare.toFixed(3), freezes, blackGaps: blacks, badShots: shotQA.bad, targetSeconds: T, tolerance: tol, narrationSeconds: timing.duration }, checks, failed, checkedAt: new Date().toISOString() };
+  // approval ≠ technical QA. Image TECHNICAL checks (pixels: decode, size, exposure, blank, borders, duplicates) never
+  // stand in for image CONTENT verification, which needs a vision model; the rendered script's own status counts too.
+  {
+    const idx = readImageIndex(dir), shotsImg = Object.entries(idx.shots || {}).map(([id, e]) => ({ sceneId: id, file: path.join(dir, e.file) })).filter((x) => fs.existsSync(x.file));
+    const measured = shotsImg.map((x) => ({ ...measureImage(x.file), sceneId: x.sceneId })), cross = setFindings(measured);
+    const techF = measured.flatMap((m, i) => [...technicalFindings(m), ...cross[i]].map((f) => ({ sceneId: m.sceneId, ...f })));
+    report.imageTechnical = { checked: measured.length, errors: techF.filter((f) => f.severity === 'error'), review: techF.filter((f) => f.severity === 'review'), warnings: techF.filter((f) => f.severity === 'warning') };
+    report.imageContent = { inspected: false, reason: 'no image-content (vision) model is installed — each image must be reviewed by a person' };
+    const sv = getScriptVersion(projectId, version);
+    report.scriptStatus = sv?.meta?.status || 'unknown';
+    const critical = [...(failed.length ? [`video QA failed: ${failed.join(', ')}`] : []), ...report.imageTechnical.errors.map((f) => `${f.sceneId}: ${f.problem}`)];
+    const sbv = (() => { try { return readJSON(path.join(dir, 'storyboard', 'storyboard.json')).validation; } catch { return null; } })();
+    const visualCritical = sbv && !sbv.ok ? sbv.shots.filter((x) => !x.ok).map((x) => `${x.id}: visual does not match its line — ${x.issues.join('; ')}`) : [];
+    const review = ['image content not inspected', ...(report.scriptStatus !== 'READY' ? [`script v${version} is ${report.scriptStatus}`] : []), ...report.imageTechnical.review.map((f) => `${f.sceneId}: ${f.problem}`), ...(report.status === 'PASS_WITH_WARNINGS' ? ['video QA passed with warnings'] : [])];
+    report.visualValidation = { ok: !visualCritical.length, failed: visualCritical };
+    report.approval = { decision: (critical.length || visualCritical.length) ? 'REJECTED' : review.length ? 'NEEDS_REVIEW' : 'APPROVED', reasons: [...critical, ...visualCritical, ...review] };
+  }
   fs.writeFileSync(path.join(dir, 'review', 'qa_report.json'), JSON.stringify(report, null, 2));
   if (failed.length) { rec((p) => { p.qa = report; p.status = 'failed'; }); throw new Error(`QA failed: ${failed.join(', ')}`); }
   job.stageProgress('qa', { current: 5, total: 6, message: 'Exporting to the workspace exports folder' });
@@ -366,16 +385,17 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   fs.copyFileSync(final, exp);
   const expInfo = await ffprobe(job, 'qa', exp);
   if (expInfo.size !== info.size || Math.abs(expInfo.duration - info.duration) > 0.01) throw new Error('export copy does not match the rendered file');
-  const result = { projectId, exportPath: rel(exp), exportAbsolutePath: exp, renderPath: rel(final), durationSeconds: +info.duration.toFixed(2), targetSeconds: T, withinTolerance: checks.duration_within_tolerance, width: info.width, height: info.height, fps: info.fps, sizeMB: +(info.size / 1048576).toFixed(2), qa: report.status, videoUrl: `/media/exports/${outName}` };
+  const result = { approval: report.approval, imageContentInspected: false, projectId, exportPath: rel(exp), exportAbsolutePath: exp, renderPath: rel(final), durationSeconds: +info.duration.toFixed(2), targetSeconds: T, withinTolerance: checks.duration_within_tolerance, width: info.width, height: info.height, fps: info.fps, sizeMB: +(info.size / 1048576).toFixed(2), qa: report.status, videoUrl: `/media/exports/${outName}` };
   rec((p) => {
-    p.status = 'rendered'; p.exportPath = result.exportPath; p.qa = { status: report.status, checks, failed, report: rel(path.join(dir, 'review', 'qa_report.json')) };
+    p.status = 'rendered'; p.exportPath = result.exportPath; p.qa = { status: report.status, checks, failed, approval: report.approval, imageContent: report.imageContent, imageTechnical: { checked: report.imageTechnical.checked, errors: report.imageTechnical.errors.length, review: report.imageTechnical.review.length }, scriptStatus: report.scriptStatus, report: rel(path.join(dir, 'review', 'qa_report.json')) };
     p.render = { ...(p.render || {}), jobId: job.id, finishedAt: new Date().toISOString(), durationSeconds: result.durationSeconds, targetSeconds: T, withinTolerance: result.withinTolerance, frames: cap.frames, captureSeconds: cap.seconds, file: result.renderPath, exportPath: result.exportPath, scriptVersion: version, storyboardVersion: sbVersion };
     p.models.tts = { engine: 'Kokoro-82M v1.0 ONNX', voice: config.narration.voice, lang: config.narration.ttsLang };
     p.models.alignment = { engine: 'faster-whisper', model: wm.name };
     p.history.push({ jobId: job.id, status: 'completed', at: new Date().toISOString() });
   });
-  job.completeStage('qa', `${report.status} · exported ${rel(exp)}`);
-  job.complete(result, `Video ready: ${rel(exp)} (${result.durationSeconds} s)`);
+  job.completeStage('qa', `video QA ${report.status} · approval ${report.approval.decision} · exported ${rel(exp)}`);
+  for (const r of report.approval.reasons) job.warn(`Approval: ${r}`);
+  job.complete(result, `Video rendered: ${rel(exp)} (${result.durationSeconds} s) — ${report.approval.decision === 'APPROVED' ? 'approved' : `${report.approval.decision}: ${report.approval.reasons.slice(0, 2).join('; ')}`}`);
 }
 
 export const CHROME_PATH = CHROME;

@@ -9,7 +9,8 @@
 //   styles      ← engine/styles/<id>/profile.json + example/ template
 import fs from 'node:fs';
 import path from 'node:path';
-import { PATHS, STUDIO_CONFIG, CHROME } from './workspace.js';
+import { PATHS, STUDIO_CONFIG, CHROME, ROOT } from './workspace.js';
+import { CONFIG } from './config.js';
 import { DESIGNS, LOOKS } from '../../engine/styles/tall-tale/example/src/core/characters/index.js';
 
 // ── LANGUAGES ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -158,15 +159,31 @@ export function whisperFor(lang, w = detectWhisper()) {
 }
 
 function detectLLM() {
+  const P = CONFIG.SCRIPT_GENERATION_PROVIDER;
+  if (P === 'gemini' || P === 'groq') {   // online script writing: no local model involved, no fallback
+    const key = P === 'gemini' ? CONFIG.GEMINI_API_KEY : CONFIG.GROQ_API_KEY, model = P === 'gemini' ? CONFIG.GEMINI_MODEL : CONFIG.GROQ_MODEL, label = P === 'gemini' ? 'Google Gemini API' : 'Groq API';
+    return { ready: !!key && CONFIG.SCRIPT_GENERATION_ENABLED, provider: P, exe: null, model: null, name: `${model} (${label})`, license: `${label} terms`, gpuLayers: null, context: null,
+      reason: !CONFIG.SCRIPT_GENERATION_ENABLED ? 'script generation is disabled (SCRIPT_GENERATION_ENABLED=false)' : !key ? `${P === 'gemini' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY'} is empty in .env` : null };
+  }
+  return detectLocalLLM();
+}
+/** local llama.cpp model (not used for script writing while SCRIPT_GENERATION_PROVIDER=groq) */
+function detectLocalLLM() {
   const exe = ['llama-server.exe', 'llama-server'].map((f) => path.join(PATHS.llamaCpp, f)).find((f) => fs.existsSync(f));
   let models = [];
   try { models = fs.readdirSync(PATHS.models.llm).filter((f) => f.endsWith('.gguf')).map((f) => path.join(PATHS.models.llm, f)); } catch {}
   let meta = {};
   try { meta = JSON.parse(fs.readFileSync(path.join(PATHS.models.llm, 'studio-model.json'), 'utf8')); } catch {}
-  const model = models.find((m) => path.basename(m) === meta.file) || models[0] || null;
+  // the configured model only — never "any .gguf in the folder" (that silently fell back to another model).
+  // studio-model.json may point outside models/llm with "path" (relative to the workspace).
+  const configured = meta.path ? path.resolve(ROOT, meta.path) : meta.file ? path.join(PATHS.models.llm, meta.file) : null;
+  const model = configured ? (fs.existsSync(configured) ? configured : null) : models.length === 1 ? models[0] : null;
   return {
     ready: !!(exe && model), exe: exe || null, model, name: meta.name || (model ? path.basename(model) : null), license: meta.license || null,
-    reason: !exe ? 'llama.cpp server not installed (runtime/llama.cpp)' : !model ? 'no GGUF model in models/llm' : null,
+    gpuLayers: Number.isInteger(meta.gpuLayers) ? meta.gpuLayers : null, context: Number.isInteger(meta.context) ? meta.context : null,
+    reason: !exe ? 'llama.cpp server not installed (runtime/llama.cpp)'
+      : !model ? (configured ? `the configured script model is missing (${meta.name || meta.file}: ${configured}) — the studio does not substitute another model` : models.length > 1 ? 'several GGUF models in models/llm and none selected in studio-model.json' : 'no GGUF model in models/llm')
+      : null,
   };
 }
 

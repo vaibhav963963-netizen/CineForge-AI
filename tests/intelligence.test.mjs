@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { crossTopicNames, storyType, STORY_SHAPES, readiness, researchBrief, visualPeriodAndRepetition, claimLedger, qualityGates } from '../dashboard/lib/scriptgen.js';
+import { REQUIRED_SCRIPT_CHECKS, crossTopicNames, storyType, STORY_SHAPES, readiness, researchBrief, visualPeriodAndRepetition, claimLedger, qualityGates } from '../dashboard/lib/scriptgen.js';
 import { findTopicFacts, reviewClaims } from '../dashboard/lib/factcheck.js';
 
 const HI = { topic: 'How do vaccines train the immune system?', durationSeconds: 30, language: { id: 'hi-conversational', code: 'hi', script: 'Deva', captionScript: 'Deva', name: 'Hindi' }, narration: { voice: 'no_such_voice_for_tests', speed: 1, delivery: { lead: 0.3, outro: 1, gap: 0.3 } } };
@@ -27,7 +27,9 @@ test('research: no verified source → RESEARCH gate fails and the status is NEE
   const ok = { ok: true, issues: [] };
   assert.equal(readiness({ research: { ok: false, issues: ['x'] }, language: ok, facts: ok, editorial: ok }), 'NEEDS_RESEARCH');
   assert.equal(readiness({ research: ok, language: { ok: false, issues: ['y'] } }), 'FAILED');
-  assert.equal(readiness({ research: ok, language: ok, facts: ok }), 'READY');
+  // a partial set of passing checks is never READY (a check that did not run is not a pass)
+  assert.equal(readiness({ research: ok, language: ok, facts: ok }), 'NEEDS_REVIEW');
+  assert.equal(readiness(Object.fromEntries(REQUIRED_SCRIPT_CHECKS.map((k) => [k, ok]))), 'READY');
   const g = qualityGates({ ...HI, topic: 'Why are heatwaves in India getting longer?' }, { script: { lines: [{ text: 'गर्मी बढ़ रही है।', visual: 'x' }] }, meta: { claimReview: { claims: [] } } });
   assert.equal(g.research.ok, false); assert.equal(g.research.brief.status, 'NEEDS_RESEARCH');
 });
@@ -96,4 +98,15 @@ test('vaccines: "Jenner protected against measles (खसरा)" is a known err
   const bad = reviewClaims({ lines: [{ text: '1796 में, जेनर ने गायधर्मा से मटेरियल का इस्तेमाल करके खसरा बचाया।' }] }, { topic: 'vaccines', topicFacts: tf }).claims.filter((c) => c.status === 'contradicted');
   assert.equal(bad.length, 1); assert.match(bad[0].note, /चेचक/);
   assert.equal(tf.terms.hi.smallpox, 'चेचक');
+});
+
+test('quality rules: a model pass that did not run, or the low-memory mode, keeps a script out of READY and says why', async () => {
+  const { failedPass, qualityGates: qg, readiness: rd, missingChecks } = await import('../dashboard/lib/scriptgen.js');
+  const base = { script: { lines: [{ text: 'शेर शाह सूरी ने 1540 में सड़क को फिर से बनवाया।', visual: 'Wide shot of a Mughal-era caravan on a dusty road.' }] }, meta: { claimReview: { claims: [] } } };
+  const cfg = { ...HI, topic: 'How the Grand Trunk Road connected India for centuries' };
+  const failed = qg(cfg, failedPass(base, 'visual description could not run: fetch failed'));
+  assert.equal(failed.pipeline.ok, false); assert.match(failed.pipeline.issues[0], /visual description could not run/); assert.notEqual(rd(failed), 'READY');
+  const low = qg(cfg, { ...base, meta: { ...base.meta, runtime: { profile: 'low-memory', llmContext: 4096, reducedQuality: true } } });
+  assert.equal(low.pipeline.ok, false); assert.match(low.pipeline.issues[0], /low-memory mode.*4096/);
+  assert.deepEqual(missingChecks({ language: { ok: true } }).includes('pipeline'), true);
 });

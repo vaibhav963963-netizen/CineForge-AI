@@ -97,6 +97,31 @@ function submitScriptJob({ input, projectId, requestKey, facts }) {
   return { job, project, deduplicated: false, warnings: v.warnings };
 }
 
+// Script Book queue: starts the next queued "pending" entry when no Script Book script is being written (one at a time)
+let sbTicking = false;
+async function scriptBookQueueTick() {
+  if (sbTicking) return; sbTicking = true;
+  try {
+    const sb = await import('./lib/scriptbook.js');
+    const book = sb.syncWithJobs(jobs);
+    if (book.entries.some((e) => e.status === 'generating')) return;
+    // a DAILY quota stops the batch: the remaining queued topics stay Pending (not Failed) and can be generated later
+    if (book.entries.some((e) => e.status === 'failed' && /daily (limit|quota)/i.test(e.error || '') && e.queued === false && Date.now() - Date.parse(e.updatedAt) < 5 * 60 * 1000)) {
+      const left = book.entries.filter((e) => e.queued && e.status === 'pending');
+      if (left.length) { for (const e of left) sb.setQueued(e.id, false); console.log(`[scriptbook] daily quota reached — ${left.length} queued topic(s) left Pending`); }
+      return;
+    }
+    const next = book.entries.find((e) => e.status === 'pending' && e.queued);
+    if (!next) return;
+    try { const g = await import('./lib/scriptmodel.js'); await g.ensureReady(); }
+    catch (e) { for (const x of book.entries.filter((y) => y.queued)) sb.setQueued(x.id, false); console.log(`[scriptbook] queue paused: ${e.message}`); return; }
+    const input = { topic: next.topic, language: next.language, personality: next.personality, voice: next.voice, style: next.style, character: next.character, durationSeconds: next.durationSeconds, visualMode: next.visualMode };
+    const { job, project } = submitScriptJob({ input, projectId: null, requestKey: `scriptbook-${next.id}-${(next.attempts || 0) + 1}` });
+    sb.markGenerating(next.id, { jobId: job.id, projectId: project.id }); sb.setQueued(next.id, false);
+  } catch (e) { console.log(`[scriptbook] queue error: ${e.message}`); } finally { sbTicking = false; }
+}
+setInterval(() => { scriptBookQueueTick(); }, 15000).unref?.();
+
 function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUnverifiedClaims = false }) {
   const v = validateGenerationConfig(input, { purpose: 'render', hasApprovedScript: !!scriptVersion });
   if (!v.ok) throw new HttpError(422, 'Invalid selection', { errors: v.errors });
@@ -131,6 +156,52 @@ async function api(req, res, url) {
   if (p === '/api/characters') return send(res, 200, getCatalog().characters);
   if (p === '/api/voices') return send(res, 200, getCatalog().voices);
   if (p === '/api/validate' && method === 'POST') { const b = await readBody(req); const v = validateGenerationConfig(b.input || b, { purpose: b.purpose || 'render', hasApprovedScript: !!b.scriptVersion }); return send(res, v.ok ? 200 : 422, v); }
+
+  // Script Book — topics → scripts written online (Groq) → saved → selected later for offline video production
+  if (p.startsWith('/api/scriptbook')) {
+    scriptBookQueueTick();
+    const sb = await import('./lib/scriptbook.js');
+    const fail = (e) => { throw new HttpError(e.status || 500, e.message, e.failing ? { failing: e.failing } : undefined); };
+    const inputOf = (e) => ({ topic: e.topic, language: e.language, personality: e.personality, voice: e.voice, style: e.style, character: e.character, durationSeconds: e.durationSeconds, visualMode: e.visualMode });
+    const online = async () => { try { const g = await import('./lib/scriptmodel.js'); await g.ensureReady(); return { ok: true }; } catch (e) { return { ok: false, reason: e.message, code: e.code || null }; } };
+    const generate = (e) => {
+      if (e.status === 'generating' && e.jobId && ['queued', 'running'].includes(jobs.get(e.jobId)?.status)) return { entry: e, deduplicated: true };   // never two jobs for one entry
+      if (['approved', 'used'].includes(e.status)) throw new HttpError(409, `this script is already ${e.status}; add the topic again for a new script`);
+      const { job, project } = submitScriptJob({ input: inputOf(e), projectId: e.projectId && (sb.getEntry(e.id)?.status !== 'failed') ? e.projectId : null, requestKey: `scriptbook-${e.id}-${(e.attempts || 0) + 1}` });
+      return { entry: sb.markGenerating(e.id, { jobId: job.id, projectId: project.id }), jobId: job.id };
+    };
+    try {
+      let mm;
+      if (p === '/api/scriptbook' && method === 'GET') {
+        const entries = sb.syncWithJobs(jobs).entries.map((e) => { const pr = e.projectId ? loadProject(e.projectId) : null; return { ...e, versions: (pr?.script?.versions || []).map((v) => ({ version: v.version, source: v.source || null, createdAt: v.createdAt || null })), projectApprovedVersion: pr?.script?.approvedVersion || null }; });
+        return send(res, 200, { entries, statuses: sb.STATUSES });
+      }
+      if (p === '/api/scriptbook/status' && method === 'GET') { const sm = await import('./lib/scriptmodel.js'); return send(res, 200, { provider: CONFIG.SCRIPT_GENERATION_PROVIDER, providerName: sm.providerName(), model: sm.configuredModel(), enabled: CONFIG.SCRIPT_GENERATION_ENABLED, keyPresent: sm.keyPresent(), online: await online(), production: 'local (offline)' }); }
+      if (p === '/api/scriptbook/existing-topics' && method === 'GET') return send(res, 200, sb.existingTopics());
+      if (p === '/api/scriptbook/topics' && method === 'POST') { const b = await readBody(req); return send(res, 201, { added: sb.addTopics(Array.isArray(b.items) ? b.items : [b], { source: b.source || 'manual' }) }); }
+      if (p === '/api/scriptbook/generate-pending' && method === 'POST') {
+        const o = await online(); if (!o.ok) throw new HttpError(503, `scripts cannot be written now: ${o.reason}. Saved scripts remain usable for videos.`);
+        // ONE script at a time (the Groq account's tokens-per-minute budget is shared): queue them; the queue below
+        // starts the next one when the previous finishes
+        const queued = sb.syncWithJobs(jobs).entries.filter((e) => e.status === 'pending').map((e) => sb.setQueued(e.id, true));
+        scriptBookQueueTick();
+        return send(res, 202, { queued: queued.length, started: 0 });
+      }
+      if ((mm = p.match(/^\/api\/scriptbook\/([\w-]{6,40})\/(generate|approve|refresh|render)$/)) && method === 'POST') {
+        const e = sb.syncWithJobs(jobs).entries.find((x) => x.id === mm[1]); if (!e) throw new HttpError(404, 'Script Book entry not found');
+        const b = await readBody(req).catch(() => ({}));
+        if (mm[2] === 'generate') { const o = await online(); if (!o.ok) throw new HttpError(503, `scripts cannot be written now: ${o.reason}. Saved scripts remain usable for videos.`); return send(res, 202, generate(e)); }
+        if (mm[2] === 'approve') return send(res, 200, sb.approve(e.id, { version: b.version || null }));
+        if (mm[2] === 'refresh') return send(res, 200, sb.refreshFromVersion(e.id, b.version || e.version));
+        // render: an APPROVED saved script → fully local, offline video production (no Groq call anywhere in it)
+        if (!['approved', 'used'].includes(e.status) || !e.approvedVersion) throw new HttpError(409, 'only an approved script can be used for a video');
+        const { job } = submitRenderJob({ input: inputOf(e), projectId: e.projectId, scriptVersion: e.approvedVersion, requestKey: `scriptbook-render-${e.id}-${(e.uses || []).length + 1}` });
+        return send(res, 202, { jobId: job.id, entry: sb.markUsed(e.id, { jobId: job.id }) });
+      }
+      if ((mm = p.match(/^\/api\/scriptbook\/([\w-]{6,40})$/)) && method === 'DELETE') return send(res, 200, { removed: sb.removeEntry(mm[1]) });
+    } catch (e) { if (e instanceof HttpError) throw e; fail(e); }
+    throw new HttpError(404, 'unknown Script Book route');
+  }
 
   // projects
   if (p === '/api/projects' && method === 'GET') return send(res, 200, listProjects());

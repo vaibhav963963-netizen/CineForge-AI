@@ -33,3 +33,12 @@ test('server routing: no route uses "r" before "let r" (seen: the Delete route m
   const decl = src.indexOf('  let r;'), firstUse = src.search(/\(r = m\(/);
   assert.ok(decl > 0 && firstUse > decl, `first "(r = m(" at ${firstUse}, "let r;" at ${decl}`);
 });
+
+test('script model: the configured model only — a missing model is "not ready", never a substitute (no silent fallback)', async () => {
+  const src = fs.readFileSync(new URL('../dashboard/lib/catalog.js', import.meta.url), 'utf8');
+  assert.ok(!/\|\| models\[0\] \|\| null/.test(src), 'the "any .gguf" fallback is gone');
+  assert.match(src, /the studio does not substitute another model/);
+  const { getCatalog } = await import('../dashboard/lib/catalog.js');
+  const llm = getCatalog(true)._internal.llm;
+  assert.ok(['gemini', 'groq'].includes(llm.provider)); assert.equal(llm.model, null);   // script writing is online; no local model file is used
+});

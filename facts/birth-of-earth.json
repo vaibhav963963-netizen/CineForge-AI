@@ -1,0 +1,237 @@
+{
+  "id": "birth-of-earth",
+  "title": "How Earth was born (4.5 billion years ago)",
+  "match": [
+    "birth of earth",
+    "earth was born",
+    "how earth formed",
+    "formation of earth",
+    "earth formed",
+    "origin of earth",
+    "पृथ्वी का जन्म",
+    "पृथ्वी कैसे बनी",
+    "पृथ्वी का निर्माण",
+    "how was earth born",
+    "earth born",
+    "how was the earth born",
+    "earth birth",
+    "earth's birth",
+    "how earth was born",
+    "how was earth formed",
+    "धरती का जन्म",
+    "धरती कैसे बनी",
+    "धरती का निर्माण",
+    "earth origin",
+    "how did earth form",
+    "how did the earth form",
+    "formation of the earth"
+  ],
+  "aliases": [
+    "Earth",
+    "Sun",
+    "Moon",
+    "Theia",
+    "Solar System",
+    "Jupiter",
+    "Mars"
+  ],
+  "sources": [
+    "NASA Science: Earth and Moon formation pages (general)",
+    "USGS and Smithsonian explainers on Earth's age and early history (general)",
+    "Standard planetary-science textbook consensus (protoplanetary disk, accretion, differentiation)"
+  ],
+  "verified": [
+    {
+      "text": "Chronological order of the story (tell it in this order): 1) the solar nebula, a cloud of gas and dust; 2) the young Sun and a spinning protoplanetary disk; 3) dust grains stick together into planetesimals; 4) collisions and accretion heat the young Earth until it is molten; 5) iron sinks to the core as the Earth differentiates; 6) the Theia impact, from which debris forms a ring and the Moon; 7) the Earth cools, a crust forms, and the first oceans form last.",
+      "keys": [
+        "order",
+        "first",
+        "then",
+        "after",
+        "chronolog"
+      ]
+    },
+    {
+      "text": "The Sun and the planets formed from a giant cloud of gas and dust that began to collapse under its own gravity, about 4.5 billion years ago.",
+      "keys": [
+        "gas and dust",
+        "cloud",
+        "collapse",
+        "4.5",
+        "billion"
+      ]
+    },
+    {
+      "text": "As the cloud spun and flattened, it formed a disk: most of the material gathered at the centre to form the young Sun, and the rest formed a disk of gas and dust around it.",
+      "keys": [
+        "disk",
+        "flattened",
+        "spun",
+        "centre",
+        "center"
+      ]
+    },
+    {
+      "text": "Dust grains in the disk stuck together and grew into rocky bodies called planetesimals, some of them kilometres across.",
+      "keys": [
+        "planetesimal",
+        "stuck together",
+        "grew",
+        "kilometres",
+        "kilometers",
+        "rocky bodies"
+      ]
+    },
+    {
+      "text": "Collisions between growing rocky bodies released energy as heat, and the young Earth grew larger by gathering more and more material.",
+      "keys": [
+        "collision",
+        "collided",
+        "heat",
+        "energy",
+        "gathered"
+      ]
+    },
+    {
+      "text": "The young Earth became so hot that much of it was molten, a sea of magma.",
+      "keys": [
+        "molten",
+        "magma",
+        "hot",
+        "melted"
+      ]
+    },
+    {
+      "text": "While the Earth was molten, heavy materials such as iron sank toward the centre and formed the core, and lighter materials rose toward the surface. This is called differentiation.",
+      "keys": [
+        "iron",
+        "sank",
+        "core",
+        "centre",
+        "differentiation",
+        "heavy"
+      ]
+    },
+    {
+      "text": "As the surface cooled, a solid crust formed. Gases released from the interior, including water vapour, collected into an early atmosphere.",
+      "keys": [
+        "crust",
+        "cooled",
+        "atmosphere",
+        "gases",
+        "water vapour",
+        "water vapor"
+      ]
+    },
+    {
+      "text": "As the surface cooled further, water vapour condensed into liquid water, and the first oceans formed.",
+      "keys": [
+        "ocean",
+        "oceans",
+        "condensed",
+        "liquid water"
+      ]
+    },
+    {
+      "text": "The Earth is about 4.5 billion years old, the age estimated from the oldest meteorites and rocks.",
+      "keys": [
+        "4.5",
+        "billion",
+        "oldest",
+        "meteorite"
+      ]
+    },
+    {
+      "text": "Mars-sized protoplanets and debris were common in the early solar system; the leading explanation for the Moon is a Mars-sized body, Theia, striking the young Earth.",
+      "keys": [
+        "mars-sized",
+        "theia",
+        "protoplanet"
+      ]
+    },
+    {
+      "text": "The impact that formed the Moon happened early in Earth's history, while the Earth was still very hot and before the first oceans formed.",
+      "keys": [
+        "moon",
+        "early",
+        "before the oceans",
+        "still hot",
+        "impact"
+      ]
+    },
+    {
+      "text": "The Theia impact and the Moon forming from its debris must be told in their own line, separate from the iron sinking and the core: first the iron sinks, then, in a separate line, Theia strikes the Earth and debris forms the Moon.",
+      "keys": [
+        "theia",
+        "separate line",
+        "debris",
+        "moon"
+      ]
+    },
+    {
+      "text": "The Sun and the Earth formed about 4.5 billion years ago (लगभग साढ़े चार अरब साल पहले, 4.5 billion years).",
+      "keys": [
+        "4.5",
+        "साढ़े चार",
+        "चार और आधा",
+        "4.5 billion",
+        "billion years"
+      ]
+    },
+    {
+      "text": "Iron sinks to the core while the whole Earth is still molten, before any crust forms. The crust forms only after the Moon-forming impact, and the first oceans form last, as the surface cools.",
+      "keys": [
+        "iron",
+        "molten",
+        "crust",
+        "oceans",
+        "last"
+      ]
+    }
+  ],
+  "theories": [
+    {
+      "text": "Scientists think a Mars-sized body called Theia struck the young Earth, and the debris from that impact formed the Moon. This is the leading explanation, not a certainty.",
+      "keys": [
+        "theia",
+        "moon formed",
+        "impact",
+        "debris",
+        "mars-sized"
+      ]
+    }
+  ],
+  "legends": [],
+  "knownErrors": [
+    {
+      "text": "Earth formed in a single day or a few years",
+      "keys": [
+        "single day",
+        "few years",
+        "overnight"
+      ],
+      "correction": "Earth formed over tens of millions of years, and it was still growing and changing for a long time after that."
+    },
+    {
+      "text": "The Moon was always there",
+      "keys": [
+        "moon was always",
+        "always been there"
+      ],
+      "correction": "The Moon formed after Earth, most likely from debris after a large impact."
+    }
+  ],
+  "uncertain": [],
+  "terms": {
+    "hi": {
+      "protoplanetary disk": "प्रोटोप्लैनेटरी डिस्क (ग्रहों का जन्म-चक्र)",
+      "planetesimal": "प्लैनेटसिमल (छोटे चट्टानी पिंड)",
+      "differentiation": "विभेदन (भारी पदार्थ केंद्र में)",
+      "core": "कोर (केंद्र)",
+      "magma": "मैग्मा (पिघली चट्टान)",
+      "crust": "पपड़ी (ऊपरी सतह)",
+      "Theia": "थिया (मंगल के आकार का ग्रह)",
+      "molten": "पिघला हुआ"
+    }
+  }
+}

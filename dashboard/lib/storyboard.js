@@ -1,3 +1,4 @@
+import { chooseWorld, matchAction, visualPlan, validateStoryboard } from './visualplan.js';
 // Storyboard planning: narration lines (+ their real TTS/Whisper times) → timed shots, each with a visual objective,
 // subject, environment, objects, action, camera, lighting, rendering method, image prompt, 3D asset needs,
 // animation instructions and transition. Matching uses each line's English "visual" description (written by the
@@ -330,6 +331,35 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
       focus: env === 'temple' && !leadAction && concepts.some((c) => c.id === 'bell' || c.id === 'ringing') ? 'bell' : undefined,
     };
   });
+  // scene-to-visual intelligence: when the video is about a set-piece world, every line it covers shows the ACTION its
+  // own words describe (a purpose-built animated scene), instead of a stock environment chosen by keyword. This runs in
+  // both visual modes: a still-image model cannot draw a protoplanetary disk or antibodies binding a virus correctly
+  // (it drew "a scientist in a lab" for those), so these scenes are always the set piece.
+  const world = chooseWorld(topic, lines);
+  let prevSp = null;
+  shots.forEach((s, k) => {
+    const ls = s.lines.map((i) => lines[i]);
+    const act = world ? matchAction(world, { visual: ls.map((l) => l.visual || '').join(' '), text: ls.map((l) => l.text).join(' '), say: ls.map((l) => l.say || '').join(' ') }) : null;
+    if (!act) { prevSp = null; return; }
+    const plan = visualPlan({ worldId: world, act, line: { visual: ls.map((l) => l.visual || '').join(' ') }, style, character: hasLead ? config.visual.characterName : null, prev: prevSp });
+    const lead = plan.leadAllowed ? [{ role: 'lead', action: k === 0 ? 'point' : 'explain' }] : [];
+    Object.assign(s, {
+      method: 'setpiece', renderMethod: `Animated ${is3d ? '3D' : '2D'} set piece: ${world} / ${act.id} (${style.name})`,
+      setpiece: { world, action: act.id }, visualPlan: plan,
+      subject: plan.subject, environment: world, objects: [], action: act.id, cast: lead,
+      camera: { ...s.camera, angle: 'wide', move: s.camera.move === 'punch' ? 'push' : s.camera.move },
+      lighting: plan.lighting, imagePrompt: null, negativePrompt: null, image: null, assets3d: null,
+      animation: plan.animation, transition: k === 0 ? 'black' : prevSp && prevSp.action === act.id ? 'cut' : s.transition,
+    });
+    prevSp = { world, action: act.id };
+  });
+  // consecutive shots with the same action continue ONE animation (progress ranges), instead of replaying it
+  for (let k = 0; k < shots.length;) {
+    const a = shots[k]; let e = k;
+    if (a.method === 'setpiece') while (shots[e + 1]?.method === 'setpiece' && shots[e + 1].setpiece.action === a.setpiece.action) e++;
+    const n = e - k + 1; for (let j = 0; j < n; j++) if (shots[k + j].setpiece) shots[k + j].setpiece.range = [+(j / n).toFixed(3), +((j + 1) / n).toFixed(3)];
+    k = e + 1;
+  }
   // image reuse: the second half of a split line, or any shot whose prompt matches an earlier one, reuses that image
   // (with its own camera move) instead of generating a near-duplicate
   const byPrompt = new Map();
@@ -350,5 +380,6 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
       s.renderMethod = 'Animated infographic over a defocused local AI image';
     }
   }
-  return { title: script.title, planner: 'rules+lexicon v2', createdAt: new Date().toISOString(), durationSeconds: dur, shots };
+  const validation = validateStoryboard(shots, lines, { style, world });
+  return { title: script.title, planner: world ? `visual plan v3 (set-piece world: ${world})` : 'rules+lexicon v2', world, createdAt: new Date().toISOString(), durationSeconds: dur, shots, validation };
 }

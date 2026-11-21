@@ -54,6 +54,7 @@ export function scaffoldRuntime(dir, config) {
   } else {
     // 2D styles never load WebGL code
     fs.rmSync(path.join(dir, 'src', 'director', 'stage3d.js'), { force: true });
+    fs.rmSync(path.join(dir, 'src', 'director', 'setpieces3d.js'), { force: true });   // imports three.js
   }
   fs.mkdirSync(path.join(dir, 'fonts'), { recursive: true });
   const faces = [];

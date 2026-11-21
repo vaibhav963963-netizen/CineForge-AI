@@ -110,3 +110,17 @@ scenes, three identical compositions in a row), **continuity** (period jumps, a 
 **completeness** (missing visual or reference). Errors and uncertain findings fail the `visuals` gate (never READY);
 warnings are advisory. `correctVisuals` sends only failing scenes to the model (max 4 calls), with the narration
 read-only, and keeps a new visual only if re-validation clears that scene without creating a problem elsewhere.
+
+## Image QA (Step 7) — actual pixels
+
+`dashboard/lib/imageqa.js`. **Pixel-level technical checks (implemented, FFmpeg, no model):** decode/missing,
+9:16 size, near-black / flat / blown-out (blown-out only when colour is also washed out — pastel illustrations are
+fine), blank (entropy), black borders (16×28 dark-cell grid), duplicates and repeated compositions (64-bit difference
+hash), colour-style jumps. **Pixel-level semantic checks (implemented, needs a vision model):** a vision model describes
+the image without being told the narration; the Step 6 rules then check that description against the narration,
+storyboard and fact file (wrong subject, counts, human anatomy, known errors, period, invented names/numbers), plus
+visible text/watermarks and distortion. Without a vision model every image is NEEDS_REVIEW — never approved. Gates:
+semantic, factual, accuracy (history/science), technical, continuity, overall; one critical image rejects the project.
+`correctImages` regenerates only failed images (injected generator), keeps every version and reason, max 2 attempts,
+keeps the original when nothing passes. Not yet wired into the render pipeline; the vision projector for the local
+4B model (mmproj, 851 MB) is not installed.

@@ -111,3 +111,12 @@ test('valid English commas: intro phrase, participle, relative clause, list, con
   for (const t of ['Around 1900 BCE, many cities were slowly emptied.', 'Weakening monsoon rains and droughts likely caused crop failure, leading to population movement.', 'Harappa had wide streets, which were laid out in a grid.', 'The cities had drains, granaries and baths.', 'The rains failed, and the farms dried up.', 'Archaeological sites revealed the scale of this ancient, thriving civilization.']) clean(EN, t);
 });
 test('real (Step 5 eval): an appositive with a hyphenated "-ed" adjective is not a comma splice', () => clean(EN, 'Cities like Harappa displayed a planned layout – streets and bricks, a well-organized society.'));
+
+test('real (rendered short 2026-11-19): leaked JSON fragments with numbers between quotes fail the language check', () => {
+  const EN2 = { language: { id: 'en', code: 'en', script: 'Latn', captionScript: 'Latn', name: 'English' } };
+  for (const t of ['The Moon always shows the same side to Earth.”, 13, “Because of tidal locking,”, 14', 'Long ago, the Moon rotated much faster than it does now.”, 13, “Then, Earth’s gravity began to exert its'])
+    assert.ok(checkLanguage({ lines: [{ text: t }] }, EN2).some((x) => /stray quoted fragments/.test(x)), t);
+  // real quotations and numbers in normal sentences still pass
+  for (const t of ['Kipling called it “the river of life”, and the name stuck.', 'Today we see about 59 percent of its surface, over time.', 'He said "go", and 13 ships left.'])
+    assert.deepEqual(checkLanguage({ lines: [{ text: t }] }, EN2), [], t);
+});

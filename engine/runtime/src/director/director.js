@@ -9,6 +9,7 @@ import * as lib from '../core/lib.js';
 import { makeSkin, environment2d, prop2d, figure2d, GROUND } from './painter2d.js';
 import { drawOverlay, setOverlayStyle } from './overlay.js';
 import { loadImage, stylize, drawCover, frame2d, backdropStage } from './image.js';
+import { setpiece2d, LEAD_SPOT_2D } from './setpieces2d.js';
 const { W, H, clamp, lerp, seg, eo, eio, eob, rnd } = lib;
 
 // how big each 3D environment is: scales the camera distance of shots that frame the place rather than a subject
@@ -100,8 +101,31 @@ export async function buildDirector({ scene, E, three }) {
     const trDur = style.transition.duration || 0.2;
     let drawCore;
 
+    // ── set pieces: a purpose-built animated scene of exactly what the line narrates (world + action) ──────────
+    if (method === 'setpiece' && sh.setpiece) {
+      const { world, action } = sh.setpiece;
+      if (is3d && three.setpieces) {
+        const sp = three.setpieces.setpiece3d(world, style), spCam = new THREE.PerspectiveCamera(56, cam.aspect, 0.05, 2000);
+        drawCore = (lt, d, t, blit) => {
+          const r = sh.setpiece.range || [0, 1], c = sp.set(action, lerp(r[0], r[1], clamp(lt / Math.max(0.01, d))), t);
+          spCam.position.copy(c.pos); spCam.lookAt(c.look);
+          const g = style.grade;
+          E.render(sp.scene, spCam, { bloom: g.bloom, bloomThreshold: g.bloomThreshold, aperture: 0.0006, maxblur: 0.004, focus: c.pos.distanceTo(c.look), exposure: g.exposure, vignette: g.vignette, grain: g.grain, warm: g.warm, sat: g.sat, t });
+          blit();
+        };
+      } else {
+        const spot = LEAD_SPOT_2D[world]?.[action];
+        drawCore = (lt, d, t) => {
+          const r = sh.setpiece.range || [0, 1], ctx = lib.ctx, k = lerp(r[0], r[1], clamp(lt / Math.max(0.01, d))); ctx.save();
+          camera2d({ angle: 'wide', move: camSpec.move === 'punch' ? 'push' : camSpec.move }, lt, d, [540, 960], { ...style, camera: { ...style.camera, intensity: 0.5 * (style.camera.intensity ?? 1) } }, i);
+          setpiece2d(S2, world, action, k, t);
+          if (spot && leadCast && !TEST.hideLead) figure2d(S2, { x: spot[0], y: spot[1], h: spot[2], dir: 1, colors: figColors, accessory: C.accessory, action: leadCast.action || 'point', t, talk: false });
+          ctx.restore();
+        };
+      }
+    }
     // ── 3D shots ──────────────────────────────────────────────────────────────────────────────────────────
-    if (is3d && method !== 'image' && method !== 'infographic' && !(method === 'hybrid' && !images.has(sh.id))) {
+    else if (is3d && method !== 'image' && method !== 'infographic' && !(method === 'hybrid' && !images.has(sh.id))) {
       let env;
       if (method === 'hybrid') { const tex = new THREE.CanvasTexture(images.get(sh.id)); tex.colorSpace = THREE.SRGBColorSpace; env = backdropStage(THREE, tex, style); }
       else env = stage.env(sh.environment);

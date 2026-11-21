@@ -47,6 +47,24 @@ export const SCHEMA = [
   { key: 'NOTIFY_TOAST', section: 'Notification settings', type: 'bool', default: true, aliases: [['CINEFORGE_NO_TOAST', (v) => !truthy(v)]], desc: 'Windows toast for automation warnings / errors' },
   // System Setup (diagnostics)
   { key: 'CINEFORGE_SETUP_DIR', section: 'Logging and diagnostics', type: 'path', default: '', desc: 'Override the System Setup state folder (tests only)' },
+  // Script generation (online) — never used during video production
+  { key: 'GEMINI_API_KEY', section: 'Google Gemini API (script writing)', type: 'secret', default: '', desc: 'Google Gemini API key (backend only; masked in every report, never sent to the browser)' },
+  { key: 'GEMINI_THINKING_LEVEL', section: 'Google Gemini API (script writing)', type: 'enum', values: ['default', 'minimal', 'low', 'medium', 'high'], default: 'low', desc: 'Gemini thinking level for script calls (low = ~2.5x faster; default = model default, much slower)' },
+  { key: 'GEMINI_MODEL', section: 'Google Gemini API (script writing)', type: 'string', default: 'gemini-2.5-flash', desc: 'Gemini model code used for script writing (checked against your key; a rerouted model is refused, never used silently)' },
+  { key: 'GEMINI_BASE_URL', section: 'Google Gemini API (script writing)', type: 'url', default: 'https://generativelanguage.googleapis.com/v1beta', desc: 'Gemini REST API base URL' },
+  { key: 'GROQ_API_KEY', section: 'Groq API (script writing)', type: 'secret', default: '', desc: 'Groq API key (backend only; masked in every report, never sent to the browser)' },
+  { key: 'GROQ_MODEL', section: 'Groq API (script writing)', type: 'string', default: 'openai/gpt-oss-120b', desc: 'Groq model id used for script writing (checked against your account; never switched silently)' },
+  { key: 'GROQ_BASE_URL', section: 'Groq API (script writing)', type: 'url', default: 'https://api.groq.com/openai/v1', desc: 'Groq OpenAI-compatible API base URL' },
+  { key: 'SCRIPT_GENERATION_PROVIDER', section: 'Script generation', type: 'enum', values: ['gemini', 'groq'], default: 'gemini', desc: 'Where scripts are written (online: Google Gemini or Groq). No fallback between them. Video production never needs it.' },
+  { key: 'SCRIPT_GENERATION_ENABLED', section: 'Script generation', type: 'bool', default: true, desc: 'Allow writing new scripts (saved scripts stay usable when disabled or offline)' },
+  { key: 'SCRIPT_GENERATION_TIMEOUT', section: 'Script generation', type: 'int', min: 5000, max: 600000, default: 120000, desc: 'Timeout of one Groq request (ms)' },
+  { key: 'SCRIPT_GENERATION_MODE', section: 'Script generation', type: 'enum', values: ['single-request', 'multi-pass'], default: 'single-request', desc: 'single-request = the whole script (research notes, plan, narration, storyboard) in ONE API call, then local checks; multi-pass = the older chain of separate research/plan/review/visual calls' },
+  { key: 'SCRIPT_GENERATION_MAX_RETRIES', section: 'Script generation', type: 'int', min: 0, max: 10, default: 3, desc: 'Retries of one Groq request on rate limits, network errors and timeouts' },
+  // Video production — always local and offline
+  { key: 'VIDEO_GENERATION_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'Video production runs on this computer only' },
+  { key: 'TTS_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'Kokoro TTS (local)' },
+  { key: 'IMAGE_GENERATION_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'ComfyUI + DreamShaper (local)' },
+  { key: 'VIDEO_RENDER_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'Three.js capture + FFmpeg (local)' },
 ];
 const KNOWN = new Set(SCHEMA.flatMap((s) => [s.key, ...(s.aliases || []).map((a) => (Array.isArray(a) ? a[0] : a))]));
 // variables that must never be printed (none are required in .env; listed so a user who adds one is still protected)
@@ -140,6 +158,8 @@ export function redact(text) {
     .replace(/ya29\.[\w.-]+/g, 'ya29.***')
     .replace(/\b1\/\/[\w-]{20,}/g, '1//***')
     .replace(/GOCSPX-[\w-]+/g, 'GOCSPX-***')
+    .replace(/\bgsk_[A-Za-z0-9]{8,}/g, 'gsk_***')
+    .replace(/\bAIza[0-9A-Za-z_-]{20,}/g, 'AIza***')
     .replace(/(Bearer\s+)[\w.~+/-]+=*/gi, '$1***')
     .replace(/((?:client_secret|refresh_token|access_token|api[_-]?key|password|token)["']?\s*[:=]\s*["']?)[^"'\s&,}]+/gi, '$1***');
 }
