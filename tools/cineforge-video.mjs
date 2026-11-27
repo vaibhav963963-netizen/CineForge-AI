@@ -22,6 +22,22 @@ const CONFIG = {
     sentences: ['What if you swallowed gum?', 'It stays inside your stomach.'],
     voice: 'am_michael', environment: 'a kitchen, or inside the body',
   },
+  'inside-out': {
+    sentences: ['What if you swallowed gum?', 'It goes down into your stomach.'],
+    voice: 'am_michael', environment: 'a bright room, an x-ray of the body, or inside the stomach',
+  },
+  'paper-atlas': {
+    sentences: ['In 1666, a baker left a fire burning.', 'The fire spread across the old city.'],
+    voice: 'am_michael', environment: 'a hall on parchment, a harbour, or a map of the city',
+  },
+  'stick-story': {
+    sentences: ['What if the power went out for three days?', 'You would need a plan.'],
+    voice: 'am_michael', environment: 'a living room, a kitchen, or a hallway',
+  },
+  'tall-tale': {
+    sentences: ['In 1914, a family mailed their daughter to Grandma.', 'The postman accepted her as a parcel.'],
+    voice: 'am_michael', environment: 'a sunny main street, an indoor shop with a counter, or a meadow',
+  },
   'night-file': {
     sentences: ['She walked down the dark corridor.', 'Her photo hung on the case wall.'],
     voice: 'am_onyx', environment: 'a dark apartment corridor, a dark house at night, or a case wall',
@@ -39,7 +55,8 @@ const ffmpeg = path.join(ROOT, 'runtime', 'ffmpeg', 'bin', process.platform === 
 const ffprobe = path.join(ROOT, 'runtime', 'ffmpeg', 'bin', process.platform === 'win32' ? 'ffprobe.exe' : 'ffprobe');
 const PYTHON = path.join(ROOT, 'runtime', 'python-venv', 'Scripts', process.platform === 'win32' ? 'python.exe' : 'python');
 const PAGE = '/engine/cineforge/index.html';
-const ALLOWED = ['/engine/cineforge/', '/engine/styles/deep-dive/example/', '/engine/styles/night-file/example/', '/dashboard/lib/cineforge/'];
+const ALLOWED = ['/engine/cineforge/', '/engine/styles/deep-dive/example/', '/engine/styles/night-file/example/', '/engine/styles/tall-tale/example/',
+  '/engine/styles/inside-out/example/', '/engine/styles/paper-atlas/example/', '/engine/styles/stick-story/example/', '/dashboard/lib/cineforge/'];
 
 function fail(msg) { console.error(`FAILED: ${msg}`); process.exit(1); }
 if (!findChrome()) fail('no Chrome/Edge found');

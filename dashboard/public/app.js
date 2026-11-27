@@ -16,7 +16,7 @@ async function api(path, opts = {}) {
 }
 
 // ── navigation ────────────────────────────────────────────────────────────────────────────────────────────
-const TITLES = { quality: ['AI Video Quality Inspector', 'Multimodal visual verification, temporal motion analysis, and publishing protection'], youtube: ['YouTube', 'Auto-publish and the status of every Short on YouTube'], scriptbook: ['Topic Book', 'Topics for automatic videos, taken from the top of the list'], automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
+const TITLES = { cineforge: ['CineForge', 'Visual styles: one test video per style, rendered and checked'], quality: ['AI Video Quality Inspector', 'Multimodal visual verification, temporal motion analysis, and publishing protection'], youtube: ['YouTube', 'Auto-publish and the status of every Short on YouTube'], scriptbook: ['Topic Book', 'Topics for automatic videos, taken from the top of the list'], automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
 function go(id) {
   if (!TITLES[id]) id = 'dashboard';
   if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
@@ -25,6 +25,7 @@ function go(id) {
   $('#screen-title').textContent = TITLES[id][0]; $('#screen-subtitle').textContent = TITLES[id][1];
   if (id === 'jobs') renderJobHistory(); if (id === 'library') refreshProjects();
   if (id === 'quality' && window.QualityUI) window.QualityUI.show();
+  if (id === 'cineforge' && window.CineForgeUI) window.CineForgeUI.show();
   if (id === 'setup' && window.SetupUI) window.SetupUI.show();
   if (id === 'automation' && window.AutomationUI) window.AutomationUI.show();
   if (id === 'youtube' && window.YouTubeUI) window.YouTubeUI.show();

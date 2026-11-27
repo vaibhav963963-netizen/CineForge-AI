@@ -20,6 +20,33 @@ GL.width = Math.round(W * RES); GL.height = Math.round(H * RES);
 const out = CV.getContext('2d', { willReadFrequently: true });
 const snap = document.createElement('canvas'); snap.width = W; snap.height = H; const snapCtx = snap.getContext('2d');
 
+// 2D styles (flat, cut-paper, stick figures) draw onto a plain canvas instead of the WebGL film. The camera moves are the
+// same as the 3D styles, applied as a 2D zoom and pan around the subject, so the shot grammar is identical in both.
+const MODE2D = STYLE.mode === '2d';
+const film = document.createElement('canvas'); film.width = W; film.height = H; const fctx = film.getContext('2d');
+const src = () => (MODE2D ? film : GL);
+const SIZE2D = { 'extreme-wide': 0.8, wide: 0.92, medium: 1.05, 'close-up': 1.35, 'extreme-close-up': 1.7 };
+const ANCHOR = [540, 1040];   // the point the 2D camera zooms around (the middle of the figure)
+function cam2d(shot, p) {
+  const c = cameraAt(shot.camera, p, shot.shotSize || 'medium');
+  const dist = Math.hypot(c.pos[0] - c.look[0], c.pos[1] - c.look[1], c.pos[2] - c.look[2]) || 1;
+  const zoom = (SIZE2D[shot.shotSize] || 1.05) * Math.max(0.85, Math.min(1.25, 9 / dist));   // push in = closer, pull out = wider
+  return { c, zoom, tx: -c.look[0] * 60, ty: -(c.look[1] - 1) * 60 };
+}
+function renderShot2D(t) {
+  const shot = shotAt(plan.shots, t);
+  fctx.setTransform(1, 0, 0, 1, 0, 0); fctx.globalAlpha = 1; fctx.fillStyle = '#000'; fctx.fillRect(0, 0, W, H);
+  if (!shot) return { shotId: null, set: null };
+  const p = Math.max(0, Math.min(1, (t - shot.start) / Math.max(1e-6, shot.end - shot.start)));
+  const { c, zoom, tx, ty } = cam2d(shot, p);
+  fctx.save();
+  fctx.translate(ANCHOR[0], ANCHOR[1]); fctx.scale(zoom, zoom); fctx.translate(-ANCHOR[0] + tx, -ANCHOR[1] + ty);
+  const info = STYLE.render2D(fctx, { shot, p, t, set: shot.set });
+  fctx.restore();
+  if (STYLE.lightOverlay) STYLE.lightOverlay(fctx, shot.lighting || 'sunlit', p, t);
+  return { shotId: shot.id, set: shot.set, shot, p, camera: { pos: c.pos, look: c.look, fov: c.fov }, subject: info ? { id: shot.subjectId, pos: info.pos } : null, effect: shot.effect, lighting: shot.lighting };
+}
+
 let E = null, cam = null, plan = null;
 const sets = {};            // set name → { scene, light, base, look, glow, update, kind }
 const subjects = new Map(); // identity → subject (one per identity; moved between sets)
@@ -70,6 +97,7 @@ function applyLook(S, name, subjPos) {
 
 /** render the frame at time t into the film canvas (WebGL), without the transition */
 function renderShot(t) {
+  if (MODE2D) return renderShot2D(t);
   const shot = shotAt(plan.shots, t);
   const S = getSet(shot ? shot.set : plan.shots[0].set);
   for (const e of effects.values()) e.fx.group.visible = false;
@@ -92,7 +120,7 @@ function renderShot(t) {
     camPos = [dist * off[0] / len, F.y + dist * off[1] / len, dist * off[2] / len];
   }
   cam.position.set(...camPos); cam.lookAt(...look); cam.fov = c.fov; cam.updateProjectionMatrix();
-  const subjPos = STYLE.placeSubject(subj, shot, p, t);
+  const subjPos = STYLE.placeSubject(subj, shot, p, t, cam, S);
   const L = applyLook(S, shot.lighting || 'sunlit', subjPos);
   if (!person && subj.root.userData.mat) subj.root.userData.mat.emissiveIntensity = L.glow ? 0.9 : 0.04;
   const fxRec = getEffect(shot, S);
@@ -115,17 +143,17 @@ export function drawFrame(t) {
   const into = shot ? t - shot.start : Infinity;
   const st = renderShot(t);
   out.globalAlpha = 1; out.fillStyle = '#000';
-  out.drawImage(GL, 0, 0, W, H);
+  out.drawImage(src(), 0, 0, W, H);
   if (shot && before && into < TRANSITION_S && shot.transition === 'dissolve') {
     renderShot(before.end - 1e-3);
-    snapCtx.clearRect(0, 0, W, H); snapCtx.drawImage(GL, 0, 0, W, H);
+    snapCtx.clearRect(0, 0, W, H); snapCtx.drawImage(src(), 0, 0, W, H);
     renderShot(t);
-    out.drawImage(GL, 0, 0, W, H);
+    out.drawImage(src(), 0, 0, W, H);
     out.globalAlpha = 1 - into / TRANSITION_S; out.drawImage(snap, 0, 0, W, H); out.globalAlpha = 1;
   } else if (shot && before && into < TRANSITION_S && shot.transition === 'fade-black') {
     out.globalAlpha = 1 - into / TRANSITION_S; out.fillRect(0, 0, W, H); out.globalAlpha = 1;
   }
-  if (shot && shot.caption) STYLE.drawCaption(out, shot.caption, into);
+  if (shot && shot.caption) STYLE.drawCaption(out, shot.caption, into, shot.end - shot.start);
   return st;
 }
 
@@ -163,8 +191,10 @@ export async function runAll(times, uploadUrl) {
     for (const f of STYLE.fonts) await document.fonts.load(f);   // the style's caption face (loaded by index.html)
     plan = await (await fetch('plan.json', { cache: 'no-store' })).json();
     if (plan.style && plan.style !== STYLE.id) throw new Error(`the plan is for style "${plan.style}" but the page is "${STYLE.id}"`);
-    E = STYLE.makeEngine(GL, { w: GL.width, h: GL.height, samples: 4 });
-    cam = STYLE.makeCamera(50);
+    if (!MODE2D) {
+      E = STYLE.makeEngine(GL, { w: GL.width, h: GL.height, samples: 4 });
+      cam = STYLE.makeCamera(50);
+    }
     window.OP = { ready: true, runAll, drawFrame };
     const result = await runAll(plan.times, '/frame');
     pre.textContent = JSON.stringify(result);

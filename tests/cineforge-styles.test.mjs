@@ -53,3 +53,14 @@ test('the analyzer sends the style\'s schema and prompt to the provider', async 
 test('an unknown style is an error, never a silent fallback', () => {
   assert.throws(() => setsFor('pixar'), /unknown style "pixar"/);
 });
+
+test('every style the planner can choose has a renderer module, and the renderer knows every planner style', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'cineforge', 'src', 'styles');
+  const modules = fs.readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'index.js' && f !== 'flat-fx.js').map((f) => f.replace(/\.js$/, ''));
+  for (const id of Object.keys(STYLES)) assert.ok(modules.includes(id), `renderer module for ${id} is missing`);
+  const index = fs.readFileSync(path.join(dir, 'index.js'), 'utf8');
+  for (const id of Object.keys(STYLES)) assert.match(index, new RegExp(`from '\./${id}\.js'`), `renderer ${id} is not registered`);
+});

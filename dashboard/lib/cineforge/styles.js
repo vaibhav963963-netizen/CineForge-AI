@@ -15,6 +15,42 @@ export const STYLES = {
       xray: 'inside a person\'s body',
     },
   },
+  'inside-out': {
+    label: 'Inside Out 2D',
+    sets: ['room', 'xray', 'stomach'],
+    setHelp: {
+      room: 'a flat, bright room with a simple person (everyday action, reactions, speech)',
+      xray: 'a flat x-ray view of a person\'s body with the bones and organs in cyan',
+      stomach: 'inside the stomach, flat organs and the food travelling down (the thing that goes in and moves)',
+    },
+  },
+  'paper-atlas': {
+    label: 'Paper Atlas 2D',
+    sets: ['hall', 'harbor', 'map'],
+    setHelp: {
+      hall: 'a historical hall on parchment with a figure in period dress (a merchant, a guard, a crowd)',
+      harbor: 'a harbour on parchment with a ship moving across the water',
+      map: 'a map on parchment with routes and places (where things happen)',
+    },
+  },
+  'stick-story': {
+    label: 'Stick Story 2D',
+    sets: ['living', 'kitchen', 'hallway'],
+    setHelp: {
+      living: 'a flat living room with a couch, a lamp and a window (a stick person sitting, standing or reacting)',
+      kitchen: 'a flat kitchen with a counter and a fridge (a stick person cooking, or stopped in shock)',
+      hallway: 'a flat hallway with two doors (a stick person walking down it, or stopped at a door)',
+    },
+  },
+  'tall-tale': {
+    label: 'Tall Tale 3D',
+    sets: ['street', 'interior', 'meadow'],
+    setHelp: {
+      street: 'a sunny small-town main street with shop fronts and the boardwalk (a person walking, talking, or reacting outside)',
+      interior: 'an indoor shop with a counter, warm bulbs and a sign (a person at the counter, or a clerk)',
+      meadow: 'an open meadow with a fence, trees and flowers (a person in the open, or a sunset)',
+    },
+  },
   'night-file': {
     label: 'Night File 3D',
     sets: ['corridor', 'house', 'casewall'],

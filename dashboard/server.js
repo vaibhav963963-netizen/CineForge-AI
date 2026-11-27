@@ -339,6 +339,8 @@ async function api(req, res, url) {
   }
   // ── AI Video Quality Inspector API ─────────────────────────────────────────────────────────────
   if (p === '/api/quality' || p.startsWith('/api/quality/')) return await qualityApi(req, res, url, p, method);
+  // ── CineForge (visual styles: the video renders run one at a time, in their own process) ─────────
+  if (p === '/api/cineforge' || p.startsWith('/api/cineforge/')) return await cineforgeApi(req, res, url, p, method);
   // ── automation (scheduler state lives in logs/automation/automation.db; the scheduler is a separate process) ──
   if (p === '/api/automation' || p.startsWith('/api/automation/')) return await automationApi(req, res, url, p, method);
   throw new HttpError(404, `unknown endpoint ${method} ${p}`);
@@ -496,6 +498,23 @@ async function automationApi(req, res, url, p, method) {
 }
 
 // ── Quality Gate API ─────────────────────────────────────────────────────────────────────────────
+async function cineforgeApi(req, res, url, p, method) {
+  const cf = await import('./lib/cineforge/service.js');
+  if (p === '/api/cineforge/styles' && method === 'GET') return send(res, 200, { styles: cf.listStyles() });
+  if (p === '/api/cineforge/jobs' && method === 'GET') return send(res, 200, cf.jobStatus());
+  if (p === '/api/cineforge/render' && method === 'POST') {
+    const b = await readBody(req).catch(() => ({}));
+    try { return send(res, 202, cf.startRender(b.style, { res: b.res || '1' })); }
+    catch (e) { return send(res, e.status || 500, { error: e.message }); }
+  }
+  if (p === '/api/cineforge/video' && method === 'GET') {
+    const f = cf.videoPath(url.searchParams.get('style') || '');
+    if (!f) return send(res, 404, { error: 'no rendered video for this style yet' });
+    res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': fs.statSync(f).size, 'Cache-Control': 'no-store' });
+    return fs.createReadStream(f).pipe(res);
+  }
+  return send(res, 404, { error: 'not found' });
+}
 async function qualityApi(req, res, url, p, method) {
   const inspector = getQualityInspector();
   const guard = getPublishingGuard();
