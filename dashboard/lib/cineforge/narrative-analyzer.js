@@ -7,14 +7,17 @@
 import { chat } from '../groq.js';
 import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, SETS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
 import { shotCountBounds, MIN_SHOT_S } from './shot-planner.js';
+import { STYLES, DEFAULT_STYLE, setsFor } from './styles.js';
 
 export { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, SETS };
 export const MAX_EVENTS_PER_SEGMENT = MAX_SHOTS_PER_SEGMENT;
 
-const ENUM_FIELDS = { set: SETS, motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
 const TEXT_FIELDS = ['subject', 'action', 'environment', 'startState', 'endState', 'caption'];
+const enumFields = (style) => ({ set: setsFor(style), motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS });
 
-export const EVENT_SCHEMA = {
+/** the event schema for a style: the set field allows only that style's sets */
+export function eventSchema(style = DEFAULT_STYLE) {
+  return {
   type: 'object',
   properties: {
     events: {
@@ -26,7 +29,7 @@ export const EVENT_SCHEMA = {
           subject: { type: 'string' },
           action: { type: 'string' },
           environment: { type: 'string' },
-          set: { type: 'string', enum: SETS },
+          set: { type: 'string', enum: setsFor(style) },
           startState: { type: 'string' },
           endState: { type: 'string' },
           caption: { type: 'string' },
@@ -44,34 +47,42 @@ export const EVENT_SCHEMA = {
   },
   required: ['events'],
   additionalProperties: false,
-};
+  };
+}
 
-const SYSTEM = [
-  'You are a film director breaking narration into a cinematic shot list for a documentary-style 3D animation.',
+export const EVENT_SCHEMA = eventSchema(DEFAULT_STYLE);
+
+/** the director's instructions for a style: the closed choices, and what each of the style's sets is for */
+export function systemPrompt(style = DEFAULT_STYLE) {
+  const help = STYLES[style].setHelp, setLine = Object.entries(help).map(([k, v]) => `${k} = ${v}`).join('; ');
+  return [
+  `You are a film director breaking narration into a cinematic shot list for the ${STYLES[style].label} visual style.`,
   `For each narration segment, produce ${MIN_SHOTS_PER_SEGMENT} to ${MAX_SHOTS_PER_SEGMENT} events, in order, each one a separate shot.`,
   'Break the sentence into its real physical events and staging: establish the setting, the approach, the transition or interaction,',
   'the climax or impact, and the aftermath, using only what the sentence describes. Do not invent plot.',
   'Each event has: a concrete action with a startState and an endState (what is where, moving which way, at what state), so the animation has a beginning and an end.',
   `motion: what the main subject physically does: ${MOTIONS.join(', ')}. Every event must include a real motion or an effect; do not write static-only shots.`,
-  'For a person (the kitchen and xray sets), the motion must be something the body does: rise = breathes in, fall = faints, impact = a jolt, approach or recede = turns toward or away from the camera, cross = sways. Do not use stay for a person.',
+  'For a person, the motion must be something the body does: rise = breathes in, fall = faints, impact = a jolt, approach or recede = walks or turns toward or away from the camera, cross = sways or walks across. Do not use stay for a person.',
   `camera: ${CAMERA_MOVES.join(', ')}. Choose the move that serves the event (impact → shake, reveal → crane, approach → push, orbit an object → orbit, follow → track, overview → aerial).`,
   `shotSize: ${SHOT_SIZES.join(', ')}. Vary the sizes across the shots; never use the same size twice in a row.`,
   `lighting: ${LIGHTING.join(', ')}. Use fire-glow or plasma-glow for atmospheric entry and impact, night-ambient for night scenes.`,
   `effect: ${EFFECTS.join(', ')}. Use fire-plasma for atmospheric entry, debris and shockwave for impacts, dust-cloud for aftermath; none otherwise.`,
   `transition: ${TRANSITIONS.join(', ')}, how this shot begins. Use cut by default, dissolve for a time jump, fade-black for a major change of place.`,
-  `set: the place the shot is in: ${SETS.join(', ')}. space = above or away from the planet; atmosphere = the entry layer around it; ground = the surface; kitchen = a person at home (use for everyday people and their bodies); xray = inside a person's body.`,
+  `set: the place the shot is in, one of ${Object.keys(help).join(', ')}. ${setLine}.`,
   'caption: the on-screen text for this shot, 1 to 3 words taken from the narration, with ONE key word marked by *, for example "What if you *swallowed gum?" or "*gum stays inside".',
   `Each segment may give its length in seconds and its allowed shot count (shotsMin to shotsMax). Use a number of events inside that range; every shot lasts seconds / shots, and no shot may be shorter than ${MIN_SHOT_S} second.`,
   'Keep subject and environment names identical across the shots of a segment.',
   'Return JSON only, matching the schema.',
-].join(' ');
+  ].join(' ');
+}
 
-/** Validate model output against the segments. Returns { ok, errors, events }. */
-export function validateEvents(data, segments) {
+/** Validate model output against the segments and the style's sets. Returns { ok, errors, events }. */
+export function validateEvents(data, segments, { style = DEFAULT_STYLE } = {}) {
   const errors = [];
   const ids = new Set(segments.map((s) => s.id));
   const list = Array.isArray(data?.events) ? data.events : null;
   if (!list) return { ok: false, errors: ['output has no events array'], events: [] };
+  const ENUM_FIELDS = enumFields(style);
   const perSeg = new Map();
   for (const [i, e] of list.entries()) {
     for (const k of TEXT_FIELDS) {
@@ -93,14 +104,14 @@ export function validateEvents(data, segments) {
 }
 
 /** Deterministic fallback: one event per segment, static and plain. It never invents content and is marked as fallback. */
-export function fallbackEvents(segments) {
+export function fallbackEvents(segments, { style = DEFAULT_STYLE } = {}) {
   return segments.map((s, i) => ({
     id: `E${String(i + 1).padStart(3, '0')}`,
     segmentId: s.id,
     subject: s.subject || 'narration subject',
     action: s.text,
     environment: s.environment || 'unspecified',
-    set: 'space',
+    set: setsFor(style)[0],
     startState: 'as described',
     endState: 'as described',
     caption: String(s.text || '').split(/\s+/).slice(0, 3).join(' '),
@@ -117,8 +128,9 @@ export function fallbackEvents(segments) {
  * segments: [{ id, text }]. Returns { source: 'groq'|'fallback', events, errors }.
  * chatFn is injectable for tests; production uses the Groq client.
  */
-export async function analyzeNarration(segments, { over = {}, chatFn = chat, feedback = null } = {}) {
+export async function analyzeNarration(segments, { over = {}, chatFn = chat, feedback = null, style = DEFAULT_STYLE } = {}) {
   if (!Array.isArray(segments) || !segments.length) return { source: 'fallback', events: [], errors: ['no narration segments'] };
+  const schema = eventSchema(style), system = systemPrompt(style);
   // feedback: the errors the caller found in the previous answer (e.g. a sentence with too few shots); the model fixes them
   // each sentence states its length and its allowed shot count, so the planner can budget the time (no shot under 1 s)
   const user = JSON.stringify({ segments: segments.map((s) => {
@@ -128,12 +140,12 @@ export async function analyzeNarration(segments, { over = {}, chatFn = chat, fee
     }) })
     + (feedback ? `\nThe previous answer was rejected for these reasons, so return a corrected full list: ${feedback}` : '');
   try {
-    const r = await chatFn({ messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }], schema: EVENT_SCHEMA, temperature: 0.2, maxTokens: 4096 }, over);
+    const r = await chatFn({ messages: [{ role: 'system', content: system }, { role: 'user', content: user }], schema, temperature: 0.2, maxTokens: 4096 }, over);
     const data = JSON.parse(r.text);
-    const v = validateEvents(data, segments);
+    const v = validateEvents(data, segments, { style });
     if (v.ok) return { source: 'groq', events: v.events, errors: [] };
-    return { source: 'fallback', events: fallbackEvents(segments), errors: v.errors };
+    return { source: 'fallback', events: fallbackEvents(segments, { style }), errors: v.errors };
   } catch (e) {
-    return { source: 'fallback', events: fallbackEvents(segments), errors: [`provider: ${e.message}`] };
+    return { source: 'fallback', events: fallbackEvents(segments, { style }), errors: [`provider: ${e.message}`] };
   }
 }

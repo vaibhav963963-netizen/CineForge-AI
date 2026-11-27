@@ -1,31 +1,19 @@
-// CineForge runtime on the Deep Dive 3D engine. Reads the CineForge plan (plan.json), and for each frame time:
-//   1. finds the active shot and places its subject in that shot's set. A person (kitchen, xray) is one Deep Dive Human and
-//      an object (space, atmosphere, ground) is one rock; each keeps its identity when the set changes,
-//   2. applies the shot's camera (framing and move from motion.js), lighting, effect, pose or motion, and the x-ray look,
-//   3. renders through the Deep Dive film engine (ACES, soft shadows, bloom, depth of field, vignette, grain),
-//   4. composes the transition (cut, dissolve, fade-black), draws the caption in the Deep Dive style, and measures the pixels.
-// It reports measurements only. The Deep Dive folders are imported read-only and are not changed.
+// CineForge runtime. Reads the CineForge plan (plan.json) and the visual style (?style=…), and for each frame time:
+//   1. finds the active shot and places its set and subject. A subject keeps its identity when the set changes,
+//   2. applies the shot's camera (framing and move from motion.js), lighting, effect, and the style's pose or motion,
+//   3. renders through the style's film engine (tone map, soft shadows, bloom, depth of field, vignette, grain),
+//   4. composes the transition (cut, dissolve, fade-black), draws the style's caption, and measures the composed pixels.
+// The style supplies its sets, subjects, poses, look and caption (engine/cineforge/src/styles/). The style folders it
+// imports are read-only and are not changed. It reports measurements only; it never assigns a quality score.
 import * as THREE from 'three';
-import { makeEngine, camera as makeCamera, W, H, RES, AA } from '../../styles/deep-dive/example/src/core/engine.js';
-import { cameraAt, subjectAt } from '../../../dashboard/lib/cineforge/motion.js';
-import { SET_BUILDERS, PERSON_SETS, makeAsteroid, makePerson, setPersonXray, buildEffect } from './scenes.js';
-import { drawCaption } from './captions.js';
+import { cameraAt } from '../../../dashboard/lib/cineforge/motion.js';
+import { buildEffect } from './scenes.js';
+import { getStyle } from './styles/index.js';
 
+const STYLE = getStyle(new URLSearchParams(location.search).get('style') || 'deep-dive');
+const { RES, W, H } = { RES: +(new URLSearchParams(location.search).get('res') || 1), W: 1080, H: 1920 };
 const TRANSITION_S = 0.4;
 const CHANGE_LEVEL = 16;
-// person sets: camera distance (m) and the height of the look point (m) for each shot size. A person is ~1.7 m tall.
-const PERSON_FRAME = {
-  'extreme-wide': { d: 3.6, y: 0.95 }, wide: { d: 2.9, y: 1.0 }, medium: { d: 2.1, y: 1.12 },
-  'close-up': { d: 1.3, y: 1.42 }, 'extreme-close-up': { d: 0.85, y: 1.58 },
-};
-// lighting presets: scales on the set's base lights, plus an optional coloured glow near the subject
-const LOOK = {
-  sunlit: {},
-  'backlit-rim': { rimScale: 3.0, keyScale: 1.4 },
-  'night-ambient': { keyScale: 0.35, hemiScale: 0.6 },
-  'fire-glow': { glow: { color: '#ff7a2a', I: 9 }, bloom: 0.6 },
-  'plasma-glow': { glow: { color: '#7fe9ff', I: 9 }, bloom: 0.7 },
-};
 
 const GL = document.getElementById('gl'), CV = document.getElementById('cv');
 GL.width = Math.round(W * RES); GL.height = Math.round(H * RES);
@@ -33,26 +21,22 @@ const out = CV.getContext('2d', { willReadFrequently: true });
 const snap = document.createElement('canvas'); snap.width = W; snap.height = H; const snapCtx = snap.getContext('2d');
 
 let E = null, cam = null, plan = null;
-const sets = {};            // set name → { scene, light, base, look, glow, kind }
-const subjects = new Map(); // identity → { root, kind } (a person or a rock; one per identity, moved between sets)
+const sets = {};            // set name → { scene, light, base, look, glow, update, kind }
+const subjects = new Map(); // identity → subject (one per identity; moved between sets)
 const effects = new Map();  // shotId → { set, fx }
 
 function getSet(name) {
   if (!sets[name]) {
-    const S = SET_BUILDERS[name](E);
+    const S = STYLE.buildSet(name, E);
     S.base = { key: S.light.key?.intensity ?? 1, rim: S.light.rim?.intensity ?? 0, hemi: S.light.hemi?.intensity ?? 0.5 };
     sets[name] = S;
   }
   return sets[name];
 }
-/** the subject for a shot: a person in a person set, a rock elsewhere. Same identity → same object across sets. */
+/** the subject for a shot. Same identity → same object across sets (a person stays the same person when the set changes). */
 function getSubject(shot) {
-  const person = PERSON_SETS.has(shot.set);
-  const key = `${person ? 'person' : 'object'}:${shot.subjectId}`;
-  if (!subjects.has(key)) {
-    if (person) { const h = makePerson(); subjects.set(key, { root: h.group, human: h, kind: 'person' }); }
-    else subjects.set(key, { root: makeAsteroid(shot.subjectId), kind: 'object' });
-  }
+  const key = `${STYLE.isPerson(shot.set) ? 'person' : 'object'}:${shot.subjectId}`;
+  if (!subjects.has(key)) subjects.set(key, STYLE.makeSubject(shot.set, shot.subjectId));
   return subjects.get(key);
 }
 function getEffect(shot, S) {
@@ -71,8 +55,8 @@ export function shotAt(shots, tSec) {
   return active && tSec <= active.end + 1e-9 ? active : null;
 }
 function applyLook(S, name, subjPos) {
-  const L = LOOK[name];
-  if (!L) throw new Error(`unknown lighting "${name}"`);
+  const L = STYLE.lookPresets[name];
+  if (!L) throw new Error(`unknown lighting "${name}" for style ${STYLE.id}`);
   if (S.light.key) S.light.key.intensity = S.base.key * (L.keyScale ?? 1);
   if (S.light.rim) S.light.rim.intensity = S.base.rim * (L.rimScale ?? 1);
   if (S.light.hemi) S.light.hemi.intensity = S.base.hemi * (L.hemiScale ?? 1);
@@ -84,64 +68,23 @@ function applyLook(S, name, subjPos) {
   return L;
 }
 
-const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-/** a person's pose for the shot's motion at progress p (Deep Dive pose conventions, degrees) */
-// blinking is a function of the film time, so it is the same on every render: a quick close every 3.2 s
-const BLINK_PERIOD = 3.2, BLINK_LEN = 0.16;
-function blinkAt(t) {
-  const ph = ((t % BLINK_PERIOD) + BLINK_PERIOD) % BLINK_PERIOD;
-  if (ph >= BLINK_LEN) return 0;
-  return 1 - Math.abs(ph / BLINK_LEN * 2 - 1);   // 0 → 1 → 0 across the blink
-}
-/**
- * a person's pose for the shot's motion at progress p, at film time t (Deep Dive pose conventions, degrees).
- * Gestures: hands together (approach), a wave (cross), a hand to the throat (impact), a hand on the chest (rise),
- * limp arms (fall). Eyes look toward the camera, or up at the thing they are thinking about. Blinks are added on top.
- */
-function poseHuman(h, motion, p, t = 0) {
-  h.pose({});
-  h.parts[0].scale.set(1, 1, 1);
-  const k = ease(p), blink = blinkAt(t);
-  let q;
-  switch (motion) {
-    case 'rise':     // breathes in: the chest lifts, a hand rests on the chest
-      h.parts[0].scale.set(1 + 0.03 * k, 1 + 0.012 * k, 1 + 0.08 * k);
-      q = { head: [-4 * k, 0, 0], shR: [22 * k, 0, -18 * k], elR: 85 * k, shL: [0, 0, 8], look: [0, -4 * k] }; break;
-    case 'fall':     // faints: the spine folds, the head drops, the arms go limp, the eyes close
-      q = { spine: [10 * k, 0, 0], head: [14 * k, -6 * k, 0], shL: [-10 * k, 0, 20 * k], shR: [-10 * k, 0, 20 * k], elL: 10, elR: 10, lid: 1.05 * k }; break;
-    case 'impact':   // a jolt that dies away, a hand goes to the throat, the eyes go up
-      q = { spine: [-6 * Math.exp(-p * 6) * Math.sin(p * 30), 0, 0], head: [-4 * Math.exp(-p * 5) * Math.sin(p * 28), 0, 0],
-        shR: [55 * k, 0, -22 * k], elR: 105 * k, look: [0, -14 * k] }; break;
-    case 'approach': // leans in, hands come together in front
-      q = { head: [0, -10 * k, 0], spine: [-3 * k, 0, 0], shL: [34 * k, 0, 12 * k], elL: 70 * k, shR: [34 * k, 0, -12 * k], elR: 70 * k }; break;
-    case 'recede':   q = { head: [0, 10 * k, 0] }; break;
-    case 'cross':    // turns, waves with the right hand
-      q = { head: [0, 14 * Math.sin(p * Math.PI), 0], spine: [0, 0, 6 * Math.sin(p * Math.PI)], shR: [0, 0, 62 * k], elR: 28 + 26 * Math.sin(p * 14) }; break;
-    default:         q = { head: [2 * Math.sin(p * 2), 0, 0] };   // stay: a slight idle sway
-  }
-  q.lid = Math.max(q.lid ?? 0, blink);   // blink on top of any closing of the eyes
-  h.pose(q);
-}
-
 /** render the frame at time t into the film canvas (WebGL), without the transition */
 function renderShot(t) {
   const shot = shotAt(plan.shots, t);
   const S = getSet(shot ? shot.set : plan.shots[0].set);
   for (const e of effects.values()) e.fx.group.visible = false;
+  if (S.update) S.update(t);                    // a set's own motion (a flickering lamp, a moving door)
   if (!shot) { E.render(S.scene, cam, {}); return { shotId: null, set: S.kind }; }
   const subj = getSubject(shot);
   S.scene.add(subj.root);                       // moves the object into this set (Object3D.add removes it from the old set)
   const p = Math.max(0, Math.min(1, (t - shot.start) / Math.max(1e-6, shot.end - shot.start)));
   const person = subj.kind === 'person';
-  // the framing and camera move come from motion.js; person sets bring the camera in to the person's scale
   const c = cameraAt(shot.camera, p, shot.shotSize || 'medium');
-  // person sets: the look target stays on the person's centre and the camera moves around it (a track is a sideways move
-  // around the person, not a pan away from them); the offset from the centre is scaled to the person's size
   // person framing: the shot size sets the distance and the height of the look point (a close-up holds the head and
   // shoulders); the camera move (push, track, orbit, crane) changes the direction and the distance around that frame
   let look = c.look, camPos = c.pos;
   if (person) {
-    const F = PERSON_FRAME[shot.shotSize] || PERSON_FRAME.medium;
+    const F = STYLE.personFrame[shot.shotSize] || STYLE.personFrame.medium;
     look = [0, F.y, 0];
     const off = [c.pos[0] - c.look[0], c.pos[1] - c.look[1], c.pos[2] - c.look[2]];
     const len = Math.hypot(...off) || 1;
@@ -149,28 +92,18 @@ function renderShot(t) {
     camPos = [dist * off[0] / len, F.y + dist * off[1] / len, dist * off[2] / len];
   }
   cam.position.set(...camPos); cam.lookAt(...look); cam.fov = c.fov; cam.updateProjectionMatrix();
-  let subjPos;
-  if (person) {
-    setPersonXray(subj.human, shot.set === 'xray');
-    poseHuman(subj.human, shot.motion, p, t);
-    subjPos = [0, 1, 0];
-    subj.root.position.set(0, 0, 0);
-  } else {
-    const st = subjectAt(shot.motion, p);
-    subj.root.position.set(...st.pos); subj.root.rotation.set(...st.rot);
-    subjPos = st.pos;
-    subj.root.userData.mat.emissiveIntensity = 0.04;
-  }
+  const subjPos = STYLE.placeSubject(subj, shot, p, t);
   const L = applyLook(S, shot.lighting || 'sunlit', subjPos);
-  if (!person && L.glow) subj.root.userData.mat.emissiveIntensity = 0.9;
+  if (!person && subj.root.userData.mat) subj.root.userData.mat.emissiveIntensity = L.glow ? 0.9 : 0.04;
   const fxRec = getEffect(shot, S);
   if (fxRec) { fxRec.fx.group.visible = true; fxRec.fx.update(p, subjPos); }
   const dist = Math.hypot(camPos[0] - subjPos[0], camPos[1] - subjPos[1], camPos[2] - subjPos[2]);
   const close = shot.shotSize === 'close-up' || shot.shotSize === 'extreme-close-up';
-  const sl = S.look || {};
+  const film = STYLE.film, sl = S.look || {};
   E.render(S.scene, cam, {
-    bloom: L.bloom ?? sl.bloom ?? 0.3, bloomThreshold: sl.bloomThreshold ?? 0.85, focus: dist,
-    aperture: close ? 0.004 : (sl.aperture ?? 0.0015), maxblur: 0.01, vignette: sl.vignette ?? 0.35, grain: 0.025, warm: 0.03,
+    bloom: L.bloom ?? sl.bloom ?? 0.3, bloomThreshold: sl.bloomThreshold ?? film.bloomThreshold, focus: dist,
+    aperture: close ? film.apertureClose : (sl.aperture ?? film.aperture), maxblur: film.maxblur,
+    vignette: sl.vignette ?? film.vignette, grain: film.grain, warm: film.warm,
   });
   return { shotId: shot.id, set: shot.set, shot, p, camera: { pos: camPos, look, fov: c.fov }, subject: { id: shot.subjectId, pos: subjPos }, effect: shot.effect, lighting: shot.lighting };
 }
@@ -192,7 +125,7 @@ export function drawFrame(t) {
   } else if (shot && before && into < TRANSITION_S && shot.transition === 'fade-black') {
     out.globalAlpha = 1 - into / TRANSITION_S; out.fillRect(0, 0, W, H); out.globalAlpha = 1;
   }
-  if (shot && shot.caption) drawCaption(out, shot.caption, into);
+  if (shot && shot.caption) STYLE.drawCaption(out, shot.caption, into);
   return st;
 }
 
@@ -227,10 +160,11 @@ export async function runAll(times, uploadUrl) {
 (async () => {
   const pre = document.getElementById('out');
   try {
-    await document.fonts.load('900 100px Inter');   // the Deep Dive caption face (loaded from the Deep Dive fonts folder)
+    for (const f of STYLE.fonts) await document.fonts.load(f);   // the style's caption face (loaded by index.html)
     plan = await (await fetch('plan.json', { cache: 'no-store' })).json();
-    E = makeEngine(GL, { w: GL.width, h: GL.height, samples: AA });
-    cam = makeCamera(50);
+    if (plan.style && plan.style !== STYLE.id) throw new Error(`the plan is for style "${plan.style}" but the page is "${STYLE.id}"`);
+    E = STYLE.makeEngine(GL, { w: GL.width, h: GL.height, samples: 4 });
+    cam = STYLE.makeCamera(50);
     window.OP = { ready: true, runAll, drawFrame };
     const result = await runAll(plan.times, '/frame');
     pre.textContent = JSON.stringify(result);

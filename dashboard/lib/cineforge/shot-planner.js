@@ -2,7 +2,8 @@
 // Each narration segment (one sentence) has its real time window from the word timestamps. Its events are shots, split
 // evenly across the window. Nothing is clamped silently: a shot shorter than MIN_SHOT_S, or a sentence with too few or
 // too many shots for its length, is reported by validateShots.
-import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, SETS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
+import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
+import { setsFor, DEFAULT_STYLE } from './styles.js';
 
 export const MIN_SHOT_S = 1.0;
 export const TIME_TOLERANCE_S = 0.01;
@@ -66,9 +67,9 @@ export function shotCountBounds(spanSeconds) {
  * Checks the plan. Returns { ok, errors, warnings }. Problems are reported, never repaired silently.
  * segments: [{ id, start, end }] — needed for the per-sentence shot counts and coverage checks.
  */
-export function validateShots(shots, segments) {
+export function validateShots(shots, segments, { style = DEFAULT_STYLE } = {}) {
   const errors = [], warnings = [];
-  const enums = { set: SETS, motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
+  const enums = { set: setsFor(style), motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
   for (const s of shots) {
     if (s.duration < MIN_SHOT_S - TIME_TOLERANCE_S) errors.push(`${s.id}: ${s.duration}s is shorter than ${MIN_SHOT_S}s`);
     for (const [k, allowed] of Object.entries(enums)) {
