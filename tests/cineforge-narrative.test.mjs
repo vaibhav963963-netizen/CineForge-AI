@@ -1,7 +1,7 @@
 // CineForge stage 1: narration → events. No network: the provider is injected.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeNarration, validateEvents, fallbackEvents, EVENT_SCHEMA, MAX_EVENTS_PER_SEGMENT } from '../dashboard/lib/cineforge/narrative-analyzer.js';
+import { analyzeNarration, validateEvents, fallbackEvents, EVENT_SCHEMA, MAX_EVENTS_PER_SEGMENT, CAMERA_MOVES, MOTIONS } from '../dashboard/lib/cineforge/narrative-analyzer.js';
 
 const SEGS = [
   { id: 'S1', text: 'The asteroid approached Earth, entered its atmosphere, and collided with the surface.', subject: 'asteroid', environment: 'space' },
@@ -9,13 +9,24 @@ const SEGS = [
 ];
 const GOOD = {
   events: [
-    { segmentId: 'S1', subject: 'asteroid', action: 'approaches Earth', environment: 'space', camera: 'wide establishing' },
-    { segmentId: 'S1', subject: 'asteroid', action: 'enters the atmosphere', environment: 'upper atmosphere', camera: 'slow push-in' },
-    { segmentId: 'S1', subject: 'asteroid', action: 'impacts the surface', environment: 'surface', camera: 'impact close-up' },
-    { segmentId: 'S2', subject: 'dust', action: 'rises over the crater', environment: 'surface', camera: 'low medium' },
+    { segmentId: 'S1', subject: 'asteroid', action: 'approaches Earth', environment: 'space', motion: 'approach', camera: 'static' },
+    { segmentId: 'S1', subject: 'asteroid', action: 'enters the atmosphere', environment: 'upper atmosphere', motion: 'approach', camera: 'push' },
+    { segmentId: 'S1', subject: 'asteroid', action: 'impacts the surface', environment: 'surface', motion: 'impact', camera: 'shake' },
+    { segmentId: 'S2', subject: 'dust', action: 'rises over the crater', environment: 'surface', motion: 'rise', camera: 'crane' },
   ],
 };
 const replyWith = (obj) => async () => ({ text: JSON.stringify(obj) });
+
+test('camera and motion are closed enums in the schema and rejected when outside them', () => {
+  const ev = EVENT_SCHEMA.properties.events.items.properties;
+  assert.deepEqual(ev.camera.enum, CAMERA_MOVES);
+  assert.deepEqual(ev.motion.enum, MOTIONS);
+  const bad = { events: [{ segmentId: 'S2', subject: 'a', action: 'b', environment: 'c', motion: 'teleport', camera: 'wide establishing' }] };
+  const v = validateEvents(bad, SEGS);
+  assert.equal(v.ok, false);
+  assert.ok(v.errors.some((m) => /motion "teleport"/.test(m)));
+  assert.ok(v.errors.some((m) => /camera "wide establishing"/.test(m)));
+});
 
 test('schema is strict: every field required, no extra properties', () => {
   assert.equal(EVENT_SCHEMA.additionalProperties, false);

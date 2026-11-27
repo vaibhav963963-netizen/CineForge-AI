@@ -1,11 +1,14 @@
 // CineForge stage 1: narration → visual EVENTS (not one visual per line).
 // A narration segment can produce several events; a short segment can produce one. Events are produced by the
 // script-model provider (Groq, per the provider decision) under a strict JSON schema, then validated here.
+// camera and motion are CLOSED enums so later stages never need to guess from free text.
 // If the provider fails or its output does not validate, the analyzer falls back to one event per segment and says so.
-// This module is new and additive: nothing in the current storyboard pipeline calls it unless CINEFORGE_ENABLED is on.
+// This module is additive: nothing in the current storyboard pipeline calls it unless CINEFORGE_ENABLED is on.
 import { chat } from '../groq.js';
 
 export const MAX_EVENTS_PER_SEGMENT = 6;
+export const CAMERA_MOVES = ['static', 'push', 'pull', 'orbit', 'track', 'crane', 'shake'];
+export const MOTIONS = ['stay', 'approach', 'recede', 'cross', 'rise', 'fall', 'impact'];
 
 export const EVENT_SCHEMA = {
   type: 'object',
@@ -19,9 +22,10 @@ export const EVENT_SCHEMA = {
           subject: { type: 'string' },
           action: { type: 'string' },
           environment: { type: 'string' },
-          camera: { type: 'string' },
+          motion: { type: 'string', enum: MOTIONS },
+          camera: { type: 'string', enum: CAMERA_MOVES },
         },
-        required: ['segmentId', 'subject', 'action', 'environment', 'camera'],
+        required: ['segmentId', 'subject', 'action', 'environment', 'motion', 'camera'],
         additionalProperties: false,
       },
     },
@@ -34,8 +38,9 @@ const SYSTEM = [
   'You are a film director planning visual events for a short animated video.',
   'Read each narration segment and list every distinct visual event it describes, in order.',
   'One segment can contain several events (for example approach, entry, impact). A short segment can contain one.',
-  'Use only what the narration describes; do not invent events. Keep subject and environment names consistent across segments.',
-  'camera: one short phrase, such as "wide establishing", "slow push-in", "orbit", "impact close-up".',
+  'Use only what the narration describes; do not invent events. Keep subject and environment names identical across segments.',
+  `motion: what the main subject physically does, one of ${MOTIONS.join(', ')}.`,
+  `camera: one of ${CAMERA_MOVES.join(', ')}; choose the move that serves the event (impact → shake, reveal → crane, approach → push).`,
   'Return JSON only, matching the schema.',
 ].join(' ');
 
@@ -47,9 +52,11 @@ export function validateEvents(data, segments) {
   if (!list) return { ok: false, errors: ['output has no events array'], events: [] };
   const perSeg = new Map();
   for (const [i, e] of list.entries()) {
-    for (const k of ['segmentId', 'subject', 'action', 'environment', 'camera']) {
+    for (const k of ['segmentId', 'subject', 'action', 'environment']) {
       if (typeof e[k] !== 'string' || !e[k].trim()) errors.push(`event ${i}: ${k} is empty`);
     }
+    if (!MOTIONS.includes(e.motion)) errors.push(`event ${i}: motion "${e.motion}" is not allowed`);
+    if (!CAMERA_MOVES.includes(e.camera)) errors.push(`event ${i}: camera "${e.camera}" is not allowed`);
     if (!ids.has(e.segmentId)) errors.push(`event ${i}: unknown segmentId "${e.segmentId}"`);
     perSeg.set(e.segmentId, (perSeg.get(e.segmentId) || 0) + 1);
   }
@@ -62,7 +69,7 @@ export function validateEvents(data, segments) {
   return { ok: errors.length === 0, errors, events };
 }
 
-/** Deterministic fallback: one event per segment. Never invents content; marked as fallback. */
+/** Deterministic fallback: one event per segment, no motion, static camera. Never invents content; marked as fallback. */
 export function fallbackEvents(segments) {
   return segments.map((s, i) => ({
     id: `E${String(i + 1).padStart(3, '0')}`,
@@ -70,7 +77,8 @@ export function fallbackEvents(segments) {
     subject: s.subject || 'narration subject',
     action: s.text,
     environment: s.environment || 'unspecified',
-    camera: 'medium',
+    motion: 'stay',
+    camera: 'static',
   }));
 }
 
