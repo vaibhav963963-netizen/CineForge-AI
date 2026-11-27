@@ -412,6 +412,13 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     if (qgReport.status !== 'PASS') {
       report.approval.decision = qgReport.status === 'REVIEW' ? 'NEEDS_REVIEW' : 'REJECTED';
       report.approval.reasons.push(...(qgReport.reasons || []));
+    } else if (report.approval.decision !== 'REJECTED') {
+      // The AI Quality Gate looks at what is actually in the picture (vision model). Its PASS is the content check that
+      // the pixel-only step cannot do, so the placeholder "image content not inspected" no longer blocks approval.
+      // Any other review reason (e.g. the script is not READY) still holds the render for review.
+      report.imageContent = { ...report.imageContent, inspected: true, method: 'AI Quality Gate (vision model) on the rendered video' };
+      report.approval.reasons = report.approval.reasons.filter((r) => r !== 'image content not inspected');
+      report.approval.decision = report.approval.reasons.length ? 'NEEDS_REVIEW' : 'APPROVED';
     }
   } catch (e) {
     job.warn(`Quality Gate inspection error: ${e.message}`);
@@ -424,7 +431,7 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
   fs.copyFileSync(final, exp);
   const expInfo = await ffprobe(job, 'qa', exp);
   if (expInfo.size !== info.size || Math.abs(expInfo.duration - info.duration) > 0.01) throw new Error('export copy does not match the rendered file');
-  const result = { approval: report.approval, imageContentInspected: false, projectId, exportPath: rel(exp), exportAbsolutePath: exp, renderPath: rel(final), durationSeconds: +info.duration.toFixed(2), targetSeconds: T, withinTolerance: checks.duration_within_tolerance, width: info.width, height: info.height, fps: info.fps, sizeMB: +(info.size / 1048576).toFixed(2), qa: report.status, videoUrl: `/media/exports/${outName}` };
+  const result = { approval: report.approval, imageContentInspected: report.imageContent?.inspected === true, projectId, exportPath: rel(exp), exportAbsolutePath: exp, renderPath: rel(final), durationSeconds: +info.duration.toFixed(2), targetSeconds: T, withinTolerance: checks.duration_within_tolerance, width: info.width, height: info.height, fps: info.fps, sizeMB: +(info.size / 1048576).toFixed(2), qa: report.status, videoUrl: `/media/exports/${outName}` };
   rec((p) => {
     p.status = 'rendered'; p.exportPath = result.exportPath; p.qa = { status: report.status, checks, failed, approval: report.approval, imageContent: report.imageContent, imageTechnical: { checked: report.imageTechnical.checked, errors: report.imageTechnical.errors.length, review: report.imageTechnical.review.length }, scriptStatus: report.scriptStatus, report: rel(path.join(dir, 'review', 'qa_report.json')) };
     p.render = { ...(p.render || {}), jobId: job.id, finishedAt: new Date().toISOString(), durationSeconds: result.durationSeconds, targetSeconds: T, withinTolerance: result.withinTolerance, frames: cap.frames, captureSeconds: cap.seconds, file: result.renderPath, exportPath: result.exportPath, scriptVersion: version, storyboardVersion: sbVersion };

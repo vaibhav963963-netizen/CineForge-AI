@@ -116,4 +116,6 @@ test('render report: image technical checks never stand in for image content; ap
   assert.match(src, /decision: \(critical\.length \|\| visualCritical\.length\) \? 'REJECTED' : review\.length \? 'NEEDS_REVIEW' : 'APPROVED'/);
   assert.match(src, /script v\$\{version\} is \$\{report\.scriptStatus\}/);
   assert.ok(!/Video ready:/.test(src), 'the job no longer reports a plain "Video ready"');
+  // the AI Quality Gate's PASS is the content check: it clears the placeholder, and only then can a render be APPROVED
+  assert.match(src, /qgReport\.status !== 'PASS'[\s\S]*?else if \(report\.approval\.decision !== 'REJECTED'\)[\s\S]*?filter\(\(r\) => r !== 'image content not inspected'\)/);
 });
