@@ -50,6 +50,12 @@ export class Engine {
           updateRun(this.db, r.id, { status: 'waiting_retry', next_attempt_at: nowIso(this.clock), last_error: 'emergency stop' }, this.clock);
           this.log('warn', `Emergency stop: run ${r.id} halted at stage "${r.stage}"; it resumes from its last checkpoint after "resume"`, r.id);
         }
+      } else if (cmd === 'publish' && arg) {
+        const r = getRun(this.db, arg);
+        if (r && ['awaiting_publish', 'queued', 'failed', 'waiting_retry'].includes(r.status)) {
+          updateRun(this.db, r.id, { status: 'queued', stage: 'upload', attempt: 0, next_attempt_at: nowIso(this.clock), failure_class: null }, this.clock);
+          this.log('info', `Run ${r.id} queued for upload/publish`, r.id);
+        }
       } else if (cmd === 'requeue' && arg) {
         const r = getRun(this.db, arg);
         if (r && ['dead', 'failed', 'cancelled', 'waiting_retry'].includes(r.status)) {
@@ -172,7 +178,7 @@ export class Engine {
         this.log('info', 'Video verified and ready; publish mode is manual — waiting for you', run.id);
         return { stage, result: 'awaiting manual publish' };
       }
-      if (stage === 'upload' && s.publishMode === 'scheduled-public' && !run.publish_at) updateRun(this.db, run.id, { publish_at: this.publishSlot(s, run) }, this.clock);
+      if (s.publishMode === 'scheduled-public' && !run.publish_at) updateRun(this.db, run.id, { publish_at: this.publishSlot(s, run) }, this.clock);
       const fresh = getRun(this.db, run.id);
       const out = (await this.executor[stage](fresh, { settings: s, checkpoints: cps, clock: this.clock, log: (m) => this.log('info', m, run.id) })) || {};
       if (out.fields) updateRun(this.db, run.id, out.fields, this.clock);

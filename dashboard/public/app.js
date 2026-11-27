@@ -6,7 +6,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random());
 const store = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const S = { catalog: null, system: null, projects: [], trends: [], preview: null, script: null, job: null, es: null, poll: null, shown: 0, target: 0, raf: null, submitting: false, validateTimer: null, lastValid: null };
+const S = { catalog: null, system: null, projects: [], preview: null, script: null, job: null, es: null, poll: null, shown: 0, target: 0, raf: null, submitting: false, validateTimer: null, lastValid: null };
 
 async function api(path, opts = {}) {
   const r = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
@@ -16,7 +16,7 @@ async function api(path, opts = {}) {
 }
 
 // ── navigation ────────────────────────────────────────────────────────────────────────────────────────────
-const TITLES = { scriptbook: ['Script Book', 'Write scripts online (Groq), save them, and make videos offline'], automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], trends: ['Topic Ideas', 'Starting points with supported options'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
+const TITLES = { quality: ['AI Video Quality Inspector', 'Multimodal visual verification, temporal motion analysis, and publishing protection'], youtube: ['YouTube', 'Auto-publish and the status of every Short on YouTube'], scriptbook: ['Topic Book', 'Topics for automatic videos, taken from the top of the list'], automation: ['Automation', 'Unattended production, recovery and publishing'], dashboard: ['Studio Dashboard', 'Overview of your local Shorts pipeline'], create: ['Create a Short', 'Validated options → script → narration → storyboard → scenes → MP4'], scripts: ['Script Studio', 'Review, edit and approve the exact script that will be rendered'], characters: ['Characters', 'Registered lead characters'], voices: ['Voices', 'Installed Kokoro voices by language'], library: ['Video Library', 'Exported videos and the settings used to make them'], jobs: ['Job History', 'Every job, with real stage timings'], settings: ['Engines & Paths', 'What is installed and where the studio reads and writes'], setup: ['System Setup', 'Scan this PC, install dependencies and AI models, verify the environment'] };
 function go(id) {
   if (!TITLES[id]) id = 'dashboard';
   if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
@@ -24,9 +24,12 @@ function go(id) {
   $$('.screen').forEach((s) => s.classList.toggle('active', s.id === `screen-${id}`));
   $('#screen-title').textContent = TITLES[id][0]; $('#screen-subtitle').textContent = TITLES[id][1];
   if (id === 'jobs') renderJobHistory(); if (id === 'library') refreshProjects();
+  if (id === 'quality' && window.QualityUI) window.QualityUI.show();
   if (id === 'setup' && window.SetupUI) window.SetupUI.show();
   if (id === 'automation' && window.AutomationUI) window.AutomationUI.show();
+  if (id === 'youtube' && window.YouTubeUI) window.YouTubeUI.show();
   if (id === 'scriptbook' && window.ScriptBookUI) window.ScriptBookUI.show();
+  if (id === 'dashboard') { loadOverview(); loadYouTubeViews(); }
 }
 
 // ── form ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -227,7 +230,8 @@ function onJob(j) {
   S.target = j.progress;   // the display animates toward this and never past it
   if (['completed', 'failed', 'cancelled'].includes(j.status)) S.shown = j.progress;   // finished: show the final value as-is
   animateBar();
-  $('#job-title').textContent = `${j.kind === 'script' ? 'Script preview' : 'Video render'} · ${j.title}`;
+  const o = j.origin && j.origin.source === 'automation' ? j.origin : null;
+  $('#job-title').textContent = `${j.kind === 'script' ? 'Script preview' : 'Video render'} · ${j.title}${o ? ` · AUTOMATIC: ${o.style} · ${o.personality} · ${o.voice} · ${o.language} · ${o.durationSeconds}s` : ''}`;
   $('#job-message').textContent = j.message;
   $('#job-pulse').className = 'pulse-indicator ' + j.status;
   $('#job-meta').innerHTML = `<span>Status <b class="st-${j.status}">${j.status}</b></span><span>Stage <b>${esc(j.currentStageName || '–')}</b>${j.stageProgress != null ? ` · ${j.stageProgress}%` : j.status === 'running' ? ' · <i>measuring…</i>' : ''}</span><span>Elapsed <b>${fmtT(j.elapsedSeconds)}</b></span><span>Remaining <b>${j.estimatedRemainingSeconds != null ? '≈' + fmtT(j.estimatedRemainingSeconds) : 'not enough data yet'}</b></span><span>Job <code>${j.jobId}</code></span>`;
@@ -401,10 +405,230 @@ function renderLibrary() {
     <div class="video-info-box"><h4>${esc(p.title)}</h4><div class="video-meta-row"><span class="badge-count">${esc(p.status)}</span><span>${p.legacy ? 'legacy' : esc(p.id)}</span></div>${settingsSummary(p)}
     <div class="form-actions">${p.hasVideo ? `<button class="btn btn-primary btn-sm" data-play="${p.id}">Watch</button>` : ''}${!p.legacy && p.config ? `<button class="btn btn-secondary btn-sm" data-reuse="${p.id}">Reuse settings</button>` : ''}${!p.legacy && p.script?.versions?.length ? `<button class="btn btn-secondary btn-sm" data-openscript="${p.id}">Script</button>` : ''}<button class="btn btn-danger btn-sm" data-delete-project="${esc(p.id)}" title="Permanently delete this short and its video">Delete</button></div></div></div>`).join('') : '<div class="empty-state">No projects yet.</div>';
 }
-function renderDashboard() {
-  $('#stat-total-videos').textContent = S.projects.filter((p) => p.hasVideo).length; $('#stat-projects').textContent = S.projects.length;
-  $('#dashboard-recent-projects').innerHTML = S.projects.slice(0, 5).map((p) => `<div class="project-card"><div class="proj-left">${p.coverUrl ? `<img src="${p.coverUrl}" class="proj-thumb" alt="">` : '<div class="proj-thumb"></div>'}<div class="proj-info"><h4>${esc(p.title)}</h4><div class="proj-meta">${p.legacy ? 'legacy · settings not recorded' : `${esc(p.config?.language.name)} · ${esc(p.config?.visual.styleName)} · ${p.render?.durationSeconds ? p.render.durationSeconds + ' s' : esc(p.status)}`}</div></div></div><div class="proj-right">${p.hasVideo ? `<button class="btn btn-secondary btn-sm" data-play="${p.id}">▶</button>` : `<span class="badge-count">${esc(p.status)}</span>`}</div></div>`).join('') || '<div class="empty-state">No projects yet.</div>';
+// ── dashboard: live. Every number comes from /api/overview (polled every 5 s); YouTube views every 60 s ──────────
+const nf = (n) => (n == null || !Number.isFinite(n) ? '–' : Number(n).toLocaleString('en-IN'));
+const dur = (s) => (s == null || !Number.isFinite(s) ? '–' : s < 60 ? `${Math.round(s)} s` : `${Math.floor(s / 60)} min ${Math.round(s % 60)} s`);
+const when = (iso) => (iso ? new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) : '–');
+const clock = (iso) => (iso ? new Date(iso).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '–');
+const dayLabel = (d) => new Date(`${d}T12:00:00+05:30`).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' });
+const shorten = (s, n) => (String(s || '').length > n ? `${String(s).slice(0, n - 1)}…` : String(s || ''));
+const STATUS_VIEW = {
+  published: ['Published', 'good', '✓'], scheduled: ['Scheduled', 'info', '◷'], queued: ['Queued', 'muted', '•'],
+  running: ['Making', 'warn', '▶'], waiting_retry: ['Retrying', 'warn', '↻'], awaiting_publish: ['Awaiting upload', 'warn', '◷'],
+  failed: ['Failed', 'critical', '✖'], dead: ['Failed', 'critical', '✖'], cancelled: ['Cancelled', 'muted', '–'],
+};
+const chip = (st) => { const [label, tone, icon] = STATUS_VIEW[st] || [st || '–', 'muted', '•']; return `<span class="dash-chip tone-${tone}"><span aria-hidden="true">${icon}</span>${esc(label)}</span>`; };
+// a run with a YouTube link is published (or scheduled, while its publish time is still ahead)
+const phaseOf = (r) => (r.youtubeUrl ? (r.publishAt && Date.parse(r.publishAt) > Date.now() ? 'scheduled' : 'published') : r.status);
+
+// axis top and tick step: 4 even steps, whole numbers, always above the largest value
+function niceAxis(max) {
+  const raw = Math.max(1, max) / 4, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = Math.max(1, Math.ceil(raw / mag) * mag);
+  return { step, top: step * 4 };
 }
+
+// line chart: gridlines, axis labels, one soft area under the first series, a hover column per point with a guide line
+function lineChart({ labels, series, fmtX = (l) => l, aria }) {
+  const W = 760, H = 270, L = 42, R = 84, T = 14, B = 30, iw = W - L - R, ih = H - T - B;
+  const max = Math.max(0, ...series.flatMap((s) => s.values));
+  const { step, top } = niceAxis(max);
+  const n = labels.length, x = (i) => (n === 1 ? L + iw / 2 : L + (iw * i) / (n - 1)), y = (v) => T + ih - (v / top) * ih;
+  let g = '';
+  for (let k = 0; k <= 4; k++) {
+    const tv = step * k;
+    g += `<line class="${k ? 'viz-grid' : 'viz-baseline'}" x1="${L}" x2="${W - R}" y1="${y(tv).toFixed(1)}" y2="${y(tv).toFixed(1)}"/>`;
+    g += `<text class="viz-tick" x="${L - 8}" y="${(y(tv) + 4).toFixed(1)}" text-anchor="end">${tv}</text>`;
+  }
+  const every = Math.max(1, Math.ceil(n / 7));
+  labels.forEach((l, i) => { if (i % every === 0 || i === n - 1) g += `<text class="viz-tick" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${esc(fmtX(l))}</text>`; });
+  series.forEach((s, si) => {
+    const pts = s.values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    if (si === 0 && !s.dashed && n > 1) g += `<polygon class="viz-area" points="${x(0).toFixed(1)},${y(0).toFixed(1)} ${pts} ${x(n - 1).toFixed(1)},${y(0).toFixed(1)}" style="fill:${s.color}"/>`;
+    g += `<polyline class="viz-line${s.dashed ? ' viz-dashed' : ''}" points="${pts}" style="stroke:${s.color}"/>`;
+    if (!s.dashed) s.values.forEach((v, i) => { g += `<circle class="viz-dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" style="fill:${s.color}"/>`; });
+    const lv = s.values[n - 1];
+    if (lv != null) g += `<text class="viz-end" x="${(x(n - 1) + 10).toFixed(1)}" y="${(y(lv) + 4).toFixed(1)}"><tspan class="viz-swatch" style="fill:${s.color}">●</tspan> ${esc(s.name)} ${nf(lv)}</text>`;
+  });
+  const colW = n > 1 ? iw / (n - 1) : iw;
+  labels.forEach((l, i) => {
+    const tip = `${fmtX(l)} — ${series.map((s) => `${s.name}: ${nf(s.values[i])}`).join(' · ')}`;
+    g += `<g class="viz-col"><line class="viz-guide" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${T}" y2="${T + ih}"/><rect x="${(x(i) - colW / 2).toFixed(1)}" y="${T}" width="${colW.toFixed(1)}" height="${ih}" fill="transparent" data-tip="${esc(tip)}"/></g>`;
+  });
+  return `<svg class="viz-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}">${g}</svg>`;
+}
+
+// horizontal grouped bars: one row per item, one bar per series, a value at each bar's end
+function hBars({ rows, series, fmt, aria }) {
+  const W = 760, LW = 250, RW = 70, rowH = 34, pad = 22;
+  const max = Math.max(1, ...rows.flatMap((r) => r.values.map((v) => v || 0)));
+  const { step, top } = niceAxis(max), iw = W - LW - RW, H = rows.length * rowH + pad + 8;
+  let g = '';
+  for (let k = 0; k <= 4; k++) {
+    const xx = LW + (iw * k) / 4;
+    g += `<line class="${k ? 'viz-grid' : 'viz-baseline'}" x1="${xx.toFixed(1)}" x2="${xx.toFixed(1)}" y1="4" y2="${H - pad}"/><text class="viz-tick" x="${xx.toFixed(1)}" y="${H - 6}" text-anchor="middle">${fmt(step * k)}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const y0 = 6 + i * rowH, bh = (rowH - 10) / series.length - 2;
+    g += `<text class="viz-tick viz-rowlabel" x="${LW - 10}" y="${(y0 + rowH / 2 + 4).toFixed(1)}" text-anchor="end">${esc(shorten(r.label, 34))}</text>`;
+    r.values.forEach((v, j) => {
+      if (v == null) return;
+      const w = Math.max(2, (v / top) * iw), yy = y0 + 2 + j * (bh + 2);
+      g += `<rect x="${LW}" y="${yy.toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" style="fill:${series[j].color}" data-tip="${esc(`${r.label} · ${series[j].name}: ${fmt(v)}`)}"/>`;
+      g += `<text class="viz-value" x="${(LW + w + 6).toFixed(1)}" y="${(yy + bh / 2 + 4).toFixed(1)}">${fmt(v)}</text>`;
+    });
+  });
+  return `<svg class="viz-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}">${g}</svg>`;
+}
+
+// one whole split into parts: a single segmented bar with a labelled legend underneath
+function segmentBar(parts, total) {
+  const live = parts.filter((p) => p.n > 0);
+  const bar = total
+    ? `<div class="viz-seg" role="img" aria-label="${esc(parts.map((p) => `${p.label} ${p.n}`).join(', '))}">${live.map((p) => `<span class="viz-seg-part tone-${p.tone}" style="flex:${p.n} 1 0" data-tip="${esc(`${p.label}: ${nf(p.n)} of ${nf(total)} runs`)}"><span class="viz-seg-n">${nf(p.n)}</span></span>`).join('')}</div>`
+    : '<div class="viz-seg viz-seg-empty">No runs yet</div>';
+  const legend = parts.map((p) => `<div class="viz-row"><span class="viz-icon tone-${p.tone}" aria-hidden="true">${p.icon}</span><span>${esc(p.label)}</span><span class="viz-row-value">${nf(p.n)}</span><span class="muted">${total ? `${Math.round((p.n / total) * 100)}%` : ''}</span></div>`).join('');
+  return `${bar}<div class="viz-legend-rows">${legend}</div>`;
+}
+
+function renderKpis() {
+  const el = $('#dash-kpis'), o = S.overview; if (!el || !o) return;
+  const a = o.automation, v = o.videos;
+  const made = a ? a.byDay.map((d) => d.made) : v.byDay.map((d) => d.count);
+  const last7 = made.slice(-7).reduce((s, x) => s + x, 0), prev7 = made.slice(-14, -7).reduce((s, x) => s + x, 0), diff = last7 - prev7;
+  const yt = S.ytVideos && Array.isArray(S.ytVideos.videos) ? S.ytVideos.videos.filter((x) => x.youtube) : null;
+  const views = yt ? yt.reduce((s, x) => s + (x.youtube.views || 0), 0) : null;
+  const finished = a ? a.published + a.failed : 0;
+  const spark = (vals) => { const w = 120, h = 34, mx = Math.max(1, ...vals), st = vals.length > 1 ? w / (vals.length - 1) : 0; return `<svg class="dash-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${vals.map((q, i) => `${(i * st).toFixed(1)},${(h - 3 - (q / mx) * (h - 6)).toFixed(1)}`).join(' ')}" fill="none" stroke="var(--series-1)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`; };
+  const card = (label, value, sub, extra = '') => `<div class="dash-kpi"><span class="dash-kpi-label">${label}</span><strong class="dash-kpi-value">${value}</strong><span class="dash-kpi-sub">${sub}</span>${extra}</div>`;
+  el.innerHTML = [
+    card('Shorts made', nf(a ? a.total : v.total), `${nf(last7)} in the last 7 days`, `${spark(made)}<span class="dash-trend tone-${diff > 0 ? 'good' : 'muted'}">${diff > 0 ? '▲' : diff < 0 ? '▼' : '■'} ${Math.abs(diff)} vs the 7 days before</span>`),
+    card('Published on YouTube', nf(a?.published), a ? `${nf(a.live)} public · ${nf(a.scheduled)} scheduled` : 'automation database not open'),
+    card('YouTube views', views == null ? '–' : nf(views), yt ? `across ${nf(yt.length)} uploaded Shorts · refreshed each minute` : 'YouTube status unavailable right now'),
+    card('Publish success', a?.successRate == null ? '–' : `${a.successRate}%`, a ? `${nf(a.failed)} failed of ${nf(finished)} finished runs` : ''),
+    card('Topics waiting', nf(a?.queue), a ? `${nf(a.inProgress)} being made now` : ''),
+  ].join('');
+}
+
+function liveHtml(j) {
+  if (!j.active.length) return `<div class="viz-idle"><span class="viz-idle-dot" aria-hidden="true"></span>Nothing is running. The studio is idle.</div>`;
+  return j.active.map((x) => `<div class="viz-job">
+      <div class="viz-job-head"><strong>${esc(x.title)}</strong><span class="dash-chip tone-info">${esc(x.status)}</span></div>
+      <div class="muted viz-job-stage">${esc(x.stage || x.message || '')}${x.stageProgress != null ? ` · this step ${x.stageProgress}%` : ''}</div>
+      <div class="viz-track viz-track-lg" role="progressbar" aria-valuenow="${Math.round(x.progress || 0)}" aria-valuemin="0" aria-valuemax="100"><span class="viz-fill tone-info" style="width:${Math.min(100, x.progress || 0)}%"></span></div>
+      <div class="muted viz-job-meta">${nf(Math.round(x.progress || 0))}% · elapsed ${dur(x.elapsedSeconds)}${x.etaSeconds != null ? ` · about ${dur(x.etaSeconds)} left` : ''}</div>
+    </div>`).join('');
+}
+
+function mixHtml(v) {
+  const group = (title, items) => {
+    if (!items.length) return `<div class="dash-mix-group"><h4>${title}</h4><p class="muted">None yet.</p></div>`;
+    const max = items[0].count;
+    return `<div class="dash-mix-group"><h4>${title}</h4><ul class="viz-bars">${items.slice(0, 6).map((it) => `<li data-tip="${esc(it.label)}: ${nf(it.count)}"><span class="viz-bar-label">${esc(it.label)}</span><span class="viz-track"><span class="viz-fill" style="width:${(it.count / max * 100).toFixed(1)}%;background:var(--series-1)"></span></span><span class="viz-bar-value">${nf(it.count)}</span></li>`).join('')}</ul></div>`;
+  };
+  return group('Language', v.languages) + group('Visual style', v.styles) + group('Narration', v.personalities) + group('Character', v.characters)
+    + `<p class="muted dash-foot">${nf(v.exported)} exported · ${dur(v.totalSeconds)} total runtime · average ${dur(v.averageSeconds)}</p>`;
+}
+
+function latestHtml(v) {
+  if (!v.latest.length) return '<div class="empty-state">No Shorts yet.</div>';
+  return `<ul class="dash-latest">${v.latest.map((p) => `<li>
+      <div class="dash-thumb">${p.coverUrl ? `<img src="${esc(p.coverUrl)}" alt="" loading="lazy">` : ''}</div>
+      <div class="dash-latest-main"><strong>${esc(p.title)}</strong><span class="muted">${esc(p.language || '–')} · ${esc(p.style || '–')} · ${dur(p.seconds)} · ${esc(when(p.createdAt))}</span></div>
+      <div class="dash-latest-tags">${p.qa ? `<span class="dash-chip tone-${p.qa === 'APPROVED' ? 'good' : 'warn'}">QA ${esc(p.qa.toLowerCase().replace(/_/g, ' '))}</span>` : ''}${p.hasVideo ? `<button class="btn btn-secondary btn-sm" data-play="${esc(p.id)}">Watch</button>` : `<span class="dash-chip tone-muted">${esc(p.status)}</span>`}</div>
+    </li>`).join('')}</ul>`;
+}
+
+function attentionHtml(o) {
+  const items = [], a = o.automation;
+  if (a) for (const f of a.failures) items.push(`<li class="tone-critical"><span aria-hidden="true">✖</span><div><strong>${esc(f.topic || f.id)}</strong><span class="muted">${esc(f.failureClass || 'failed')}${f.error ? ` · ${esc(f.error)}` : ''}</span></div></li>`);
+  const failedJobs = o.jobs.statuses.find((s) => s.label === 'failed');
+  if (failedJobs) items.push(`<li class="tone-critical"><span aria-hidden="true">✖</span><div><strong>${nf(failedJobs.count)} studio job(s) failed</strong><span class="muted">See Job History for the messages</span></div></li>`);
+  if (o.automationError) items.push(`<li class="tone-warn"><span aria-hidden="true">⚠</span><div><strong>Automation records unavailable</strong><span class="muted">${esc(o.automationError)}</span></div></li>`);
+  return items.length ? `<ul class="viz-list">${items.join('')}</ul>` : '<p class="viz-ok"><span aria-hidden="true">✓</span> Nothing needs attention right now.</p>';
+}
+
+function runsHtml(a) {
+  if (!a) return '<p class="muted">The automation database is not open, so no run records are shown.</p>';
+  if (!a.recent.length) return '<div class="empty-state">No automated runs yet. Turn Automation on to start.</div>';
+  return `<div class="dash-table-wrap"><table class="jobs-table"><thead><tr><th>Topic</th><th>Status</th><th>Stage</th><th>Publish time (IST)</th><th>Link</th></tr></thead><tbody>${a.recent.map((r) => `<tr><td>${esc(r.topic || '–')}</td><td>${chip(phaseOf(r))}</td><td>${esc(r.stage)}</td><td>${esc(when(r.publishAt))}</td><td>${r.youtubeUrl ? `<a href="${esc(r.youtubeUrl)}" target="_blank" rel="noopener">Open</a>` : '–'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function systemHtml(o) {
+  const s = S.system || {}, cat = S.catalog, e = cat?.engines;
+  const meter = (label, used, total, text) => { const pct = total ? Math.min(100, (used / total) * 100) : 0; return `<div class="dash-meter"><span>${label}</span><span class="viz-track"><span class="viz-fill" style="width:${pct.toFixed(1)}%;background:var(--series-1)"></span></span><span class="muted">${text}</span></div>`; };
+  const kv = (k, v) => `<div class="dash-kv"><span>${k}</span><strong>${v}</strong></div>`;
+  const byLabel = Object.fromEntries(o.jobs.statuses.map((x) => [x.label, x.count]));
+  return `${s.disk ? meter('Disk', s.disk.totalGB - s.disk.freeGB, s.disk.totalGB, `${s.disk.freeGB} GB free of ${s.disk.totalGB} GB`) : ''}
+    ${s.ramTotalGB ? meter('RAM', s.ramTotalGB - s.ramFreeGB, s.ramTotalGB, `${s.ramFreeGB} GB free of ${s.ramTotalGB} GB`) : ''}
+    ${kv('Languages ready', cat ? `${cat.languages.filter((l) => l.available).length} / ${cat.languages.length}` : '–')}
+    ${kv('AI images (ComfyUI)', e ? (e.comfyui.ready ? 'Ready' : 'Off') : '–')}
+    ${kv('Studio jobs', `${nf(o.jobs.total)} · ${nf(byLabel.completed || 0)} completed · ${nf(byLabel.failed || 0)} failed`)}
+    ${kv('Average job time', dur(o.jobs.averageSeconds))}`;
+}
+
+function renderDashboard() {
+  renderKpis();
+  const o = S.overview; if (!o) return;
+  const v = o.videos, a = o.automation, j = o.jobs;
+  const days = a ? a.byDay : v.byDay.map((d) => ({ day: d.day, made: d.count, published: 0, failed: 0 }));
+  const made = days.reduce((s, d) => s + d.made, 0), pub = days.reduce((s, d) => s + d.published, 0);
+  $('#dash-chart-note').textContent = `${nf(made)} made and ${nf(pub)} published in the last ${days.length} days · India time`;
+  $('#dash-chart').innerHTML = lineChart({
+    labels: days.map((d) => d.day), fmtX: dayLabel, aria: `Shorts made and published per day, last ${days.length} days`,
+    series: [{ name: 'Made', color: 'var(--series-1)', values: days.map((d) => d.made) }, { name: 'Published', color: 'var(--series-2)', values: days.map((d) => d.published) }],
+  });
+  $('#dash-chart-table').innerHTML = `<details class="viz-table"><summary>Table view</summary><table><thead><tr><th>Day</th><th>Made</th><th>Published</th><th>Failed</th></tr></thead><tbody>${days.map((d) => `<tr><td>${dayLabel(d.day)}</td><td>${d.made}</td><td>${d.published}</td><td>${d.failed}</td></tr>`).join('')}</tbody></table></details>`;
+
+  $('#dash-live').innerHTML = liveHtml(j);
+  const jt = j.timings;
+  $('#dash-jobs-chart').innerHTML = jt.length >= 2
+    ? lineChart({
+      labels: jt.map((x) => x.at), fmtX: (iso) => clock(iso).slice(0, 5), aria: `Seconds taken by the last ${jt.length} studio jobs`,
+      series: [{ name: 'Seconds', color: 'var(--series-1)', values: jt.map((x) => x.seconds || 0) }, { name: 'Average', color: 'var(--viz-muted)', dashed: true, values: jt.map(() => j.averageSeconds || 0) }],
+    })
+    : '<div class="empty-state">Two or more finished jobs are needed for this chart.</div>';
+  $('#dash-jobs-note').textContent = jt.length ? `last ${jt.length} finished jobs · average ${dur(j.averageSeconds)}` : 'no finished jobs yet';
+
+  $('#dash-pipeline').innerHTML = a ? segmentBar([
+    { label: 'Live on YouTube', tone: 'good', icon: '✓', n: a.live },
+    { label: 'Scheduled', tone: 'info', icon: '◷', n: a.scheduled },
+    { label: 'In progress', tone: 'warn', icon: '▶', n: a.inProgress },
+    { label: 'Failed', tone: 'critical', icon: '✖', n: a.failed },
+    { label: 'Other (cancelled, not uploaded)', tone: 'muted', icon: '•', n: Math.max(0, a.total - a.published - a.inProgress - a.failed) },
+  ], a.total) + `<p class="muted dash-foot">${a.successRate == null ? 'No finished runs yet.' : `${a.successRate}% of finished runs reached YouTube.`}</p>` : '<p class="muted">The automation database is not open.</p>';
+
+  const dur2 = v.durations;
+  $('#dash-duration').innerHTML = dur2.length
+    ? hBars({ rows: dur2.map((d) => ({ label: d.title, values: [d.target, d.actual] })), series: [{ name: 'Target', color: 'var(--viz-muted)' }, { name: 'Actual', color: 'var(--series-1)' }], fmt: (s) => `${Math.round(s)} s`, aria: 'Target and actual length of the latest exported Shorts' })
+      + `<div class="viz-legend"><span><i class="viz-sw" style="background:var(--viz-muted)"></i>Target</span><span><i class="viz-sw" style="background:var(--series-1)"></i>Actual</span></div>`
+    : '<div class="empty-state">No exported Shorts yet.</div>';
+
+  $('#dash-latest').innerHTML = latestHtml(v);
+  $('#dash-attention').innerHTML = attentionHtml(o);
+  $('#dash-mix').innerHTML = mixHtml(v);
+  $('#dash-system').innerHTML = systemHtml(o);
+  $('#dash-runs').innerHTML = runsHtml(a);
+  $('#dash-updated').textContent = `Live · updated ${clock(o.generatedAt)} IST`;
+}
+
+async function loadOverview() {
+  try { S.overview = await api('/api/overview'); renderDashboard(); }
+  catch (e) { const k = $('#dash-kpis'); if (k) k.innerHTML = `<div class="dash-error">Could not load dashboard data: ${esc(e.message)}</div>`; }
+}
+async function loadYouTubeViews() {
+  try { S.ytVideos = await api('/api/automation/youtube/videos'); } catch { S.ytVideos = null; }
+  renderKpis();
+}
+
+// one tooltip for every chart mark
+document.addEventListener('DOMContentLoaded', () => {
+  const tip = document.createElement('div'); tip.id = 'viz-tip'; tip.hidden = true; document.body.appendChild(tip);
+  document.addEventListener('mouseover', (e) => { const t = e.target.closest('[data-tip]'); if (!t) { tip.hidden = true; return; } tip.textContent = t.dataset.tip; tip.hidden = false; });
+  document.addEventListener('mousemove', (e) => { if (!tip.hidden) { tip.style.left = `${e.clientX + 14}px`; tip.style.top = `${e.clientY + 14}px`; } });
+  document.addEventListener('mouseout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('[data-tip]')) tip.hidden = true; });
+});
+
 // permanent delete: confirmed by typing nothing extra, but the dialog names exactly what is removed
 async function deleteShort(id) {
   const p = S.projects.find((x) => x.id === id);
@@ -441,8 +665,6 @@ function renderSettings() {
   ].join('');
   $('#paths-grid').innerHTML = [row('Workspace', esc(S.system.workspace)), ...Object.entries(S.system.paths).map(([k, v]) => row(k, `<code>${esc(v)}</code>`)), row('Free disk', S.system.disk ? `${S.system.disk.freeGB} GB of ${S.system.disk.totalGB} GB` : '–')].join('');
   const ready = S.catalog.languages.filter((l) => l.available);
-  $('#stat-langs').textContent = `${ready.length} / ${S.catalog.languages.length}`; $('#stat-langs-sub').textContent = ready.map((l) => l.id).join(', ');
-  $('#stat-comfy').textContent = e.comfyui.ready ? 'Ready' : 'Off'; $('#stat-comfy-sub').textContent = e.comfyui.ready ? e.comfyui.model : e.comfyui.reason;
   $('#disk-free-pill').textContent = S.system.disk ? `${S.system.disk.freeGB} GB free` : '';
   const allOk = e.tts.ready && e.chrome.ready && e.ffmpeg.ready;
   $('#engine-dot').className = 'gpu-indicator ' + (allOk ? 'online' : 'offline'); $('#engine-title').textContent = allOk ? 'Core engines ready' : 'Engine missing';
@@ -459,29 +681,33 @@ function renderRosters() {
   $('#voices-intro').textContent = `${S.catalog.voices.length} voices installed for the studio's languages (read from models/kokoro/voices-v1.0.bin).`;
   const byLang = {}; S.catalog.voices.forEach((v) => (byLang[v.accent] = byLang[v.accent] || []).push(v));
   $('#voices-grid').innerHTML = Object.entries(byLang).map(([g, vs]) => vs.map((v) => `<div class="voice-card"><h3>${esc(v.name)} ${v.recommended ? '★' : ''}</h3><p>${esc(v.notes)}</p><div class="voice-tags"><span class="voice-tag">${esc(g)}</span><span class="voice-tag">${v.gender}</span><span class="voice-tag"><code>${v.id}</code></span></div></div>`).join('')).join('');
-  $('#trends-grid').innerHTML = S.trends.map((t) => `<div class="trend-card"><div class="trend-badge-row"><span class="badge-cat">${esc(t.category)}</span><span class="badge-demand high">${esc(t.demand)}</span></div><h3>${esc(t.title)}</h3><div class="trend-hook">"${esc(t.hook)}"</div><div class="trend-meta-row"><span>${esc(S.catalog.languages.find((l) => l.id === t.language)?.name || t.language)}</span> · <span>${esc(S.catalog.styles.find((s) => s.id === t.style)?.name || t.style)}</span> · <span>${t.duration}s</span></div><button class="btn btn-primary btn-sm btn-block" data-usetrend="${t.id}">Use this topic</button></div>`).join('');
-  $('#dashboard-trend-mini').innerHTML = S.trends.slice(0, 4).map((t) => `<div class="trend-mini-card" data-usetrend="${t.id}"><div><div class="trend-mini-title">${esc(t.title)}</div><div class="trend-mini-cat">${esc(t.category)} · ${t.duration}s</div></div></div>`).join('');
-}
-function useTrend(id) {
-  const t = S.trends.find((x) => x.id === id); if (!t) return;
-  $('#f-topic').value = t.title;
-  if (S.catalog.languages.find((l) => l.id === t.language)?.available) $('#f-language').value = t.language;
-  onLanguageChange({ personality: t.personality }); $('#f-style').value = t.style; $('#f-duration').value = t.duration; onFormChange(); go('create');
 }
 let toastT; function toast(m) { let el = $('#toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); } el.textContent = m; el.className = 'show'; clearTimeout(toastT); toastT = setTimeout(() => (el.className = ''), 3500); }
 
 // ── boot ──────────────────────────────────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   $$('.nav-item').forEach((b) => b.addEventListener('click', () => go(b.dataset.screen)));
+  // sidebar: collapse to icons and back (remembered on this computer; works without storage too)
+  const applySidebar = (collapsed) => { $('.app-layout').classList.toggle('sidebar-collapsed', collapsed); $('#sidebar-toggle').setAttribute('aria-expanded', String(!collapsed)); };
+  let sidebarCollapsed = false; try { sidebarCollapsed = localStorage.getItem('studio.sidebarCollapsed') === '1'; } catch {}
+  applySidebar(sidebarCollapsed);
+  $('#sidebar-toggle').onclick = () => { sidebarCollapsed = !sidebarCollapsed; applySidebar(sidebarCollapsed); try { localStorage.setItem('studio.sidebarCollapsed', sidebarCollapsed ? '1' : '0'); } catch {} };
+  // show the screen named in the URL straight away (a reload stays on the same screen even if a data request fails);
+  // the full go() below still runs once the data has loaded
+  const startScreen = location.hash.slice(1);
+  if (TITLES[startScreen]) {
+    $$('.screen').forEach((sc) => sc.classList.toggle('active', sc.id === `screen-${startScreen}`));
+    $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.screen === startScreen));
+    $('#screen-title').textContent = TITLES[startScreen][0]; $('#screen-subtitle').textContent = TITLES[startScreen][1];
+  }
   document.addEventListener('click', (e) => {
     const lc = e.target.closest('[data-lookcard]');
     if (lc) { const ch = S.catalog.characters.find((c) => c.id === lc.dataset.lookcard), lk = ch?.looks.find((l) => l.id === lc.dataset.lookid), card = lc.closest('.char-card-3d'), img = card?.querySelector('img[data-char3d]');
       card?.querySelectorAll('.look-chip').forEach((b) => b.classList.toggle('active', b === lc)); const use = card?.querySelector('[data-usechar]'); if (use) use.dataset.uselook = lk?.id || '';
       if (img && window.CharPreview) { img.dataset.look = lk?.overrides ? JSON.stringify(lk.overrides) : ''; window.CharPreview.fill(card); } return; }
-    const t = e.target.closest('[data-goto],[data-play],[data-reuse],[data-openscript],[data-usetrend],[data-usechar],.le-del'); if (!t) return;
+    const t = e.target.closest('[data-goto],[data-play],[data-reuse],[data-openscript],[data-usechar],.le-del'); if (!t) return;
     if (t.dataset.goto) { e.preventDefault(); go(t.dataset.goto); }
     if (t.dataset.play) openVideo(t.dataset.play);
-    if (t.dataset.usetrend) useTrend(t.dataset.usetrend);
     if (t.dataset.usechar) { $('#f-character').value = t.dataset.usechar; fillLooks(t.dataset.uselook); onFormChange(); go('create'); }
     if (t.dataset.reuse) { const p = S.projects.find((x) => x.id === t.dataset.reuse); loadFormFromConfig(p.config); go('create'); }
     if (t.dataset.openscript) { const p = S.projects.find((x) => x.id === t.dataset.openscript); loadScript(p.id, Math.max(...p.script.versions.map((v) => v.version))).then(() => go('scripts')); }
@@ -491,7 +717,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   ['#f-topic', '#f-personality', '#f-voice', '#f-style', '#f-character', '#f-look', '#f-visualmode', '#f-duration'].forEach((s) => $(s).addEventListener('input', onFormChange));
   $('#f-character').addEventListener('change', () => { fillLooks(); onFormChange(); });
   $('#f-language').addEventListener('change', () => onLanguageChange());
-  $('#btn-random').onclick = () => { const t = S.trends[Math.floor(Math.random() * S.trends.length)]; if (t) useTrend(t.id); };
   $('#btn-preview').onclick = () => submit('preview');
   $('#btn-manual').onclick = async () => {
     // a project with the validated options and an empty editor; the script is language-checked when saved
@@ -527,10 +752,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     go('create'); setTimeout(() => submit('render'), 400);
   };
   try {
-    [S.catalog, S.system, S.trends] = await Promise.all([api('/api/catalog'), api('/api/system'), api('/api/trends')]);
+    [S.catalog, S.system] = await Promise.all([api('/api/catalog'), api('/api/system')]);
   } catch (e) { document.body.insertAdjacentHTML('afterbegin', `<div class="fatal">Studio server unreachable: ${esc(e.message)}</div>`); return; }
   S.preview = store.get('studio.preview');
   fillForm(); renderSettings(); renderRosters(); await refreshProjects();
+  loadOverview(); loadYouTubeViews();
+  // live: the numbers refresh every 5 s while the dashboard is open; YouTube views every 60 s (it calls YouTube)
+  setInterval(() => { if ($('#screen-dashboard').classList.contains('active')) loadOverview(); }, 5000);
+  setInterval(() => { if ($('#screen-dashboard').classList.contains('active')) loadYouTubeViews(); }, 60000);
   if (location.hash.length > 1) go(location.hash.slice(1));
   if (S.preview) loadScript(S.preview.projectId, S.preview.version).catch(() => { S.preview = null; store.set('studio.preview', null); renderPreviewState(); });
   // re-attach to a running job (refresh-safe), else show the last job's final state

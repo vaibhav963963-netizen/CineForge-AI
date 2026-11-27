@@ -46,7 +46,9 @@ export function judgeShots(frames, shots) {
   const videoAvg = med(per.map((p) => p.avg));
   for (const p of per) {
     p.problem = p.high < LIMITS.darkHigh ? `near-black (90th-percentile luma ${p.high})`
-      : (p.low > LIMITS.blownLow && p.avg > LIMITS.blownAvg && p.avg > videoAvg * LIMITS.blownRatio) ? `blown out (luma ${Math.round(p.avg)} vs video ${Math.round(videoAvg)}, shadows at ${p.low})`
+      // washed out in absolute terms (no real shadows), not merely brighter than the rest: a daylight scene in a video that
+      // also has dark space scenes is normal (seen: bright 2D shots failed against a 42-luma video average)
+      : (p.low > 150 || (p.avg > 210 && p.low > 110)) ? `blown out (luma ${Math.round(p.avg)} vs video ${Math.round(videoAvg)}, shadows at ${p.low})`
       : (p.high - p.low < LIMITS.flatRange) ? `flat / malformed frame (luma range ${p.high - p.low})`
       : null;
   }

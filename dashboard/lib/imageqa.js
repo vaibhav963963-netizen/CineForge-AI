@@ -176,3 +176,94 @@ export async function correctImages(report, { regenerate, inspect, maxAttempts =
   }
   return log;
 }
+
+/**
+ * Local frame-level visual QA on rendered MP4 frames across each shot.
+ * Samples frames at start, mid, end of each shot. Detects near-black, blank,
+ * frozen shots and identical visuals across consecutive shots.
+ */
+export function inspectRenderFrames(videoPath, shots, { ffmpeg = PATHS.ffmpeg, framesDir = null } = {}) {
+  const results = [];
+  const errors = [];
+  let prevMidHash = null, prevShotId = null;
+
+  const tempDir = framesDir || path.join(path.dirname(videoPath), 'qa_frames_tmp');
+  fs.mkdirSync(tempDir, { recursive: true });
+
+  try {
+    for (const s of (shots || [])) {
+      const dur = (s.end || 0) - (s.start || 0);
+      const t1 = (s.start || 0) + Math.min(0.3, dur * 0.15);
+      const t2 = (s.start || 0) + dur * 0.5;
+      const t3 = Math.max((s.start || 0) + 0.3, (s.end || 0) - Math.min(0.3, dur * 0.15));
+
+      const samples = [
+        { name: 'start', t: t1 },
+        { name: 'mid', t: t2 },
+        { name: 'end', t: t3 },
+      ];
+
+      const frameMeasures = [];
+      const shotErrors = [];
+
+      for (const samp of samples) {
+        const frameFile = path.join(tempDir, `${s.id}_${samp.name}.jpg`);
+        spawnSync(ffmpeg, ['-y', '-ss', samp.t.toFixed(3), '-i', videoPath, '-vframes', '1', '-q:v', '2', frameFile], { encoding: 'utf8', windowsHide: true });
+        const m = measureImage(frameFile);
+        frameMeasures.push({ ...samp, file: frameFile, ...m });
+
+        // Near-black check
+        // near-black = dark AND nothing bright in it (a space scene is dark on average but has a lit planet: 90th percentile high)
+        if (Number.isFinite(m.avg) && m.avg < 15 && !(m.high >= 45) && !(m.contentArea >= 0.2)) {   // a small lit planet on dark space has real content area
+          shotErrors.push({ sceneId: s.id, problem: `near-black frame at ${samp.t.toFixed(1)}s (luma ${m.avg.toFixed(1)})`, severity: 'error' });
+        }
+        // Blank check
+        // blank = almost no detail AND almost no contrast
+        if (Number.isFinite(m.entropy) && m.entropy < 0.35 && !(m.high - m.low >= 60)) {
+          shotErrors.push({ sceneId: s.id, problem: `blank frame at ${samp.t.toFixed(1)}s (entropy ${m.entropy.toFixed(2)})`, severity: 'error' });
+        }
+      }
+
+      // Frozen check across the shot (if duration > 2s and start/mid/end dhash are identical)
+      if (dur >= 2.0 && frameMeasures.length === 3 && frameMeasures[0].dhash) {
+        const d12 = hamming(frameMeasures[0].dhash, frameMeasures[1].dhash);
+        const d23 = hamming(frameMeasures[1].dhash, frameMeasures[2].dhash);
+        if (d12 === 0 && d23 === 0) {
+          shotErrors.push({ sceneId: s.id, problem: `frozen visual across shot (${dur.toFixed(1)}s)`, severity: 'error' });
+        }
+      }
+
+      // Identical across shots check
+      const midM = frameMeasures[1];
+      if (midM?.dhash && prevMidHash) {
+        const dPrev = hamming(midM.dhash, prevMidHash);
+        if (dPrev <= 2) {
+          shotErrors.push({ sceneId: s.id, problem: `identical visual to previous scene ${prevShotId} (hamming ${dPrev})`, severity: 'error' });
+        }
+      }
+      if (midM?.dhash) {
+        prevMidHash = midM.dhash;
+        prevShotId = s.id;
+      }
+
+      results.push({
+        sceneId: s.id,
+        start: s.start,
+        end: s.end,
+        action: s.setpiece?.action || s.action || null,
+        visual: s.visualObjective || s.visualPlan?.visualDescription || '',
+        frames: frameMeasures.map((f) => ({ pos: f.name, t: +f.t.toFixed(2), avg: f.avg, entropy: f.entropy, dhash: f.dhash })),
+        errors: shotErrors,
+        ok: shotErrors.length === 0,
+      });
+
+      errors.push(...shotErrors);
+    }
+  } finally {
+    if (!framesDir) {
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+    }
+  }
+
+  return { ok: errors.length === 0, scenesChecked: (shots || []).length, results, errors };
+}

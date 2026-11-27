@@ -1,4 +1,4 @@
-import { chooseWorld, matchAction, visualPlan, validateStoryboard } from './visualplan.js';
+import { chooseWorld, matchAction, visualPlan, validateStoryboard, WORLDS } from './visualplan.js';
 // Storyboard planning: narration lines (+ their real TTS/Whisper times) → timed shots, each with a visual objective,
 // subject, environment, objects, action, camera, lighting, rendering method, image prompt, 3D asset needs,
 // animation instructions and transition. Matching uses each line's English "visual" description (written by the
@@ -339,19 +339,38 @@ export function planStoryboard({ script, timing, words, config, style, topic }) 
   let prevSp = null;
   shots.forEach((s, k) => {
     const ls = s.lines.map((i) => lines[i]);
-    const act = world ? matchAction(world, { visual: ls.map((l) => l.visual || '').join(' '), text: ls.map((l) => l.text).join(' '), say: ls.map((l) => l.say || '').join(' ') }) : null;
-    if (!act) { prevSp = null; return; }
-    const plan = visualPlan({ worldId: world, act, line: { visual: ls.map((l) => l.visual || '').join(' ') }, style, character: hasLead ? config.visual.characterName : null, prev: prevSp });
+    const b = beats[k];
+    let shotText = ls.map((l) => l.text).join(' ');
+    let shotVisual = ls.map((l) => l.visual || '').join(' ');
+    let shotSay = ls.map((l) => l.say || '').join(' ');
+    if (b && b.part !== undefined) {
+      if (words) {
+        const ws = words.filter((w) => b.lines.includes(w.line) && w.s >= b.start - 0.08 && w.e <= b.end + 0.08);
+        if (ws.length > 0) shotText = ws.map((w) => w.w).join(' ');
+      }
+      if (shotVisual.includes(',')) {
+        const parts = shotVisual.split(',').map((p) => p.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          shotVisual = b.part === 0 ? parts.slice(0, Math.ceil(parts.length / 2)).join(', ') : parts.slice(Math.ceil(parts.length / 2)).join(', ');
+        }
+      }
+    }
+    const act = world ? matchAction(world, { visual: shotVisual, text: shotText, say: shotSay }) : null;
+    // in a video about a set-piece world, a line the world does not name specifically still shows that world's subject
+    // (seen: "-70 °C on the other side" became an empty generic room with a lamp → rejected as blank)
+    const useAct = act || (world ? { ...WORLDS[world].overview, matched: 'overview', keyword: null } : null);
+    if (!useAct) { prevSp = null; return; }
+    const plan = visualPlan({ worldId: world, act: useAct, line: { visual: shotVisual }, style, character: hasLead ? config.visual.characterName : null, prev: prevSp });
     const lead = plan.leadAllowed ? [{ role: 'lead', action: k === 0 ? 'point' : 'explain' }] : [];
     Object.assign(s, {
-      method: 'setpiece', renderMethod: `Animated ${is3d ? '3D' : '2D'} set piece: ${world} / ${act.id} (${style.name})`,
-      setpiece: { world, action: act.id }, visualPlan: plan,
-      subject: plan.subject, environment: world, objects: [], action: act.id, cast: lead,
+      method: 'setpiece', renderMethod: `Animated ${is3d ? '3D' : '2D'} set piece: ${world} / ${useAct.id} (${style.name})`,
+      setpiece: { world, action: useAct.id }, visualPlan: plan,
+      subject: plan.subject, environment: world, objects: [], action: useAct.id, cast: lead,
       camera: { ...s.camera, angle: 'wide', move: s.camera.move === 'punch' ? 'push' : s.camera.move },
       lighting: plan.lighting, imagePrompt: null, negativePrompt: null, image: null, assets3d: null,
-      animation: plan.animation, transition: k === 0 ? 'black' : prevSp && prevSp.action === act.id ? 'cut' : s.transition,
+      animation: plan.animation, transition: k === 0 ? 'black' : prevSp && prevSp.action === useAct.id ? 'cut' : s.transition,
     });
-    prevSp = { world, action: act.id };
+    prevSp = { world, action: useAct.id };
   });
   // consecutive shots with the same action continue ONE animation (progress ranges), instead of replaying it
   for (let k = 0; k < shots.length;) {

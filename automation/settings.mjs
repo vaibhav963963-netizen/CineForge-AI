@@ -20,11 +20,13 @@ export const DEFAULTS = {
   minFreeRamGB: 3,
   minFreeVramGB: 3,                        // another app holding the GPU (e.g. a game) → heavy stages wait
   eventRetentionDays: 30,                  // older events are pruned; the database is backed up daily (7 kept)
-  publishMode: 'manual',                   // manual | private-upload | scheduled-public
+  publishMode: 'manual',                   // manual (no upload) | auto (upload now; privacy from .env) | scheduled-public (publish at publishTime)
+  youtubePrivacy: CONFIG.YOUTUBE_DEFAULT_PRIVACY,   // private | unlisted | public — visibility of automated uploads (page setting; .env is the default)
   allowCatchUpPublishing: false,           // never publish several overdue videos together unless allowed
-  scriptGate: 'ready',                     // ready = only READY scripts are rendered unattended | allow-needs-review (opt-in)
+  scriptGate: 'allow-needs-review',                     // ready = only READY scripts are rendered unattended | allow-needs-review (opt-in)
   topicSource: 'queue',                    // queue (user list) | trends
-  topicQueue: [],
+  topicQueue: [],                          // topics still waiting, in order
+  topicHistory: [],                        // every topic ever added: { topic, addedAt, status: 'waiting' | 'made', runId, madeAt }
   studio: { url: CONFIG.AUTOMATION_STUDIO_URL, language: 'hi-conversational', personality: 'documentary', voice: 'hf_alpha', style: 'tall-tale', character: 'curious_student', durationSeconds: 45, visualMode: 'hybrid-local' },
 };
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -32,12 +34,14 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export function validateSettings(s) {
   const e = [];
-  const v = { ...DEFAULTS, ...s };
+  // the studio address always comes from .env (PORT / AUTOMATION_STUDIO_URL): a stored address can never point at a wrong port
+  const v = { ...DEFAULTS, ...s, studio: { ...DEFAULTS.studio, ...(s.studio || {}), url: CONFIG.AUTOMATION_STUDIO_URL } };   // a partly stored studio block falls back to the defaults
   try { new Intl.DateTimeFormat('en-US', { timeZone: v.timeZone }); } catch { e.push(`unknown time zone "${v.timeZone}"`); }
   for (const k of ['productionTime', 'publishTime']) if (!HHMM.test(v[k])) e.push(`${k} must be HH:MM`);
   for (const k of ['productionDays', 'publishDays']) if (!Array.isArray(v[k]) || !v[k].length || v[k].some((d) => !DAYS.includes(d))) e.push(`${k} must list days (${DAYS.join(', ')})`);
   for (const [k, lo, hi] of [['maxVideosPerDay', 1, 10], ['maxConcurrentJobs', 1, 1], ['retryCount', 0, 10], ['minFreeDiskGB', 1, 500], ['minFreeRamGB', 0, 64]]) if (!(Number.isInteger(v[k]) || k === 'minFreeRamGB') || v[k] < lo || v[k] > hi) e.push(`${k} must be ${lo}–${hi}`);
-  if (!['manual', 'private-upload', 'scheduled-public'].includes(v.publishMode)) e.push('publishMode must be manual | private-upload | scheduled-public');
+  if (!['manual', 'auto', 'scheduled-public'].includes(v.publishMode)) e.push('publishMode must be manual | auto | scheduled-public');
+  if (!['private', 'unlisted', 'public'].includes(v.youtubePrivacy)) e.push('youtubePrivacy must be private | unlisted | public');
   if (!['ready', 'allow-needs-review'].includes(v.scriptGate)) e.push('scriptGate must be ready | allow-needs-review');
   for (const w of ['recoveryWindow', 'quietHours']) if (!HHMM.test(v[w]?.start || '') || !HHMM.test(v[w]?.end || '')) e.push(`${w} needs start/end HH:MM`);
   return { ok: !e.length, errors: e, value: v };

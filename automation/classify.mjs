@@ -16,11 +16,15 @@ export const CLASSES = {
   upload_interrupted: { retry: true,  backoff: true,  label: 'Upload interruption', resumable: true },
   studio_unavailable: { retry: true,  backoff: true,  label: 'CineForge studio not reachable' },
   cancelled:          { retry: false, backoff: false, label: 'Cancelled' },
+  reconciliation:     { retry: false, backoff: false, label: 'Upload timeout ambiguous (marked for reconciliation)', reconciliation: true },
+  quality_gate_failed: { retry: true, backoff: true, label: 'Quality gate inspection failed', regenerate: 'render' },
   unknown:            { retry: true,  backoff: true,  label: 'Unknown failure' },
 };
 
 const RULES = [
+  ['reconciliation', /reconciliation|ambiguous timeout/i],
   ['cancelled', /cancel/i],
+  ['quality_gate_failed', /quality gate|quality inspection|publishing blocked/i],
   ['youtube_quota', /quota(exceeded| exceeded)|rateLimitExceeded|dailyLimitExceeded|youtube.*\b403\b.*quota/i],
   ['youtube_auth', /invalid_grant|unauthorized_client|invalid_client|token (has been )?(expired|revoked)|youtube.*\b401\b|insufficientPermissions|authorization required/i],
   ['upload_interrupted', /upload (was )?interrupted|resumable|ECONNRESET.*upload|upload.*(socket|timeout)/i],

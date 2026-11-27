@@ -93,7 +93,9 @@ export async function buildDirector({ scene, E, three }) {
   const extraColors = (k) => ({ skin: ['#C68652', '#E0AC69', '#8D5524'][k % 3], shirt: ['#5C6BC0', '#26A69A', '#8D6E63'][k % 3], pants: '#37474F', hair: '#222' });
 
   scene.shots.forEach((sh, i) => {
-    const at = i === 0 ? 0 : sh.start, method = sh.method, camSpec = sh.camera || { angle: 'medium', move: 'push' };
+    const at = i === 0 ? 0 : sh.start, camSpec = sh.camera || { angle: 'medium', move: 'push' };
+    // no AI image for this shot (image engine off or failed): draw it procedurally instead of leaving a black frame
+    const method = (sh.method === 'image' || sh.method === 'hybrid') && !images.has(sh.id) ? (is3d ? 'scene3d' : 'scene2d') : sh.method;
     const leadCast = hasLead ? (sh.cast || []).find((c) => c.role === 'lead') : null;
     const extrasCast = (sh.cast || []).filter((c) => c.role !== 'lead').slice(0, 2);
     const objects = (sh.objects || []).filter((o) => !(ENV_NATIVE[sh.environment] || []).includes(o));

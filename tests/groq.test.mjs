@@ -2,7 +2,8 @@
 // rate-limit wait, and the key never appearing in errors. Uses a simulated Groq server (global fetch), no network.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chat, ensureReady } from '../dashboard/lib/groq.js';
+import { chat, ensureReady, rateBudget, resetBudget } from '../dashboard/lib/groq.js';
+import { pauseScriptBookQueue, resumeScriptBookQueue, getScriptBookQueueStatus } from '../dashboard/server.js';
 
 const KEY = 'gsk_' + 'TESTKEY0123456789abcdefABCDEF';
 const over = { key: KEY, model: 'openai/gpt-oss-120b', base: 'https://groq.test/openai/v1', timeout: 5000, retries: 3, enabled: true };
@@ -48,3 +49,43 @@ test('per-minute rate limit (429 without a daily limit): waits the time Groq giv
   const t0 = Date.now(); const r = await chat({ messages: [{ role: 'user', content: 'hi' }], schema, maxTokens: 50 }, over);
   assert.equal(r.text, '{"a":"w"}'); assert.ok(Date.now() - t0 >= 1000); assert.equal(calls.filter((x) => x.url.endsWith('/chat/completions')).length, 2);
 });
+
+test('issue 11: 429 daily-limit error records budget, pauses queue with reset time and resumes', async () => {
+  resetBudget();
+  const tpd = resp(429, {
+    error: {
+      message: `Rate limit reached for model \`openai/gpt-oss-120b\` on tokens per day (TPD): Limit 200000, Used 199500, Requested 1000. Please try again in 12m30s.`,
+      type: 'tokens',
+    },
+  }, { 'x-should-retry': 'false', 'x-ratelimit-reset-tokens': '750s' });
+
+  serve([tpd]);
+  let caught = null;
+  try {
+    await chat({ messages: [{ role: 'user', content: 'hi' }], schema, maxTokens: 50 }, over);
+  } catch (e) {
+    caught = e;
+  }
+  assert.ok(caught);
+  assert.equal(caught.code, 'daily-limit');
+  assert.ok(caught.resetAt > Date.now());
+
+  const b = rateBudget();
+  assert.equal(b.dailyLimit, 200000);
+  assert.equal(b.dailyUsed, 199500);
+  assert.equal(b.dailyRemaining, 500);
+  assert.ok(b.dailyResetAt > Date.now());
+
+  // Confirm queue pauses with reset time
+  pauseScriptBookQueue(caught.resetAt);
+  const st = getScriptBookQueueStatus();
+  assert.equal(st.paused, true);
+  assert.ok(st.remainingMs > 0);
+  assert.equal(st.pausedUntil, new Date(caught.resetAt).toISOString());
+
+  // Confirm queue resumes
+  resumeScriptBookQueue();
+  const st2 = getScriptBookQueueStatus();
+  assert.equal(st2.paused, false);
+});
+

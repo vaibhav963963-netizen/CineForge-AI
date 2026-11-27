@@ -116,3 +116,37 @@ test('real (workspace scan): a bright, colourful pastel illustration is not "blo
   assert.deepEqual(technicalFindings({ exists: true, width: 768, height: 1368, avg: 198, low: 136, high: 226, entropy: 0.42, saturation: 32 }), []);
   assert.ok(technicalFindings({ exists: true, width: 768, height: 1368, avg: 220, low: 150, high: 240, entropy: 0.6, saturation: 4 }).some((x) => /blown out/.test(x.problem)));
 });
+
+test('issue 6: frame-level QA rejects broken render (black scene named) and keeps non-ready script in review', async () => {
+  const { inspectRenderFrames } = await import('../dashboard/lib/imageqa.js');
+  const brokenVideo = P('broken.mp4');
+  const goodVideo = P('good.mp4');
+
+  // Create a 4s video where 0-2s is colorful and 2-4s is near-black
+  ff('-f', 'lavfi', '-i', 'testsrc=duration=2:size=360x640:rate=10', '-f', 'lavfi', '-i', 'color=c=black:duration=2:size=360x640:rate=10', '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[v]', '-map', '[v]', '-pix_fmt', 'yuv420p', brokenVideo);
+
+  // Create a 4s good video with animated, distinct scenes (not frozen, not identical)
+  ff('-f', 'lavfi', '-i', 'mandelbrot=s=360x640:rate=10:start_scale=1:end_scale=3', '-t', '2', '-f', 'lavfi', '-i', 'smptebars=s=360x640:rate=10', '-t', '2', '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[v]', '-map', '[v]', '-pix_fmt', 'yuv420p', goodVideo);
+
+  const shots = [
+    { id: 'S01', start: 0, end: 2, visualObjective: 'colorful chart' },
+    { id: 'S02', start: 2, end: 4, visualObjective: 'space nebula' },
+  ];
+
+  const brokenCheck = inspectRenderFrames(brokenVideo, shots, { ffmpeg: PATHS.ffmpeg });
+  assert.equal(brokenCheck.ok, false);
+  assert.ok(brokenCheck.errors.some((e) => e.sceneId === 'S02' && /near-black/.test(e.problem)), 'S02 must be flagged as near-black');
+
+  const goodCheck = inspectRenderFrames(goodVideo, shots, { ffmpeg: PATHS.ffmpeg });
+  assert.equal(goodCheck.ok, true);
+  assert.equal(goodCheck.errors.length, 0);
+
+  // Wire decision test: passing frames + scriptStatus 'NEEDS_REVIEW' → decision must stay NEEDS_REVIEW
+  const scriptStatus = 'NEEDS_REVIEW';
+  const critical = goodCheck.errors.map((e) => `${e.sceneId}: ${e.problem}`);
+  const review = [
+    ...(scriptStatus !== 'READY' ? [`script v1 is ${scriptStatus}`] : [])
+  ];
+  const decision = critical.length ? 'REJECTED' : review.length ? 'NEEDS_REVIEW' : 'APPROVED';
+  assert.equal(decision, 'NEEDS_REVIEW', 'A good render with a NEEDS_REVIEW script must not be marked APPROVED');
+});

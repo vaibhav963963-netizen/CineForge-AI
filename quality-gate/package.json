@@ -1,0 +1,7 @@
+{
+  "name": "cineforge-quality-gate",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI Video Quality Inspector & Automatic Correction Engine",
+  "main": "index.js"
+}

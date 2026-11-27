@@ -14,9 +14,11 @@ import { reviewClaims, findTopicFacts, listFactFiles, claimsGate, confirmClaims,
 import { runScriptJob, runRenderJob, renderPlan, scriptPlan, inputFromConfig } from './lib/pipeline.js';
 import { checkLanguage, estimateSeconds, qualityGates, readiness, gateGroups, claimLedger } from './lib/scriptgen.js';
 import { generateImage, seedFor, readImageIndex, writeImageIndex, freeVram } from './lib/imagegen.js';
-import { TRENDING_TOPICS } from './lib/trends.js';
 import { createSetupRoutes } from './lib/setup/routes.js';
+import { overview } from './lib/overview.js';
 import { CONFIG, assertConfig } from './lib/config.js';
+import { getQualityInspector, getCorrectionEngine, getPublishingGuard, QUALITY_CONFIG } from '../quality-gate/index.js';
+
 assertConfig('The studio server');   // invalid .env values stop here with an actionable message
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,7 +84,7 @@ function media(req, res, p) {
 }
 
 // ── job submission helpers ───────────────────────────────────────────────────────────────────────────────
-function submitScriptJob({ input, projectId, requestKey, facts }) {
+function submitScriptJob({ input, projectId, requestKey, facts, origin = null }) {
   facts = typeof facts === 'string' && facts.trim() ? facts.trim().slice(0, 4000) : null;
   const v = validateGenerationConfig(input, { purpose: 'script' });
   if (!v.ok) throw new HttpError(422, 'Invalid selection', { errors: v.errors });
@@ -92,29 +94,75 @@ function submitScriptJob({ input, projectId, requestKey, facts }) {
   else updateProject(project.id, (p) => { p.config = v.config; p.configHash = configHash(v.config); });
   const dup = jobs.findActiveDuplicate({ requestKey, configHash: 'script:' + configHash(v.config), projectId: project.id });
   if (dup) return { job: dup, project, deduplicated: true, warnings: v.warnings };
-  const job = jobs.submit({ kind: 'script', projectId: project.id, title: v.config.topic, config: v.config, plan: scriptPlan(), requestKey, configHash: 'script:' + configHash(v.config) },
+  const job = jobs.submit({ kind: 'script', projectId: project.id, title: v.config.topic, config: v.config, plan: scriptPlan(), requestKey, origin, configHash: 'script:' + configHash(v.config) },
     (j) => runScriptJob(j, { projectId: project.id, config: v.config, facts }));
   return { job, project, deduplicated: false, warnings: v.warnings };
 }
 
 // Script Book queue: starts the next queued "pending" entry when no Script Book script is being written (one at a time)
 let sbTicking = false;
-async function scriptBookQueueTick() {
-  if (sbTicking) return; sbTicking = true;
+let sbQueuePausedUntil = 0;
+let sbQueuePauseTimer = null;
+
+export function pauseScriptBookQueue(resetAt) {
+  sbQueuePausedUntil = resetAt;
+  clearTimeout(sbQueuePauseTimer);
+  const waitMs = Math.max(0, resetAt - Date.now());
+  if (waitMs > 0 && waitMs < 24 * 3600 * 1000) {
+    sbQueuePauseTimer = setTimeout(() => {
+      sbQueuePausedUntil = 0;
+      scriptBookQueueTick();
+    }, waitMs);
+    sbQueuePauseTimer.unref?.();
+  }
+}
+
+export function resumeScriptBookQueue() {
+  sbQueuePausedUntil = 0;
+  clearTimeout(sbQueuePauseTimer);
+  scriptBookQueueTick();
+}
+
+export function getScriptBookQueueStatus() {
+  return {
+    paused: Date.now() < sbQueuePausedUntil,
+    pausedUntil: sbQueuePausedUntil > 0 ? new Date(sbQueuePausedUntil).toISOString() : null,
+    remainingMs: Math.max(0, sbQueuePausedUntil - Date.now()),
+  };
+}
+
+export async function scriptBookQueueTick() {
+  if (sbTicking) return;
+  if (Date.now() < sbQueuePausedUntil) return;
+  sbTicking = true;
   try {
     const sb = await import('./lib/scriptbook.js');
     const book = sb.syncWithJobs(jobs);
     if (book.entries.some((e) => e.status === 'generating')) return;
-    // a DAILY quota stops the batch: the remaining queued topics stay Pending (not Failed) and can be generated later
-    if (book.entries.some((e) => e.status === 'failed' && /daily (limit|quota)/i.test(e.error || '') && e.queued === false && Date.now() - Date.parse(e.updatedAt) < 5 * 60 * 1000)) {
+    // a DAILY quota stops the batch: pause queue until reset time
+    const failedDaily = book.entries.find((e) => e.status === 'failed' && /daily (limit|quota)/i.test(e.error || '') && e.queued === false && Date.now() - Date.parse(e.updatedAt) < 24 * 60 * 60 * 1000);
+    if (failedDaily) {
+      const groq = await import('./lib/groq.js');
+      const b = groq.rateBudget();
+      const resetAt = b.dailyResetAt || (Date.now() + 15 * 60 * 1000);
+      pauseScriptBookQueue(resetAt);
       const left = book.entries.filter((e) => e.queued && e.status === 'pending');
-      if (left.length) { for (const e of left) sb.setQueued(e.id, false); console.log(`[scriptbook] daily quota reached — ${left.length} queued topic(s) left Pending`); }
+      if (left.length) console.log(`[scriptbook] daily quota reached — queue paused until ${new Date(resetAt).toISOString()}; ${left.length} queued topic(s) pending`);
       return;
     }
     const next = book.entries.find((e) => e.status === 'pending' && e.queued);
     if (!next) return;
     try { const g = await import('./lib/scriptmodel.js'); await g.ensureReady(); }
-    catch (e) { for (const x of book.entries.filter((y) => y.queued)) sb.setQueued(x.id, false); console.log(`[scriptbook] queue paused: ${e.message}`); return; }
+    catch (e) {
+      if (e.code === 'daily-limit' && e.resetAt) {
+        pauseScriptBookQueue(e.resetAt);
+        console.log(`[scriptbook] queue paused on daily limit until ${new Date(e.resetAt).toISOString()}`);
+        return;
+      }
+      for (const x of book.entries.filter((y) => y.queued)) sb.setQueued(x.id, false);
+      console.log(`[scriptbook] queue paused: ${e.message}`);
+      return;
+    }
     const input = { topic: next.topic, language: next.language, personality: next.personality, voice: next.voice, style: next.style, character: next.character, durationSeconds: next.durationSeconds, visualMode: next.visualMode };
     const { job, project } = submitScriptJob({ input, projectId: null, requestKey: `scriptbook-${next.id}-${(next.attempts || 0) + 1}` });
     sb.markGenerating(next.id, { jobId: job.id, projectId: project.id }); sb.setQueued(next.id, false);
@@ -122,7 +170,7 @@ async function scriptBookQueueTick() {
 }
 setInterval(() => { scriptBookQueueTick(); }, 15000).unref?.();
 
-function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUnverifiedClaims = false }) {
+function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUnverifiedClaims = false, origin = null }) {
   const v = validateGenerationConfig(input, { purpose: 'render', hasApprovedScript: !!scriptVersion });
   if (!v.ok) throw new HttpError(422, 'Invalid selection', { errors: v.errors });
   let project = projectId ? loadProject(projectId) : null;
@@ -141,7 +189,7 @@ function submitRenderJob({ input, projectId, scriptVersion, requestKey, acceptUn
   const dup = jobs.findActiveDuplicate({ requestKey, configHash: hash, projectId: project.id });
   if (dup) return { job: dup, project, deduplicated: true, warnings: v.warnings };
   updateProject(project.id, (p) => { p.config = v.config; p.configHash = configHash(v.config); });
-  const job = jobs.submit({ kind: 'render', projectId: project.id, title: v.config.topic, config: v.config, plan: renderPlan({ approved: !!scriptVersion, hybrid: v.config.visual.visualMode === 'hybrid-local' }), requestKey, configHash: hash },
+  const job = jobs.submit({ kind: 'render', projectId: project.id, title: v.config.topic, config: v.config, plan: renderPlan({ approved: !!scriptVersion, hybrid: v.config.visual.visualMode === 'hybrid-local' }), requestKey, origin, configHash: hash },
     (j) => runRenderJob(j, { projectId: project.id, config: v.config, scriptVersion: scriptVersion ? +scriptVersion : null, acceptUnverifiedClaims: acceptUnverifiedClaims === true }));
   return { job, project, deduplicated: false, warnings: v.warnings };
 }
@@ -152,7 +200,6 @@ async function api(req, res, url) {
   if (p.startsWith('/api/setup/')) return setup.handle(req, res, url, { readBody, send });
   if (p === '/api/catalog') return send(res, 200, publicCatalog());
   if (p === '/api/system') return send(res, 200, systemInfo());
-  if (p === '/api/trends') return send(res, 200, TRENDING_TOPICS);
   if (p === '/api/characters') return send(res, 200, getCatalog().characters);
   if (p === '/api/voices') return send(res, 200, getCatalog().voices);
   if (p === '/api/validate' && method === 'POST') { const b = await readBody(req); const v = validateGenerationConfig(b.input || b, { purpose: b.purpose || 'render', hasApprovedScript: !!b.scriptVersion }); return send(res, v.ok ? 200 : 422, v); }
@@ -173,10 +220,11 @@ async function api(req, res, url) {
     try {
       let mm;
       if (p === '/api/scriptbook' && method === 'GET') {
+        const groq = await import('./lib/groq.js');
         const entries = sb.syncWithJobs(jobs).entries.map((e) => { const pr = e.projectId ? loadProject(e.projectId) : null; return { ...e, versions: (pr?.script?.versions || []).map((v) => ({ version: v.version, source: v.source || null, createdAt: v.createdAt || null })), projectApprovedVersion: pr?.script?.approvedVersion || null }; });
-        return send(res, 200, { entries, statuses: sb.STATUSES });
+        return send(res, 200, { entries, statuses: sb.STATUSES, budget: groq.rateBudget(), queue: getScriptBookQueueStatus() });
       }
-      if (p === '/api/scriptbook/status' && method === 'GET') { const sm = await import('./lib/scriptmodel.js'); return send(res, 200, { provider: CONFIG.SCRIPT_GENERATION_PROVIDER, providerName: sm.providerName(), model: sm.configuredModel(), enabled: CONFIG.SCRIPT_GENERATION_ENABLED, keyPresent: sm.keyPresent(), online: await online(), production: 'local (offline)' }); }
+      if (p === '/api/scriptbook/status' && method === 'GET') { const sm = await import('./lib/scriptmodel.js'); const groq = await import('./lib/groq.js'); return send(res, 200, { provider: CONFIG.SCRIPT_GENERATION_PROVIDER, providerName: sm.providerName(), model: sm.configuredModel(), enabled: CONFIG.SCRIPT_GENERATION_ENABLED, keyPresent: sm.keyPresent(), online: await online(), production: 'local (offline)', budget: groq.rateBudget(), queue: getScriptBookQueueStatus() }); }
       if (p === '/api/scriptbook/existing-topics' && method === 'GET') return send(res, 200, sb.existingTopics());
       if (p === '/api/scriptbook/topics' && method === 'POST') { const b = await readBody(req); return send(res, 201, { added: sb.addTopics(Array.isArray(b.items) ? b.items : [b], { source: b.source || 'manual' }) }); }
       if (p === '/api/scriptbook/generate-pending' && method === 'POST') {
@@ -203,6 +251,12 @@ async function api(req, res, url) {
     throw new HttpError(404, 'unknown Script Book route');
   }
 
+  // dashboard: real numbers from the project folders, job history and the automation database
+  if (p === '/api/overview' && method === 'GET') {
+    let db = null;
+    try { const A = await import('../automation/db.mjs'); autoDb = autoDb || A.openDb(); db = autoDb; } catch {}
+    return send(res, 200, overview({ projects: listProjects(), jobs: jobs.list({ limit: 500 }), db }));
+  }
   // projects
   if (p === '/api/projects' && method === 'GET') return send(res, 200, listProjects());
   if (p === '/api/projects' && method === 'POST') {   // a project with a hand-written script (no model needed)
@@ -308,8 +362,10 @@ async function api(req, res, url) {
     req.on('close', cleanup);
     return;
   }
+  // ── AI Video Quality Inspector API ─────────────────────────────────────────────────────────────
+  if (p === '/api/quality' || p.startsWith('/api/quality/')) return await qualityApi(req, res, url, p, method);
   // ── automation (scheduler state lives in logs/automation/automation.db; the scheduler is a separate process) ──
-  if (p === '/api/automation' || p.startsWith('/api/automation/')) return automationApi(req, res, url, p, method);
+  if (p === '/api/automation' || p.startsWith('/api/automation/')) return await automationApi(req, res, url, p, method);
   throw new HttpError(404, `unknown endpoint ${method} ${p}`);
 }
 
@@ -374,9 +430,172 @@ async function automationApi(req, res, url, p, method) {
   }
   if (p === '/api/automation/command' && method === 'POST') {
     const b = await readBody(req), c = String(b.command || '');
-    if (!/^(pause|resume|stop|run-now|requeue:run_[\w-]+)$/.test(c)) throw new HttpError(422, `unknown command "${c}"`);
+    if (!/^(pause|resume|stop|run-now|publish:run_[\w-]+|requeue:run_[\w-]+)$/.test(c)) throw new HttpError(422, `unknown command "${c}"`);
     db.prepare('INSERT INTO commands (at, command) VALUES (?, ?)').run(new Date().toISOString(), c);
     return send(res, 202, { queued: c, note: 'applied by the scheduler on its next tick (≤ 30 s)' });
   }
+  if (p === '/api/automation/youtube/videos' && method === 'GET') {
+    const rows = db.prepare("SELECT id, topic, status, stage, youtube_video_id, youtube_url, publish_at, created_at, updated_at, last_error FROM runs ORDER BY created_at DESC LIMIT 200").all();
+    const ups = Object.fromEntries(db.prepare("SELECT run_id, at FROM checkpoints WHERE stage = 'upload' AND status = 'done'").all().map((r) => [r.run_id, r.at]));
+    const ids = rows.filter((r) => r.youtube_video_id).map((r) => r.youtube_video_id);
+    let live = {}, liveError = null;
+    if (ids.length) {
+      try {
+        const Y = await import('../automation/youtube.mjs'), tok = await Y.makeYouTube().accessToken();
+        for (let k = 0; k < ids.length; k += 50) {
+          const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=status,snippet,statistics&id=${ids.slice(k, k + 50).join(',')}`, { headers: { Authorization: `Bearer ${tok}` } });
+          const j = await r.json();
+          for (const v of j.items || []) live[v.id] = { title: v.snippet?.title, privacy: v.status?.privacyStatus, publishAt: v.status?.publishAt || null, publishedAt: v.snippet?.publishedAt || null, uploadStatus: v.status?.uploadStatus, views: v.statistics?.viewCount ?? null };
+        }
+      } catch (e) { liveError = e.message; }
+    }
+    const videos = rows.map((r) => ({ runId: r.id, topic: r.topic, runStatus: r.status, stage: r.stage, videoId: r.youtube_video_id, url: r.youtube_url, uploadedAt: ups[r.id] || null, scheduledFor: r.publish_at, createdAt: r.created_at, lastError: r.last_error, youtube: r.youtube_video_id ? (live[r.youtube_video_id] || null) : null }));
+    return send(res, 200, { videos, liveError, settings: settings() });
+  }
+  // change one Short's publish time: saved on the run (used at upload) and, if already uploaded and not public, on YouTube
+  if (p === '/api/automation/youtube/schedule' && method === 'POST') {
+    const b = await readBody(req), when = new Date(b.publishAt);
+    if (!b.runId || isNaN(when)) throw new HttpError(422, 'runId and a valid publishAt are required');
+    if (when.getTime() < Date.now() + 15 * 60 * 1000) throw new HttpError(422, 'The publish time must be at least 15 minutes in the future');
+    const run = db.prepare('SELECT id, youtube_video_id FROM runs WHERE id = ?').get(b.runId);
+    if (!run) throw new HttpError(404, 'Short not found');
+    const iso = when.toISOString();
+    let youtube = 'saved for upload';
+    if (run.youtube_video_id) {
+      const Y = await import('../automation/youtube.mjs'), tok = await Y.makeYouTube().accessToken();
+      const cur = await (await fetch(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${run.youtube_video_id}`, { headers: { Authorization: `Bearer ${tok}` } })).json();
+      const st = cur.items?.[0]?.status;
+      if (!st) throw new HttpError(404, 'The video was not found on YouTube');
+      if (st.privacyStatus === 'public') throw new HttpError(409, 'This Short is already public; its publish time can no longer change');
+      const r = await fetch('https://www.googleapis.com/youtube/v3/videos?part=status', { method: 'PUT', headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: run.youtube_video_id, status: { privacyStatus: 'private', publishAt: iso, selfDeclaredMadeForKids: !!st.selfDeclaredMadeForKids, containsSyntheticMedia: st.containsSyntheticMedia !== false } }) });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new HttpError(502, `YouTube refused the new time: ${e.error?.message || r.status}`); }
+      youtube = 'updated on YouTube';
+    }
+    db.prepare('UPDATE runs SET publish_at = ?, updated_at = ? WHERE id = ?').run(iso, new Date().toISOString(), run.id);
+    return send(res, 200, { ok: true, publishAt: iso, youtube });
+  }
+  if (p === '/api/automation/youtube/status' && method === 'GET') {
+    const Y = await import('../automation/youtube.mjs');
+    const st = Y.status();
+    return send(res, 200, {
+      authorized: !!st.authorized,
+      authorizedAt: st.authorizedAt || null,
+      channelTitle: st.channel?.channelTitle || null,
+      channelId: st.channel?.channelId || null,
+      quotaUsedToday: st.quotaUsedToday ?? 0,
+      quotaDaily: st.quotaDaily || 10000,
+      clientSecret: !!st.clientSecret,
+    });
+  }
+  if (p === '/api/automation/youtube/connect' && method === 'POST') {
+    const Y = await import('../automation/youtube.mjs');
+    Y.makeYouTube().authorize({ openBrowser: true }).catch((e) => {
+      console.error('YouTube authorization background task:', e.message);
+    });
+    return send(res, 200, { ok: true, message: 'Google authorization page opened in your browser' });
+  }
+  if (p === '/api/automation/youtube/disconnect' && method === 'POST') {
+    const Y = await import('../automation/youtube.mjs');
+    const r = await Y.makeYouTube().disconnect();
+    return send(res, 200, { ok: true, revoked: r.revoked, detail: r.detail });
+  }
+  if (p === '/api/automation/youtube/test' && method === 'POST') {
+    const Y = await import('../automation/youtube.mjs');
+    try {
+      const ch = await Y.makeYouTube().verifyChannel();
+      return send(res, 200, { ok: true, channelId: ch.channelId, channelTitle: ch.channelTitle, customUrl: ch.customUrl, channelCount: ch.channelCount });
+    } catch (e) {
+      return send(res, 400, { ok: false, error: e.message, failureClass: e.failureClass || 'youtube_auth' });
+    }
+  }
+  if (p.startsWith('/api/automation/runs/') && p.endsWith('/publish') && method === 'POST') {
+    const runId = p.split('/')[4];
+    const r = db.prepare('SELECT * FROM runs WHERE id = ?').get(runId);
+    if (!r) throw new HttpError(404, `run "${runId}" not found`);
+    db.prepare("UPDATE runs SET status = 'queued', stage = 'upload', attempt = 0, next_attempt_at = ? WHERE id = ?")
+      .run(new Date().toISOString(), runId);
+    return send(res, 200, { ok: true, message: `Run ${runId} queued for upload` });
+  }
   throw new HttpError(404, `unknown automation endpoint ${method} ${p}`);
 }
+
+// ── Quality Gate API ─────────────────────────────────────────────────────────────────────────────
+async function qualityApi(req, res, url, p, method) {
+  const inspector = getQualityInspector();
+  const guard = getPublishingGuard();
+  const correction = getCorrectionEngine();
+
+  if (p === '/api/quality/status' && method === 'GET') {
+    return send(res, 200, {
+      ...inspector.modelManager.getSafeStatus(),
+      config: {
+        enabled: QUALITY_CONFIG.enabled,
+        minScore: QUALITY_CONFIG.minScore,
+        maxRetries: QUALITY_CONFIG.maxRetries,
+        failClosed: QUALITY_CONFIG.failClosed,
+      },
+      weights: QUALITY_CONFIG.weights,
+      thresholds: QUALITY_CONFIG.thresholds,
+    });
+  }
+
+  if (p === '/api/quality/reports' && method === 'GET') {
+    const projects = listProjects();
+    const reports = [];
+    for (const pr of projects) {
+      const dir = projectDir(pr.id);
+      const rep = inspector.reportGenerator.loadReport(path.join(dir, 'review'));
+      const rendersDir = path.join(dir, 'renders');
+      const hasRender = fs.existsSync(rendersDir) && fs.readdirSync(rendersDir).some((f) => f.endsWith('.mp4'));
+      reports.push({
+        projectId: pr.id,
+        title: pr.title || pr.id,
+        overallScore: rep ? rep.overallScore : null,
+        status: rep ? rep.status : (hasRender ? 'NOT_INSPECTED' : 'NOT_RENDERED'),
+        publishAllowed: rep ? rep.publishAllowed : false,
+        inspectedAt: rep ? rep.inspectedAt : null,
+        defectsCount: rep ? (rep.defects || []).length : 0,
+        modelId: rep ? rep.modelId : null,
+        reasons: rep ? (rep.reasons || []) : [],
+        hasRender,
+      });
+    }
+    return send(res, 200, reports);
+  }
+
+  let r;
+  if ((r = p.match(/^\/api\/quality\/reports\/([\w-]+)$/)) && method === 'GET') {
+    const dir = projectDir(r[1]);
+    const rep = inspector.reportGenerator.loadReport(path.join(dir, 'review'));
+    if (!rep) throw new HttpError(404, `No quality report found for project ${r[1]}`);
+    return send(res, 200, rep);
+  }
+
+  if ((r = p.match(/^\/api\/quality\/inspect\/([\w-]+)$/)) && method === 'POST') {
+    const dir = projectDir(r[1]);
+    if (!fs.existsSync(dir)) throw new HttpError(404, `Project ${r[1]} not found`);
+    const b = await readBody(req);
+    const report = await inspector.inspectProject(dir, {
+      useCache: b.force !== true,
+      skipAI: b.skipAI === true,
+    });
+    return send(res, 200, report);
+  }
+
+  if ((r = p.match(/^\/api\/quality\/correct\/([\w-]+)$/)) && method === 'POST') {
+    const dir = projectDir(r[1]);
+    if (!fs.existsSync(dir)) throw new HttpError(404, `Project ${r[1]} not found`);
+    const report = inspector.reportGenerator.loadReport(path.join(dir, 'review')) ||
+      await inspector.inspectProject(dir);
+    const plan = correction.generateCorrectionPlan(report, dir);
+    if (!plan.canRetry) {
+      return send(res, 400, { error: 'Maximum correction retries reached', plan });
+    }
+    const applied = await correction.applyCorrection(dir, plan);
+    return send(res, 200, { applied, plan });
+  }
+
+  throw new HttpError(404, `unknown quality endpoint ${method} ${p}`);
+}
+

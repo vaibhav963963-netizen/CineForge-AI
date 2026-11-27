@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './db.mjs';
+import { CONFIG } from '../dashboard/lib/config.js';
 
 /** GPU memory via nvidia-smi (null when no NVIDIA GPU / tool) */
 export function gpuMemory() {
@@ -32,8 +33,9 @@ export async function healthReport(s, { youtube = null } = {}) {
   add('ram', res.freeRamGB >= s.minFreeRamGB, `${res.freeRamGB} GB free (minimum ${s.minFreeRamGB})`, 'warning');
   const gpu = gpuMemory();
   add('gpu', !!gpu, gpu ? `${gpu.name}: ${gpu.freeGB} of ${gpu.totalGB} GB VRAM free` : 'nvidia-smi not found (GPU check skipped)', 'warning');
-  const llm = (() => { try { return fs.readdirSync(path.join(ROOT, 'models', 'llm')).filter((f) => f.endsWith('.gguf')); } catch { return []; } })();
-  add('script model', llm.length > 0, llm.join(', ') || 'no .gguf model in models/llm');
+  const provider = CONFIG.SCRIPT_GENERATION_PROVIDER;
+  const keyName = provider === 'gemini' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
+  add('script writer', !!CONFIG[keyName] && CONFIG.SCRIPT_GENERATION_ENABLED !== false, `${provider} · ${provider === 'gemini' ? CONFIG.GEMINI_MODEL : CONFIG.GROQ_MODEL}${CONFIG[keyName] ? '' : ` — ${keyName} not set in .env`}`);
   add('kokoro', fs.existsSync(path.join(ROOT, 'models', 'kokoro', 'kokoro-v1.0.onnx')), 'models/kokoro/kokoro-v1.0.onnx');
   add('ffmpeg', fs.existsSync(path.join(ROOT, 'runtime', 'ffmpeg', 'bin', 'ffmpeg.exe')) || spawnSync('ffmpeg', ['-version'], { windowsHide: true }).status === 0, 'runtime/ffmpeg/bin/ffmpeg.exe');
   let studio = false; try { studio = (await fetch(`${s.studio.url}/api/catalog`, { signal: AbortSignal.timeout(4000) })).ok; } catch {}

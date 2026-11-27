@@ -31,14 +31,22 @@ async function call(c, pathname, init, signal) {
 
 let checked = null;   // { model, at, ids }
 // tokens-per-minute pacing from Groq's own response headers (x-ratelimit-*-tokens); shared by every request
-const budget = { limit: null, remaining: null, resetAt: 0 };
-const dur = (v) => { const m = String(v || '').match(/(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?/); return m ? ((+m[1] || 0) * 60000 + (+m[2] || 0) * 1000 + (+m[3] || 0)) : 0; };
+const budget = { limit: null, remaining: null, resetAt: 0, dailyLimit: null, dailyUsed: null, dailyRemaining: null, dailyResetAt: 0 };
+export const dur = (v) => { const m = String(v || '').match(/(?:(\d+(?:\.\d+)?)m(?!s))?(?:(\d+(?:\.\d+)?)s)?(?:(\d+(?:\.\d+)?)ms)?/); return m ? ((+m[1] || 0) * 60000 + (+m[2] || 0) * 1000 + (+m[3] || 0)) : 0; };
 function noteLimits(h) {
   const lim = +h.get('x-ratelimit-limit-tokens'), rem = +h.get('x-ratelimit-remaining-tokens'), reset = dur(h.get('x-ratelimit-reset-tokens'));
   if (Number.isFinite(lim) && lim > 0) budget.limit = lim;
   if (Number.isFinite(rem)) { budget.remaining = rem; budget.resetAt = Date.now() + reset; }
+  const dLim = +h.get('x-ratelimit-limit-tokens-per-day') || +h.get('x-ratelimit-limit-tokens-day');
+  const dRem = +h.get('x-ratelimit-remaining-tokens-per-day') || +h.get('x-ratelimit-remaining-tokens-day');
+  if (Number.isFinite(dLim) && dLim > 0) budget.dailyLimit = dLim;
+  if (Number.isFinite(dRem)) budget.dailyRemaining = dRem;
 }
 export const rateBudget = () => ({ ...budget });
+export function resetBudget() {
+  budget.limit = null; budget.remaining = null; budget.resetAt = 0;
+  budget.dailyLimit = null; budget.dailyUsed = null; budget.dailyRemaining = null; budget.dailyResetAt = 0;
+}
 /** key present, model available in THIS account — never substitutes another model */
 export async function ensureReady(onStatus = () => {}, over = {}) {
   const c = cfg(over);
@@ -125,7 +133,15 @@ export async function chat({ messages, schema, temperature = 0.8, maxTokens = 20
     // Groq's own numbers instead of retrying (seen: TPD limit 200000 reached; the job sat in 90 s waits for 25 minutes)
     if (r.status === 429 && (/per day|\(TPD\)|\(RPD\)/i.test(errText) || r.headers.get('x-should-retry') === 'false')) {
       const lim = errText.match(/Limit (\d+), Used (\d+), Requested (\d+)/), again = errText.match(/try again in ([\dhms.]+)/i);
-      throw new GroqError(`Groq daily limit reached for ${c.model}${lim ? ` (${lim[2]} of ${lim[1]} tokens used today, this step needs ${lim[3]})` : ''}${again ? ` — it frees up gradually; next request possible in about ${Math.ceil(dur(again[1]) / 60000)} min` : ''}. Saved scripts can still be turned into videos offline. For more scripts per day, a higher Groq tier is needed.`, { status: 429, code: 'daily-limit' });
+      const resetMs = again ? dur(again[1]) : (dur(r.headers.get('x-ratelimit-reset-tokens')) || 60000);
+      const resetAt = Date.now() + resetMs;
+      if (lim) {
+        budget.dailyLimit = +lim[1];
+        budget.dailyUsed = +lim[2];
+        budget.dailyRemaining = Math.max(0, +lim[1] - +lim[2]);
+      }
+      budget.dailyResetAt = resetAt;
+      throw new GroqError(`Groq daily limit reached for ${c.model}${lim ? ` (${lim[2]} of ${lim[1]} tokens used today, this step needs ${lim[3]})` : ''}${again ? ` — it frees up gradually; next request possible in about ${Math.ceil(dur(again[1]) / 60000)} min` : ''}. Saved scripts can still be turned into videos offline. For more scripts per day, a higher Groq tier is needed.`, { status: 429, code: 'daily-limit', resetMs, resetAt, limit: lim ? +lim[1] : null, used: lim ? +lim[2] : null, remaining: lim ? Math.max(0, +lim[1] - +lim[2]) : 0 });
     }
     // rate limit = wait the time Groq gives and try again (not a failure); bounded by count and by total waiting time
     if (r.status === 429 && rateWaits < 20 && waitedMs < 10 * 60 * 1000) {

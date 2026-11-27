@@ -124,11 +124,11 @@ Python 3.12 already installed.
 ```bat
 start-studio.bat
 ```
-Opens the dashboard at http://127.0.0.1:3000/. Or start it by hand:
+Opens the dashboard at http://127.0.0.1:3010/ (port 3010 is used because port 3000 belongs to another local project). Or start it by hand:
 ```bat
 node dashboard\server.js
 ```
-If port 3000 is busy (another app), use a different port:
+If port 3010 is busy (another app), use a different port:
 ```bat
 set PORT=3200 && node dashboard\server.js
 ```

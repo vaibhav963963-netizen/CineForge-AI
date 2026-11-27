@@ -178,7 +178,7 @@ test('storyboard: hybrid mode covers every non-action shot with an AI image (no 
 test('exposure: near-black, blown-out and flat shots are flagged; normal dim night shots pass', async () => {
   const { judgeShots, judgeImage } = await import('../dashboard/lib/exposure.js');
   const fr = (t0, t1, avg, low, high) => Array.from({ length: Math.round((t1 - t0) * 4) }, (_, k) => ({ t: t0 + k / 4, avg, low, high }));
-  const frames = [...fr(0, 3, 45, 6, 120), ...fr(3, 6, 5, 0, 4), ...fr(6, 9, 153, 74, 234), ...fr(9, 12, 30, 3, 59), ...fr(12, 15, 90, 88, 95)];
+  const frames = [...fr(0, 3, 45, 6, 120), ...fr(3, 6, 5, 0, 4), ...fr(6, 9, 228, 190, 255), ...fr(9, 12, 30, 3, 59), ...fr(12, 15, 90, 88, 95)];
   const shots = [0, 3, 6, 9, 12].map((s, i) => ({ id: 'S0' + (i + 1), start: s, end: s + 3 }));
   const q = judgeShots(frames, shots);
   assert.deepEqual(q.bad.map((b) => b.id), ['S02', 'S03', 'S05']);

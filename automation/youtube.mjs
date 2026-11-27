@@ -19,11 +19,14 @@ import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { ROOT, openDb, nowIso } from './db.mjs';
 import { CONFIG } from '../dashboard/lib/config.js';
+import { assertPublishable } from '../quality-gate/index.js';
+
 
 export const YT_DIR = path.join(ROOT, 'youtube');
 const SECRET = CONFIG.YOUTUBE_CLIENT_SECRET_FILE, TOKENS = CONFIG.YOUTUBE_TOKEN_FILE;
-const SCOPES = ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'];
-const COST = { 'videos.insert': 1600, 'videos.list': 1 };
+// youtube = full access, needed to change a video's visibility (videos.update); youtube.upload alone cannot
+const SCOPES = ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube', 'https://www.googleapis.com/auth/youtube.force-ssl'];
+const COST = { 'videos.insert': 1600, 'videos.list': 1, 'channels.list': 1, 'captions.insert': 400, 'thumbnails.set': 50 };
 const DAILY_QUOTA = CONFIG.YOUTUBE_DAILY_QUOTA, CHUNK = 8 * 1024 * 1024;
 const fail = (msg, failureClass) => Object.assign(new Error(msg), { failureClass });
 
@@ -73,7 +76,12 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
     const token = await accessToken();   // outside the try: an auth failure must stay youtube_auth, not become "network"
     let r;
     try { r = await fetchFn(url, { ...opts, headers: { Authorization: `Bearer ${token}`, ...(opts.headers || {}) } }); }
-    catch (e) { throw fail(`YouTube ${op}: network error (${e.cause?.code || e.message})`, op === 'videos.insert' ? 'upload_interrupted' : 'network'); }
+    catch (e) {
+      if (e?.cause?.code === 'ETIMEDOUT' || /timeout|timed out/i.test(e?.message)) {
+        throw Object.assign(new Error(`YouTube ${op}: request timed out (${e.cause?.code || e.message})`), { cause: e.cause, failureClass: op === 'videos.insert' ? 'reconciliation' : 'network' });
+      }
+      throw fail(`YouTube ${op}: network error (${e.cause?.code || e.message})`, op === 'videos.insert' ? 'upload_interrupted' : 'network');
+    }
     spend(op);
     return r;
   }
@@ -87,6 +95,21 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
 
   // ── resumable upload ──────────────────────────────────────────────────────────────────────────────────────────
   async function upload(run, { settings: s, checkpoints: cps = {}, db: rdb, log = () => {} }) {
+    if (CONFIG.QUALITY_GATE_ENABLED) {
+      let qr = cps.qa?.data?.qualityReport;
+      if (!qr && run.video_path) {
+        const projectDir = run.project_id ? path.join(ROOT, 'projects', run.project_id) : path.dirname(path.dirname(run.video_path));
+        const reportFile = path.join(projectDir, 'review', 'quality_report.json');
+        if (fs.existsSync(reportFile)) {
+          try { qr = JSON.parse(fs.readFileSync(reportFile, 'utf8')); } catch {}
+        }
+      }
+      try {
+        assertPublishable({ videoPath: run.video_path, qualityReport: qr, currentRun: run });
+      } catch (e) {
+        throw fail(e.message, 'quality_gate_failed');
+      }
+    }
     const d = rdb || db;
     if (run.youtube_video_id) { log(`Already uploaded as ${run.youtube_video_id} — not uploading again`); return { fields: {}, data: { videoId: run.youtube_video_id, reused: true } }; }
     if (run.video_sha && d) {
@@ -105,13 +128,34 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
     }
     if (!session) {
       const body = { snippet: { title: meta.title || run.topic, description: meta.description || '', tags: meta.tags || [], categoryId: meta.categoryId || '27', defaultLanguage: meta.defaultLanguage, defaultAudioLanguage: meta.defaultLanguage },
-        status: { privacyStatus: 'private', selfDeclaredMadeForKids: !!meta.madeForKids, containsSyntheticMedia: meta.containsSyntheticMedia !== false, ...(s.publishMode === 'scheduled-public' && run.publish_at ? { publishAt: run.publish_at } : {}) } };
-      const init = await call('videos.insert', 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', { method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': 'video/mp4', 'X-Upload-Content-Length': String(size) }, body: JSON.stringify(body) });
+        status: (() => { const priv = s.youtubePrivacy || CONFIG.YOUTUBE_DEFAULT_PRIVACY, sched = s.publishMode === 'scheduled-public' && priv === 'public' && run.publish_at;
+          return { privacyStatus: sched ? 'private' : priv, selfDeclaredMadeForKids: !!meta.madeForKids, containsSyntheticMedia: meta.containsSyntheticMedia !== false, ...(sched ? { publishAt: run.publish_at } : {}) }; })() };
+      let init;
+      try {
+        init = await call('videos.insert', 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', { method: 'POST',
+          headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': 'video/mp4', 'X-Upload-Content-Length': String(size) }, body: JSON.stringify(body) });
+      } catch (err) {
+        if (err?.failureClass === 'reconciliation' || err?.cause?.code === 'ETIMEDOUT' || /timeout|timed out|ambiguous/i.test(err?.message)) {
+          if (d && run.id) {
+            d.prepare("UPDATE runs SET status = 'needs_reconciliation', failure_class = 'reconciliation', last_error = ?, updated_at = ? WHERE id = ?")
+              .run(`Ambiguous timeout during videos.insert: ${err.message}`, nowIso(clock), run.id);
+          }
+          throw Object.assign(err, { failureClass: 'reconciliation' });
+        }
+        throw err;
+      }
       if (!init.ok) throw await apiError(init, 'videos.insert');
       session = init.headers.get('location');
       if (!session) throw fail('YouTube did not return an upload session', 'upload_interrupted');
-      d?.prepare('UPDATE runs SET upload_session = ?, updated_at = ? WHERE id = ?').run(session, nowIso(clock), run.id);   // persisted BEFORE sending bytes
+      if (d && run.id) {
+        const row = d.prepare('SELECT 1 FROM runs WHERE id = ?').get(run.id);
+        if (!row) {
+          d.prepare("INSERT OR REPLACE INTO runs (id, slot, status, stage, attempt, topic, video_path, video_sha, upload_session, created_at, updated_at) VALUES (?, ?, 'running', 'upload', 0, ?, ?, ?, ?, ?, ?)")
+            .run(run.id, run.slot || `manual_${run.id}`, run.topic || 'Manual Upload', run.video_path, run.video_sha || null, session, nowIso(clock), nowIso(clock));
+        } else {
+          d.prepare('UPDATE runs SET upload_session = ?, updated_at = ? WHERE id = ?').run(session, nowIso(clock), run.id);   // persisted BEFORE sending bytes
+        }
+      }
     }
     const fd = fs.openSync(run.video_path, 'r');
     try {
@@ -131,6 +175,10 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
     throw fail('upload ended without a video resource', 'upload_interrupted');
     function done(v) {
       log(`Uploaded: https://youtu.be/${v.id}`);
+      if (d && run.id) {
+        d.prepare("UPDATE runs SET youtube_video_id = ?, youtube_url = ?, upload_session = NULL, updated_at = ? WHERE id = ?")
+          .run(v.id, `https://youtu.be/${v.id}`, nowIso(clock), run.id);
+      }
       return { fields: { youtube_video_id: v.id, youtube_url: `https://youtu.be/${v.id}`, upload_session: null }, data: { videoId: v.id, privacy: v.status?.privacyStatus, publishAt: v.status?.publishAt || null, bytes: size } };
     }
   }
@@ -144,7 +192,7 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
     const st = v.status || {}, proc = v.processingDetails?.processingStatus;
     if (st.uploadStatus === 'failed' || st.uploadStatus === 'rejected' || proc === 'failed') throw fail(`YouTube rejected the video: ${st.failureReason || st.rejectionReason || proc}`, 'render');
     if (proc && proc !== 'succeeded' && proc !== 'terminated') throw fail(`YouTube is still processing the video (${proc})`, 'network');   // retried with backoff
-    if (s.publishMode === 'scheduled-public' && st.privacyStatus !== 'public') throw fail(`video ${run.youtube_video_id} is not public yet (privacy ${st.privacyStatus}, publishAt ${st.publishAt || '–'})`, 'network');
+    if (s.publishMode === 'scheduled-public' && (s.youtubePrivacy || CONFIG.YOUTUBE_DEFAULT_PRIVACY) === 'public' && st.privacyStatus !== 'public') throw fail(`video ${run.youtube_video_id} is not public yet (privacy ${st.privacyStatus}, publishAt ${st.publishAt || '–'})`, 'network');
     log(`YouTube status: ${st.privacyStatus}${proc ? ` · processing ${proc}` : ''}`);
     return { data: { privacyStatus: st.privacyStatus, publishAt: st.publishAt || null, processing: proc || null } };
   }
@@ -174,9 +222,70 @@ export function makeYouTube({ fetchFn = fetch, store = null, clock = Date.now, d
     tokens.write({ refresh_token: j.refresh_token, access_token: j.access_token, expires_at: clock() + (j.expires_in || 3600) * 1000, scope: j.scope, authorizedAt: new Date(clock()).toISOString() });
     return { ok: true };
   }
-  const status = () => { const t = (() => { try { return tokens.read(); } catch { return null; } })(); return { clientSecret: !!store || fs.existsSync(SECRET), authorized: !!t?.refresh_token, authorizedAt: t?.authorizedAt || null, quotaUsedToday: (() => { try { return used(); } catch { return null; } })(), quotaDaily: DAILY_QUOTA }; };
+  const status = () => { const t = (() => { try { return tokens.read(); } catch { return null; } })(); return { clientSecret: !!store || fs.existsSync(SECRET), authorized: !!t?.refresh_token, authorizedAt: t?.authorizedAt || null, channel: t?.channel || null, quotaUsedToday: (() => { try { return used(); } catch { return null; } })(), quotaDaily: DAILY_QUOTA, channel: t?.channel || null }; };
 
-  return { upload, confirmPublished, authorize, accessToken, status, quotaUsed: used };
+  // ── OAuth client file: validated by structure only; values are never printed ───────────────────────────────
+  function validateClientSecret() {
+    if (!fs.existsSync(SECRET)) return { ok: false, problem: `not found: ${SECRET}` };
+    let j; try { j = JSON.parse(fs.readFileSync(SECRET, 'utf8')); } catch { return { ok: false, problem: 'not valid JSON' }; }
+    const c = j.installed || j.web;
+    if (!c) return { ok: false, problem: 'no "installed" (Desktop) client block' };
+    const missing = ['client_id', 'client_secret', 'auth_uri', 'token_uri'].filter((k) => !c[k]);
+    if (missing.length) return { ok: false, problem: `missing fields: ${missing.join(', ')}` };
+    if (!j.installed) return { ok: false, problem: 'not a Desktop client (the studio needs an OAuth "Desktop app" client)' };
+    return { ok: true, type: 'installed', redirectUris: (c.redirect_uris || []).length };
+  }
+
+  // ── channel check: the API must confirm the authorized account has a channel (never assumed) ─────────────────
+  async function verifyChannel() {
+    ensureQuota('channels.list');
+    const r = await call('channels.list', 'https://www.googleapis.com/youtube/v3/channels?part=snippet,contentDetails&mine=true');
+    if (!r.ok) throw await apiError(r, 'channels.list');
+    const j = await r.json(), all = (j.items || []).map((c) => ({ channelId: c.id, channelTitle: c.snippet?.title || '', customUrl: c.snippet?.customUrl || null }));
+    const ch = all[0];
+    if (!ch?.channelId) throw fail('This Google account has no YouTube channel. Create one at youtube.com, then connect again.', 'youtube_auth');
+    // the API returns every channel of the account; the first one is stored, and ALL are reported so the owner can confirm the right one
+    const info = { channelId: ch.channelId, channelTitle: ch.channelTitle, customUrl: ch.customUrl, channelCount: all.length, channels: all, verifiedAt: new Date(clock()).toISOString() };
+    tokens.write({ ...(tokens.read() || {}), channel: info });
+    return info;
+  }
+
+  // ── disconnect: revoke at Google, then delete the local encrypted token (even if the revoke call fails) ──────
+  async function disconnect() {
+    const t = tokens.read();
+    let revoked = false, detail = 'no stored authorization';
+    if (t?.refresh_token) {
+      try {
+        const r = await fetchFn('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: t.refresh_token }) });
+        revoked = r.ok; detail = r.ok ? 'revoked at Google' : `Google returned ${r.status}; local copy removed anyway`;
+      } catch (e) { detail = `could not reach Google (${e.cause?.code || e.message}); local copy removed, revoke it at myaccount.google.com if needed`; }
+    }
+    if (!store) { try { fs.rmSync(TOKENS, { force: true }); } catch {} } else if (store.clear) store.clear();
+    return { ok: true, revoked, detail };
+  }
+
+  // ── captions (SRT, one language) and the cover image: both attach to an uploaded video; never re-upload the video ──
+  async function uploadCaptions(videoId, srt, { language = 'hi', name = 'Subtitles' } = {}) {
+    const boundary = 'cf' + crypto.randomBytes(8).toString('hex');
+    const meta = JSON.stringify({ snippet: { videoId, language, name, isDraft: false } });
+    const body = Buffer.concat([
+      Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: application/octet-stream\r\n\r\n`, 'utf8'),
+      Buffer.from(srt, 'utf8'), Buffer.from(`\r\n--${boundary}--`, 'utf8')]);
+    const r = await call('captions.insert', 'https://www.googleapis.com/upload/youtube/v3/captions?uploadType=multipart&part=snippet',
+      { method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}`, 'Content-Length': String(body.length) }, body });
+    if (!r.ok) throw await apiError(r, 'captions.insert');
+    const j = await r.json();
+    return { captionId: j.id || null, language };
+  }
+  async function setThumbnail(videoId, jpgFile) {
+    const buf = fs.readFileSync(jpgFile);
+    const r = await call('thumbnails.set', `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(videoId)}&uploadType=media`,
+      { method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'Content-Length': String(buf.length) }, body: buf });
+    if (!r.ok) throw await apiError(r, 'thumbnails.set');
+    return { bytes: buf.length };
+  }
+
+  return { upload, confirmPublished, authorize, accessToken, status, quotaUsed: used, verifyChannel, disconnect, validateClientSecret, uploadCaptions, setThumbnail };
 }
 
 // default instance used by the executor (lazy: no file access until a method is called)
@@ -185,11 +294,15 @@ const get = () => (inst = inst || makeYouTube());
 export const upload = (run, ctx) => makeYouTube({ db: ctx.db }).upload(run, ctx);
 export const confirmPublished = (run, ctx) => makeYouTube({ db: ctx.db }).confirmPublished(run, ctx);
 export const status = () => get().status();
+export const setThumbnail = (...a) => get().setThumbnail(...a);
+export const uploadCaptions = (...a) => get().uploadCaptions(...a);
 
 // CLI: node automation/youtube.mjs authorize | status
 if (process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]).replace(/\\/g, '/'))) {
   const cmd = process.argv[2];
   if (cmd === 'authorize') get().authorize().then(() => console.log('Authorized. The refresh token is stored encrypted (Windows DPAPI) in youtube/tokens.dpapi.')).catch((e) => { console.error(e.message); process.exit(1); });
   else if (cmd === 'status') console.log(JSON.stringify(get().status(), null, 2));
-  else console.log('usage: node automation/youtube.mjs authorize | status');
+  else if (cmd === 'verify') get().verifyChannel().then((c) => console.log(JSON.stringify(c, null, 2))).catch((e) => { console.error(e.message); process.exit(1); });
+  else if (cmd === 'disconnect') get().disconnect().then((r) => console.log(JSON.stringify(r, null, 2))).catch((e) => { console.error(e.message); process.exit(1); });
+  else console.log('usage: node automation/youtube.mjs authorize | status | verify | disconnect');
 }

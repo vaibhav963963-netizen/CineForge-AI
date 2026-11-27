@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VideoQualityReport",
+  "type": "object",
+  "properties": {
+    "version": { "type": "string" },
+    "projectId": { "type": "string" },
+    "videoPath": { "type": "string" },
+    "videoSha256": { "type": "string" },
+    "inspectedAt": { "type": "string", "format": "date-time" },
+    "modelId": { "type": "string" },
+    "modelAvailable": { "type": "boolean" },
+    "overallScore": { "type": "number", "minimum": 0, "maximum": 100 },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "INSPECTING",
+        "PASS",
+        "REVIEW",
+        "CORRECTING",
+        "REINSPECTING",
+        "FAILED",
+        "BLOCKED_BY_QUOTA",
+        "BLOCKED_BY_ERROR"
+      ]
+    },
+    "publishAllowed": { "type": "boolean" },
+    "categoryScores": {
+      "type": "object",
+      "properties": {
+        "visualQuality": { "type": "number", "minimum": 0, "maximum": 15 },
+        "animationQuality": { "type": "number", "minimum": 0, "maximum": 15 },
+        "characterObjectInteractions": { "type": "number", "minimum": 0, "maximum": 15 },
+        "scriptNarrationMatching": { "type": "number", "minimum": 0, "maximum": 15 },
+        "storyContinuity": { "type": "number", "minimum": 0, "maximum": 10 },
+        "cameraCinematicQuality": { "type": "number", "minimum": 0, "maximum": 5 },
+        "voiceAudioQuality": { "type": "number", "minimum": 0, "maximum": 10 },
+        "captionsSynchronization": { "type": "number", "minimum": 0, "maximum": 5 },
+        "technicalIntegrity": { "type": "number", "minimum": 0, "maximum": 10 }
+      },
+      "required": [
+        "visualQuality",
+        "animationQuality",
+        "characterObjectInteractions",
+        "scriptNarrationMatching",
+        "storyContinuity",
+        "cameraCinematicQuality",
+        "voiceAudioQuality",
+        "captionsSynchronization",
+        "technicalIntegrity"
+      ]
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sceneId": { "type": ["string", "null"] },
+          "timestamp": { "type": "number" },
+          "category": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+          "description": { "type": "string" },
+          "evidence": { "type": "string" }
+        },
+        "required": ["timestamp", "category", "severity", "description"]
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": { "$ref": "scene-report.schema.json" }
+    },
+    "technicalReport": { "type": "object" },
+    "audioReport": { "type": "object" },
+    "captionReport": { "type": "object" },
+    "correctionHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attempt": { "type": "integer" },
+          "timestamp": { "type": "string" },
+          "instructions": { "type": "array", "items": { "type": "string" } },
+          "repairedScenes": { "type": "array", "items": { "type": "string" } },
+          "outcomeScore": { "type": "number" }
+        }
+      }
+    },
+    "retryCount": { "type": "integer", "minimum": 0 }
+  },
+  "required": [
+    "projectId",
+    "videoPath",
+    "videoSha256",
+    "inspectedAt",
+    "overallScore",
+    "status",
+    "publishAllowed",
+    "categoryScores",
+    "defects"
+  ]
+}

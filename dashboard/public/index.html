@@ -23,12 +23,13 @@
         <button class="nav-item active" data-screen="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span>Dashboard</span></button>
         <button class="nav-item" data-screen="create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>Create Video</span><span class="badge-accent" id="nav-job-badge" hidden>Running</span></button>
         <button class="nav-item" data-screen="scripts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Script Studio</span></button>
-        <button class="nav-item" data-screen="scriptbook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg><span>Script Book</span></button>
-        <button class="nav-item" data-screen="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Topic Ideas</span></button>
+        <button class="nav-item" data-screen="scriptbook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M8 7h8M8 11h6"/></svg><span>Topic Book</span></button>
         <button class="nav-item" data-screen="characters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Characters</span></button>
         <button class="nav-item" data-screen="voices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg><span>Voices</span></button>
         <button class="nav-item" data-screen="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>Video Library</span><span class="badge-count" id="nav-video-count">0</span></button>
+        <button class="nav-item" data-screen="quality"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg><span>AI Quality Inspector</span></button>
         <button class="nav-item" data-screen="automation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg><span>Automation</span></button>
+        <button class="nav-item" data-screen="youtube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></svg><span>YouTube</span></button>
         <button class="nav-item" data-screen="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Job History</span></button>
         <div class="nav-section-label">SETTINGS</div>
         <button class="nav-item" data-screen="setup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span>System Setup</span></button>
@@ -42,26 +43,62 @@
 
     <main class="main-content">
       <header class="top-bar">
-        <div class="bar-left"><h1 id="screen-title">Studio Dashboard</h1><p id="screen-subtitle">Overview of your local Shorts pipeline</p></div>
+        <div class="bar-left"><button class="btn btn-secondary btn-sm sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Show or hide sidebar" title="Show or hide sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></button><h1 id="screen-title">Studio Dashboard</h1><p id="screen-subtitle">Overview of your local Shorts pipeline</p></div>
         <div class="bar-right"><div class="telemetry-pill"><span class="pulse-dot"></span><span id="disk-free-pill">–</span></div><button class="btn btn-primary" id="btn-quick-create"><span>Create New Short</span></button></div>
       </header>
 
       <!-- DASHBOARD -->
       <section class="screen active" id="screen-dashboard">
         <div class="su-banner" id="su-global-banner" hidden></div>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-content"><span class="stat-label">Exported videos</span><h3 class="stat-value" id="stat-total-videos">–</h3><span class="stat-meta text-emerald">in exports/</span></div></div>
-          <div class="stat-card"><div class="stat-content"><span class="stat-label">Projects</span><h3 class="stat-value" id="stat-projects">–</h3><span class="stat-meta">in projects/</span></div></div>
-          <div class="stat-card"><div class="stat-content"><span class="stat-label">Languages ready</span><h3 class="stat-value" id="stat-langs">–</h3><span class="stat-meta" id="stat-langs-sub"></span></div></div>
-          <div class="stat-card"><div class="stat-content"><span class="stat-label">AI images (ComfyUI)</span><h3 class="stat-value" id="stat-comfy">–</h3><span class="stat-meta" id="stat-comfy-sub"></span></div></div>
-        </div>
-        <div class="content-split-grid">
-          <div class="panel"><div class="panel-header"><div><h3>Recent projects</h3><p>Settings shown are the ones each video was actually made with</p></div><button class="btn btn-secondary btn-sm" data-goto="library">View library</button></div><div class="projects-list" id="dashboard-recent-projects"></div></div>
-          <div class="panel"><div class="panel-header"><div><h3>Topic ideas</h3><p>Pre-filled with supported options</p></div><button class="btn btn-secondary btn-sm" data-goto="trends">Browse</button></div><div class="trending-mini-list" id="dashboard-trend-mini"></div></div>
+        <div class="dash-meta"><span class="viz-live"><span class="viz-live-dot" aria-hidden="true"></span>LIVE</span> <span class="muted" id="dash-updated">Loading…</span> <span class="muted">· refreshes every 5 seconds</span></div>
+        <div class="dash-kpis" id="dash-kpis"></div>
+        <div class="dash-grid">
+          <div class="panel dash-span-2">
+            <div class="panel-header"><div><h3>Shorts per day</h3><p id="dash-chart-note">Last 14 days · India time</p></div>
+              <div class="viz-legend"><span><i class="viz-sw" style="background:var(--series-1)"></i>Made</span><span><i class="viz-sw" style="background:var(--series-2)"></i>Published</span></div></div>
+            <div class="viz-chart" id="dash-chart"></div>
+            <div id="dash-chart-table"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Live now</h3><p>Studio jobs running at this moment</p></div></div>
+            <div id="dash-live"></div>
+          </div>
+          <div class="panel dash-span-2">
+            <div class="panel-header"><div><h3>How long jobs take</h3><p id="dash-jobs-note">Seconds per finished studio job</p></div></div>
+            <div class="viz-chart" id="dash-jobs-chart"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Pipeline</h3><p>Every automated run, by where it is now</p></div></div>
+            <div id="dash-pipeline"></div>
+          </div>
+          <div class="panel dash-span-2">
+            <div class="panel-header"><div><h3>Target vs actual length</h3><p>Each exported Short against the length it was asked to be</p></div></div>
+            <div class="viz-chart" id="dash-duration"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Mix of exported Shorts</h3><p>Counts across every exported video</p></div></div>
+            <div id="dash-mix"></div>
+          </div>
+          <div class="panel dash-span-2">
+            <div class="panel-header"><div><h3>Latest Shorts</h3><p>Newest first, with the settings each one was made with</p></div><button class="btn btn-secondary btn-sm" data-goto="library">View library</button></div>
+            <div id="dash-latest"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>Needs attention</h3><p>Failures and problems from the real records</p></div></div>
+            <div id="dash-attention"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><h3>System</h3><p>This PC and the studio engines</p></div></div>
+            <div id="dash-system"></div>
+          </div>
+          <div class="panel dash-span-3">
+            <div class="panel-header"><div><h3>Automation runs</h3><p>Latest 10 runs with their publish times</p></div><button class="btn btn-secondary btn-sm" data-goto="automation">Open Automation</button></div>
+            <div id="dash-runs"></div>
+          </div>
         </div>
       </section>
 
-      <!-- CREATE -->
+            <!-- CREATE -->
       <section class="screen" id="screen-create">
         <div class="create-container">
           <div class="panel">
@@ -147,8 +184,6 @@
         </div>
       </section>
 
-      <!-- TOPIC IDEAS -->
-      <section class="screen" id="screen-trends"><div class="section-intro"><h2>Topic ideas</h2><p>Each idea fills the form with a supported language, personality and style. You can change anything.</p></div><div class="trends-grid" id="trends-grid"></div></section>
 
       <!-- CHARACTERS -->
       <section class="screen" id="screen-characters"><div class="section-intro"><h2>Character roster</h2><p>Registered characters, one folder each in <code>engine/styles/tall-tale/example/src/core/characters/</code>. In 3D styles they appear as the 3D model; in 2D styles as a 2D figure in the same colours and signature accessory.</p></div><div class="characters-grid" id="characters-grid"></div></section>
@@ -159,6 +194,9 @@
       <!-- LIBRARY -->
       <section class="screen" id="screen-library"><div class="section-intro"><h2>Video library</h2><p>Videos in <code>exports/</code>, with the settings each one was actually created with.</p></div><div class="library-grid" id="library-grid"></div></section>
 
+      <!-- QUALITY INSPECTOR (quality.js) -->
+      <section class="screen" id="screen-quality"><div id="quality-root"><p class="muted">Loading AI Video Quality Inspector…</p></div></section>
+
       <!-- JOBS -->
       <section class="screen" id="screen-jobs"><div class="section-intro"><h2>Job history</h2><p>Every script and render job with its real stage timings. Stored in <code>logs/jobs/</code>.</p></div><div class="job-history" id="job-history"></div></section>
 
@@ -167,6 +205,7 @@
       <section class="screen" id="screen-scriptbook"><div id="scriptbook-root"><p class="muted">Loading…</p></div></section>
       <!-- AUTOMATION (automation.js) -->
       <section class="screen" id="screen-automation"><div id="automation-root"><p class="muted">Loading…</p></div></section>
+      <section class="screen" id="screen-youtube"><div id="youtube-root"><p class="muted">Loading…</p></div></section>
 
       <!-- SYSTEM SETUP (setup.js) -->
       <section class="screen" id="screen-setup">
@@ -204,6 +243,8 @@
   <script type="module" src="charpreview.js"></script>
   <script src="setup.js"></script>
   <script src="automation.js"></script>
+  <script src="youtube.js"></script>
   <script src="scriptbook.js"></script>
+  <script src="quality.js"></script>
 </body>
 </html>

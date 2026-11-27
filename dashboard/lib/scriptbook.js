@@ -11,7 +11,6 @@ import { DatabaseSync } from 'node:sqlite';
 import { PATHS } from './workspace.js';
 import { CONFIG } from './config.js';
 import { getScriptVersion, loadProject } from './projects.js';
-import { TRENDING_TOPICS } from './trends.js';
 
 export const STATUSES = ['pending', 'generating', 'generated', 'needs_review', 'approved', 'used', 'failed'];
 const FILE = () => path.join(PATHS.logs, 'scriptbook', 'scriptbook.json');
@@ -39,11 +38,11 @@ export function addTopics(items, { source = 'manual' } = {}) {
   saveBook(book); return added;
 }
 
-/** topics from the EXISTING topic storage: the automation topic queue (read-only) and the curated Topic Ideas */
+/** topics from the EXISTING topic storage: the automation topic queue (read-only) */
 export function existingTopics() {
   let queue = [];
   try { const db = new DatabaseSync(CONFIG.AUTOMATION_DB, { readOnly: true }); const row = db.prepare("SELECT value FROM settings WHERE key = 'topicQueue'").get(); db.close(); queue = row ? JSON.parse(row.value) : []; } catch {}
-  return { automationQueue: Array.isArray(queue) ? queue.map(String) : [], topicIdeas: TRENDING_TOPICS.map((t) => ({ topic: t.title, language: t.language, personality: t.personality, style: t.style })) };
+  return { automationQueue: Array.isArray(queue) ? queue.map(String) : [] };
 }
 
 const set = (id, patch) => { const book = loadBook(), e = book.entries.find((x) => x.id === id); if (!e) throw Object.assign(new Error('Script Book entry not found'), { status: 404 }); Object.assign(e, patch, { updatedAt: now() }); saveBook(book); return e; };

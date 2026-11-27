@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SceneInspectionReport",
+  "type": "object",
+  "properties": {
+    "sceneId": { "type": "string" },
+    "timestampStart": { "type": "number" },
+    "timestampEnd": { "type": "number" },
+    "narration": { "type": "string" },
+    "intendedAction": { "type": "string" },
+    "visualDescription": { "type": "string" },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "visualClarity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "animationQuality": { "type": "number", "minimum": 0, "maximum": 100 },
+        "interactionMatch": { "type": "number", "minimum": 0, "maximum": 100 },
+        "narrationMatch": { "type": "number", "minimum": 0, "maximum": 100 },
+        "continuity": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "required": ["visualClarity", "animationQuality", "interactionMatch", "narrationMatch"]
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": { "type": "number" },
+          "type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+          "description": { "type": "string" },
+          "evidence": { "type": "string" }
+        },
+        "required": ["timestamp", "type", "severity", "description"]
+      }
+    },
+    "correctionInstruction": { "type": ["string", "null"] },
+    "passed": { "type": "boolean" }
+  },
+  "required": ["sceneId", "timestampStart", "timestampEnd", "scores", "defects", "passed"]
+}

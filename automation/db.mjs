@@ -41,6 +41,8 @@ export function openDb(file = CONFIG.AUTOMATION_DB) {
   // migrations for databases created by earlier versions
   const cols = new Set(db.prepare('PRAGMA table_info(runs)').all().map((c) => c.name));
   if (!cols.has('resource_wait_since')) db.exec('ALTER TABLE runs ADD COLUMN resource_wait_since TEXT');
+  if (!cols.has('thumbnail_path')) db.exec('ALTER TABLE runs ADD COLUMN thumbnail_path TEXT');
+  if (!cols.has('captions_path')) db.exec('ALTER TABLE runs ADD COLUMN captions_path TEXT');
   return db;
 }
 

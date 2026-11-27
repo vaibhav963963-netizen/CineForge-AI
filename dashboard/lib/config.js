@@ -43,6 +43,7 @@ export const SCHEMA = [
   { key: 'YOUTUBE_CLIENT_SECRET_FILE', section: 'YouTube OAuth and publishing', type: 'path', default: 'youtube/client_secret.json', desc: 'OAuth client file downloaded from Google Cloud (kept out of Git)' },
   { key: 'YOUTUBE_TOKEN_FILE', section: 'YouTube OAuth and publishing', type: 'path', default: 'youtube/tokens.dpapi', desc: 'Encrypted refresh token (Windows DPAPI, current user only) — never put the token itself in .env' },
   { key: 'YOUTUBE_DAILY_QUOTA', section: 'YouTube OAuth and publishing', type: 'int', min: 100, max: 1000000, default: 10000, desc: 'YouTube Data API units per day for this project' },
+  { key: 'YOUTUBE_DEFAULT_PRIVACY', section: 'YouTube OAuth and publishing', type: 'enum', values: ['private', 'unlisted', 'public'], default: 'private', desc: 'Privacy of new YouTube uploads: private (default, safe), unlisted, or public. Public needs the wider YouTube permission (re-authorize first)' },
   // Notifications
   { key: 'NOTIFY_TOAST', section: 'Notification settings', type: 'bool', default: true, aliases: [['CINEFORGE_NO_TOAST', (v) => !truthy(v)]], desc: 'Windows toast for automation warnings / errors' },
   // System Setup (diagnostics)
@@ -65,6 +66,13 @@ export const SCHEMA = [
   { key: 'TTS_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'Kokoro TTS (local)' },
   { key: 'IMAGE_GENERATION_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'ComfyUI + DreamShaper (local)' },
   { key: 'VIDEO_RENDER_PROVIDER', section: 'Local video production', type: 'enum', values: ['local'], default: 'local', desc: 'Three.js capture + FFmpeg (local)' },
+  // AI Video Quality Inspector & Automatic Correction Gate
+  { key: 'GEMINI_QUALITY_MODEL', section: 'AI Video Quality Inspector', type: 'string', default: 'gemini-3.1-flash-lite', desc: 'Verified free-tier Gemini model for multimodal video quality inspection' },
+  { key: 'GEMINI_FREE_TIER_ONLY', section: 'AI Video Quality Inspector', type: 'bool', default: true, desc: 'Strict zero-cost enforcement: use only free-tier models, never bill or use paid APIs' },
+  { key: 'QUALITY_GATE_ENABLED', section: 'AI Video Quality Inspector', type: 'bool', default: true, desc: 'Enable pre-publish quality gate inspection before any video can be published' },
+  { key: 'QUALITY_GATE_MIN_SCORE', section: 'AI Video Quality Inspector', type: 'int', min: 0, max: 100, default: 85, desc: 'Minimum weighted quality score (0-100) required to PASS publishing gate' },
+  { key: 'QUALITY_GATE_MAX_RETRIES', section: 'AI Video Quality Inspector', type: 'int', min: 0, max: 10, default: 3, desc: 'Maximum automatic scene correction retry attempts before marking FAILED' },
+  { key: 'QUALITY_GATE_FAIL_CLOSED', section: 'AI Video Quality Inspector', type: 'bool', default: true, desc: 'Fail-closed policy: uninspected, failed, or quota-blocked videos strictly block publishing' },
 ];
 const KNOWN = new Set(SCHEMA.flatMap((s) => [s.key, ...(s.aliases || []).map((a) => (Array.isArray(a) ? a[0] : a))]));
 // variables that must never be printed (none are required in .env; listed so a user who adds one is still protected)

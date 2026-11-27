@@ -15,8 +15,10 @@ import { generateImage, seedFor, freeVram, readImageIndex, writeImageIndex } fro
 import { stopServer as stopLLM } from './llm.js';
 import { imageStats, judgeImage, judgeShots, autoLevel } from './exposure.js';
 import { claimsGate } from './factcheck.js';
-import { measureImage, technicalFindings, setFindings } from './imageqa.js';
+import { measureImage, technicalFindings, setFindings, inspectRenderFrames } from './imageqa.js';
 import { run } from './proc.js';
+import { getQualityInspector } from '../../quality-gate/index.js';
+
 
 // Stage weights: proportional to measured wall-clock time on the reference machine (i5-12450H + RTX 3050 6 GB)
 // for a ~40 s short; see logs/jobs/*.json "stages" for the timings they were derived from.
@@ -367,15 +369,52 @@ export async function runRenderJob(job, { projectId, config, scriptVersion, acce
     const measured = shotsImg.map((x) => ({ ...measureImage(x.file), sceneId: x.sceneId })), cross = setFindings(measured);
     const techF = measured.flatMap((m, i) => [...technicalFindings(m), ...cross[i]].map((f) => ({ sceneId: m.sceneId, ...f })));
     report.imageTechnical = { checked: measured.length, errors: techF.filter((f) => f.severity === 'error'), review: techF.filter((f) => f.severity === 'review'), warnings: techF.filter((f) => f.severity === 'warning') };
-    report.imageContent = { inspected: false, reason: 'no image-content (vision) model is installed — each image must be reviewed by a person' };
+    
+    // Frame-level visual content inspection on the rendered MP4 (sampling start, mid, end of each shot)
+    const frameQA = inspectRenderFrames(final, sb.shots, { ffmpeg: PATHS.ffmpeg, framesDir: path.join(dir, 'review', 'scene_frames') });
+    // Pixel-level only (black / blank / frozen frames). It does not verify what is in the picture, so content stays uninspected.
+    report.imageContent = {
+      inspected: false,
+      method: 'local pixel-level frame check (black/blank/frozen); image content needs vision QA',
+      scenesChecked: frameQA.scenesChecked,
+      errors: frameQA.errors,
+      results: frameQA.results.map((r) => ({ sceneId: r.sceneId, ok: r.ok, errors: r.errors })),
+    };
     const sv = getScriptVersion(projectId, version);
     report.scriptStatus = sv?.meta?.status || 'unknown';
-    const critical = [...(failed.length ? [`video QA failed: ${failed.join(', ')}`] : []), ...report.imageTechnical.errors.map((f) => `${f.sceneId}: ${f.problem}`)];
+    const frameErrors = frameQA.errors.map((f) => `${f.sceneId}: ${f.problem}`);
+    const critical = [
+      ...(failed.length ? [`video QA failed: ${failed.join(', ')}`] : []),
+      ...report.imageTechnical.errors.map((f) => `${f.sceneId}: ${f.problem}`),
+      ...frameErrors
+    ];
     const sbv = (() => { try { return readJSON(path.join(dir, 'storyboard', 'storyboard.json')).validation; } catch { return null; } })();
     const visualCritical = sbv && !sbv.ok ? sbv.shots.filter((x) => !x.ok).map((x) => `${x.id}: visual does not match its line — ${x.issues.join('; ')}`) : [];
-    const review = ['image content not inspected', ...(report.scriptStatus !== 'READY' ? [`script v${version} is ${report.scriptStatus}`] : []), ...report.imageTechnical.review.map((f) => `${f.sceneId}: ${f.problem}`), ...(report.status === 'PASS_WITH_WARNINGS' ? ['video QA passed with warnings'] : [])];
+    const review = ['image content not inspected',
+      ...(!frameQA.ok ? [`${frameQA.errors.length} scene(s) failed visual content check`] : []),
+      ...(report.scriptStatus !== 'READY' ? [`script v${version} is ${report.scriptStatus}`] : []),
+      ...report.imageTechnical.review.map((f) => `${f.sceneId}: ${f.problem}`),
+      ...(report.status === 'PASS_WITH_WARNINGS' ? ['video QA passed with warnings'] : [])
+    ];
     report.visualValidation = { ok: !visualCritical.length, failed: visualCritical };
     report.approval = { decision: (critical.length || visualCritical.length) ? 'REJECTED' : review.length ? 'NEEDS_REVIEW' : 'APPROVED', reasons: [...critical, ...visualCritical, ...review] };
+  }
+  // Run AI Video Quality Gate (multimodal visual, animation, interaction, audio, captions)
+  try {
+    const qgReport = await getQualityInspector().inspectVideo(final, { projectDir: dir, targetSeconds: T });
+    report.qualityGate = {
+      score: qgReport.overallScore,
+      status: qgReport.status,
+      categoryScores: qgReport.categoryScores,
+      publishAllowed: qgReport.publishAllowed,
+      defectsCount: (qgReport.defects || []).length,
+    };
+    if (qgReport.status !== 'PASS') {
+      report.approval.decision = qgReport.status === 'REVIEW' ? 'NEEDS_REVIEW' : 'REJECTED';
+      report.approval.reasons.push(...(qgReport.reasons || []));
+    }
+  } catch (e) {
+    job.warn(`Quality Gate inspection error: ${e.message}`);
   }
   fs.writeFileSync(path.join(dir, 'review', 'qa_report.json'), JSON.stringify(report, null, 2));
   if (failed.length) { rec((p) => { p.qa = report; p.status = 'failed'; }); throw new Error(`QA failed: ${failed.join(', ')}`); }

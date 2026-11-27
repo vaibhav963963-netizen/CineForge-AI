@@ -34,7 +34,8 @@ const TERMINAL = new Set(['completed', 'failed', 'cancelled']);
 export class CancelledError extends Error { constructor() { super('Job cancelled by user'); this.cancelled = true; } }
 
 export class Job {
-  constructor({ id, kind, projectId, title, config, plan, requestKey, configHash }) {
+  constructor({ id, kind, projectId, title, config, plan, requestKey, configHash, origin }) {
+    this.origin = origin || null;   // who started it: { source: 'automation', style, personality, voice, language, durationSeconds, ... }
     this.id = id || `job_${new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)}_${crypto.randomBytes(3).toString('hex')}`;
     this.kind = kind; this.projectId = projectId; this.title = title || projectId; this.config = config || null;
     this.requestKey = requestKey || null; this.configHash = configHash || null;
@@ -206,7 +207,7 @@ export class Job {
 
   snapshot() {
     return {
-      jobId: this.id, kind: this.kind, projectId: this.projectId, title: this.title, status: this.status,
+      jobId: this.id, kind: this.kind, projectId: this.projectId, title: this.title, origin: this.origin, status: this.status,
       currentStage: this.currentStage, currentStageName: this.currentStage ? this.stage(this.currentStage).name : null,
       progress: this.progress,
       stageProgress: (() => { const s = this.currentStage && this.stage(this.currentStage); return s && typeof s.fraction === 'number' ? Math.round(s.fraction * 1000) / 10 : null; })(),
@@ -225,7 +226,7 @@ export class Job {
   }
 
   static restore(data) {
-    const j = new Job({ id: data.jobId, kind: data.kind, projectId: data.projectId, title: data.title, config: data.config, plan: [], requestKey: data.requestKey, configHash: data.configHash });
+    const j = new Job({ id: data.jobId, kind: data.kind, projectId: data.projectId, title: data.title, config: data.config, plan: [], requestKey: data.requestKey, configHash: data.configHash, origin: data.origin || null });
     Object.assign(j, {
       status: data.status, currentStage: data.currentStage, message: data.message, progress: data.progress, warnings: data.warnings || [],
       error: data.error, failedStage: data.failedStage, result: data.result, createdAt: data.createdAt, startedAt: data.startedAt,

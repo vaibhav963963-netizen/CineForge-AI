@@ -53,10 +53,34 @@ function noiseTex(w, h, shade) {
   cx.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
 }
 // molten surface: dark plates separated by bright, branching cracks where the magma shows through
-const lavaShade = (u, v) => { const n = fbmP(u, v, 5), ridge = 1 - Math.abs(fbmP(u + 0.37, v + 0.11, 4) * 2 - 1), crack = clamp((ridge - 0.7) * 3.5), plate = 0.5 + 0.5 * (n - 0.5) * 2;
-  return [lerp(44 + 40 * plate, 255, crack), lerp(16 + 14 * plate, 170 + 40 * (1 - crack), crack), lerp(8, 40 * crack, crack)]; };
-// solidified crust: grey-brown rock with fine mottling
-const crustShade = (u, v) => { const n = fbmP(u, v, 5), m = fbmP(u + 0.5, v + 0.2, 3); return [70 + n * 80 + m * 20, 58 + n * 62 + m * 16, 44 + n * 48 + m * 10]; };
+const lavaShade = (u, v) => {
+  const n = fbmP(u, v, 5);
+  const ridge1 = 1 - Math.abs(fbmP(u + 0.37, v + 0.11, 4) * 2 - 1);
+  const ridge2 = 1 - Math.abs(fbmP(u * 2 + 0.81, v * 2 + 0.43, 3) * 2 - 1);
+  const ridge = ridge1 * 0.7 + ridge2 * 0.3;
+  const crack = clamp((ridge - 0.62) * 4.0);
+  const hotCore = clamp((ridge - 0.78) * 6.0);
+  const plate = 0.5 + 0.5 * (n - 0.5) * 2;
+  const crustColor = [lerp(28, 48, plate), lerp(18, 28, plate), lerp(14, 22, plate)];
+  const magmaColor = [lerp(230, 255, hotCore), lerp(90, 240, hotCore), lerp(10, 160, hotCore)];
+  return [
+    lerp(crustColor[0], magmaColor[0], crack),
+    lerp(crustColor[1], magmaColor[1], crack),
+    lerp(crustColor[2], magmaColor[2], crack),
+  ];
+};
+// solidified crust: grey-brown basaltic rock with highlands, crater rims, and fine mottling
+const crustShade = (u, v) => {
+  const n = fbmP(u, v, 6);
+  const m = fbmP(u + 0.5, v + 0.2, 4);
+  const fine = fbmP(u * 3 + 0.1, v * 3 + 0.7, 3);
+  const crater = Math.sin(n * 18) * 0.5 + 0.5;
+  const highland = clamp((n - 0.48) * 3);
+  const baseR = lerp(52, 98, highland) + m * 24 + fine * 12 + crater * 10;
+  const baseG = lerp(44, 82, highland) + m * 18 + fine * 10 + crater * 8;
+  const baseB = lerp(36, 68, highland) + m * 14 + fine * 8 + crater * 6;
+  return [baseR, baseG, baseB];
+};
 function lavaTex() { return noiseTex(1024, 512, lavaShade); }
 function crustTex() { return noiseTex(1024, 512, crustShade); }
 function oceanTex() {   // alpha = water: grows over the crust as the planet cools
@@ -66,13 +90,34 @@ function oceanTex() {   // alpha = water: grows over the crust as the planet coo
     c.globalCompositeOperation = 'source-over';
   });
 }
-// Earth: noise-based continents on a blue ocean, with brown mountain belts and white polar ice
+// Earth: detailed noise-based continents with coastal shelves, mountain ranges, biomes, and polar ice
 const earthShade = (u, v) => {
-  const n = fbmP(u, v, 6), dn = fbmP(u + 0.21, v + 0.63, 4), land = clamp((n - 0.5) * 9 + 0.5);
-  const sea = [24 + n * 12, 88 + n * 36, 150 + n * 50], green = [58 + dn * 40, 112 + dn * 50, 52 + dn * 26], brown = [130 + dn * 40, 104 + dn * 30, 66 + dn * 20];
-  const mount = clamp((dn - 0.55) * 4), ground = [lerp(green[0], brown[0], mount), lerp(green[1], brown[1], mount), lerp(green[2], brown[2], mount)];
-  const ice = clamp(Math.max(Math.abs(v - 0.5) - 0.42, 0) * 14);
-  return [lerp(lerp(sea[0], ground[0], land), 240, ice), lerp(lerp(sea[1], ground[1], land), 244, ice), lerp(lerp(sea[2], ground[2], land), 248, ice)];
+  const n = fbmP(u, v, 6);
+  const dn = fbmP(u + 0.21, v + 0.63, 4);
+  const micro = fbmP(u * 2 + 0.4, v * 2 + 0.8, 3);
+  const land = clamp((n - 0.5) * 12 + 0.5);
+  const shelf = clamp((n - 0.46) * 16);
+  const deepSea = [16, 54, 118];
+  const shallowSea = [38, 128, 168];
+  const sea = [lerp(deepSea[0], shallowSea[0], shelf), lerp(deepSea[1], shallowSea[1], shelf), lerp(deepSea[2], shallowSea[2], shelf)];
+  const lat = Math.abs(v - 0.5);
+  const desert = clamp(1 - Math.abs(lat - 0.22) * 8) * clamp(1 - dn * 1.2);
+  const green = [46 + micro * 25, 118 + dn * 40, 42 + micro * 20];
+  const savannah = [162 + micro * 30, 138 + micro * 20, 72 + micro * 15];
+  const mountColor = [124 + micro * 30, 102 + micro * 25, 78 + micro * 20];
+  const snow = [238, 242, 248];
+  const mount = clamp((dn - 0.52) * 5);
+  const alpineSnow = clamp((dn - 0.68) * 7);
+  let ground = [lerp(green[0], savannah[0], desert), lerp(green[1], savannah[1], desert), lerp(green[2], savannah[2], desert)];
+  ground = [lerp(ground[0], mountColor[0], mount), lerp(ground[1], mountColor[1], mount), lerp(ground[2], mountColor[2], mount)];
+  ground = [lerp(ground[0], snow[0], alpineSnow), lerp(ground[1], snow[1], alpineSnow), lerp(ground[2], snow[2], alpineSnow)];
+  const iceRagged = fbmP(u * 2 + 0.1, v * 2 + 0.9, 3) * 0.08;
+  const ice = clamp((lat + iceRagged - 0.41) * 18);
+  return [
+    lerp(lerp(sea[0], ground[0], land), 242, ice),
+    lerp(lerp(sea[1], ground[1], land), 246, ice),
+    lerp(lerp(sea[2], ground[2], land), 250, ice),
+  ];
 };
 function earthTex() { return noiseTex(1024, 512, earthShade); }
 function cloudTex() {
@@ -97,9 +142,9 @@ const RIG_COSMIC = {
   // the molten planet: a low-angle hero orbit that rises slowly
   molten: (k, t) => { const e = ease01(k), a = lerp(0.2, 1.3, e), d = drift(t, 0.15); return { pos: [Math.sin(a) * 14 + d[0], lerp(-1.5, 2.5, e) + d[1], Math.cos(a) * 14 + d[2]], look: [0, 0, 0] }; },
   // Theia strikes: a fast push-in and a shake that peaks at the moment of impact (k ≈ 0.55)
-  impact: (k, t) => { const e = ease01(k), amp = 0.4 * Math.exp(-Math.pow((k - 0.55) / 0.12, 2)), sh = [Math.sin(t * 41) * amp, Math.cos(t * 37) * amp, 0]; return { pos: [lerp(7, 3, e) + sh[0], lerp(5, 2.2, e) + sh[1], lerp(27, 15, e)], look: [-2 + sh[0] * 0.5, 0, 0] }; },
+  impact: (k, t) => { const e = ease01(k), amp = 0.4 * Math.exp(-Math.pow((k - 0.55) / 0.12, 2)), sh = [Math.sin(t * 41) * amp, Math.cos(t * 37) * amp, 0]; return { pos: [lerp(3, 0, e) + sh[0], lerp(4, 3, e) + sh[1], lerp(34, 28, e)], look: [0, 0, 0] }; },
   // the Moon forms: a crane up from the ring level to a wide view
-  moon: (k, t) => { const e = ease01(k), d = drift(t, 0.2); return { pos: [d[0], lerp(5, 18, e) + d[1], lerp(24, 38, e) + d[2]], look: [0, 0, 0] }; },
+  moon: (k, t) => { const e = ease01(k), d = drift(t, 0.2); return { pos: [d[0], lerp(14, 24, e) + d[1], lerp(38, 48, e) + d[2]], look: [0, 0, 0] }; },
   // cooling: a slow high-angle descent onto the surface
   cooling: (k, t) => { const e = ease01(k), d = drift(t, 0.2); return { pos: [lerp(-6, 6, e) + d[0], lerp(16, 6, e) + d[1], lerp(18, 13, e) + d[2]], look: [0, 0, 0] }; },
   // the atmosphere: a close orbit around the limb of the planet
@@ -154,10 +199,10 @@ const WORLDS = {
     const cloud = points(cloudSeed.length, (i) => [0, 0, 0, rnd(i + 5) > 0.7 ? '#FFD39A' : '#B58B6A'], 0.6, '#fff', { opacity: 0.95 }); scene.add(cloud);
     // a glowing dust nebula and a bright core, so the collapsing cloud is visible from the first frame
     const cloudGlow = glowSprite('#FF9A3D', 34, 0); cloudGlow.position.set(0, 0, -6); scene.add(cloudGlow);
-    const cloudCore = glowSprite('#FFE3A8', 6, 0); scene.add(cloudCore);
+    const cloudCore = glowSprite('#FFE3A8', 3.5, 0); scene.add(cloudCore);
     // iron droplets sinking through a cross-section of the Earth (core action)
-    const coreSeed = Array.from({ length: 90 }, (_, i) => ({ a: rnd(i + 600) * 6.28, r: 3.4 + rnd(i + 601) * 0.5, z: (rnd(i + 602) - 0.5) * 0.3 }));
-    const coreIron = points(coreSeed.length, () => [0, 0, 0, '#FFE6A0'], 0.2, '#fff', { opacity: 0 }); scene.add(coreIron);
+    const coreSeed = Array.from({ length: 140 }, (_, i) => ({ a: rnd(i + 600) * 6.28, r: 3.4 + rnd(i + 601) * 0.6, z: (rnd(i + 602) - 0.5) * 0.3 }));
+    const coreIron = points(coreSeed.length, (i) => [0, 0, 0, rnd(i) > 0.4 ? '#FFAA33' : '#FF7711'], 0.65, '#fff', { opacity: 0 }); scene.add(coreIron);
     const steam = points(500, (i) => { const u = rnd(i) * 2 - 1, th = rnd(i + 1) * 6.28, s = Math.sqrt(1 - u * u), r = 4.3 + rnd(i + 2) * 0.9; return [r * s * Math.cos(th), r * u, r * s * Math.sin(th), '#DDE6EE']; }, 0.5, '#fff', { opacity: 0, additive: false }); planet.add(steam);
     const volcanoes = []; for (let i = 0; i < 7; i++) { const s = glowSprite('#FFB02E', 1.4, 0); const u = rnd(i + 40) * 1.6 - 0.8, th = rnd(i + 41) * 6.28, q = Math.sqrt(1 - u * u); s.position.set(4.1 * q * Math.cos(th), 4.1 * u, 4.1 * q * Math.sin(th)); planet.add(s); volcanoes.push(s); }
     // impactor (Theia) and debris
@@ -191,7 +236,7 @@ const WORLDS = {
         } else if (action === 'collapse') {
           // the cloud contracts under its own gravity and flattens into a spinning disk; particles follow their own paths
           cloud.visible = true; const g = eio(k), cp = cloud.geometry.attributes.position.array;
-          cloudGlow.visible = cloudCore.visible = true; cloudGlow.material.opacity = 0.3 + 0.25 * g; cloudCore.material.opacity = 0.35 + 0.6 * g; cloudCore.scale.setScalar(4 + 6 * g);
+          cloudGlow.visible = cloudCore.visible = true; cloudGlow.material.opacity = 0.3 + 0.25 * g; cloudCore.material.opacity = 0.2 + 0.25 * g; cloudCore.scale.setScalar(2.2 + 2.5 * g);
           cloudSeed.forEach((q, i) => { const r = lerp(q.r, q.rd, g), th = q.th + t * 0.25 * (1 + q.rd / 6), y = lerp(q.y, q.yd, g); cp[i * 3] = Math.cos(th) * r; cp[i * 3 + 1] = y; cp[i * 3 + 2] = Math.sin(th) * r; });
           cloud.geometry.attributes.position.needsUpdate = true; cloud.material.opacity = 0.85 * (1 - 0.3 * g);
           sunLight.position.set(-30, 10, 20);
@@ -200,7 +245,7 @@ const WORLDS = {
           // cross-section of the molten Earth: iron droplets sink from the mantle to the centre, lighter rock stays out
           cutE.visible = coreIron.visible = true; cutE.position.set(0, 0, -0.5); cutE.scale.setScalar(1.25); cutE.children.forEach((m, j) => (m.material.opacity = 1));
           const ci = coreIron.geometry.attributes.position.array; coreIron.material.opacity = 0.95;
-          coreSeed.forEach((q, i) => { const gi = clamp(k * 1.3 - i * 0.008), r = lerp(q.r, 0.35, eio(gi)), a = q.a + gi * 0.6; ci[i * 3] = Math.cos(a) * r; ci[i * 3 + 1] = Math.sin(a) * r * 1.0; ci[i * 3 + 2] = q.z + 0.35; });
+          coreSeed.forEach((q, i) => { const gi = clamp(k * 1.3 - i * 0.005), r = lerp(q.r, 0.35, eio(gi)), a = q.a + gi * 0.6; ci[i * 3] = Math.cos(a) * r; ci[i * 3 + 1] = Math.sin(a) * r * 1.0; ci[i * 3 + 2] = q.z + 0.35; });
           coreIron.geometry.attributes.position.needsUpdate = true;
           cam.pos.set(0, 0.6, lerp(12, 10, eio(k))); cam.look.set(0, 0, 0);
         } else if (action === 'accrete') {

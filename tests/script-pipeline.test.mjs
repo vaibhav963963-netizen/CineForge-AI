@@ -75,7 +75,7 @@ test('editorial: the whole-script model judgment is advisory (calibration showed
 import fs from 'node:fs';
 import { unframedLines } from '../dashboard/lib/scriptgen.js';
 test('native generation: the primary pipeline never translates (generateCore does not call viaEnglish)', () => {
-  const src = fs.readFileSync(new URL('../dashboard/lib/scriptgen.js', import.meta.url), 'utf8');
+  const src = fs.readFileSync(new URL('../dashboard/lib/scriptgen.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');   // line-ending independent
   const core = src.slice(src.indexOf('async function generateCore'), src.indexOf('\n}\n', src.indexOf('async function generateCore')));
   assert.ok(!/viaEnglish\(/.test(core)); assert.ok(/generateDirect\(config, opts\)/.test(core));
 });
@@ -111,7 +111,7 @@ test('writer rules contain no real topic names as examples (seen: "Sher Shah Sur
 
 test('render report: image technical checks never stand in for image content; approval is separate from video QA', () => {
   const src = fs.readFileSync(new URL('../dashboard/lib/pipeline.js', import.meta.url), 'utf8');
-  assert.match(src, /report\.imageContent = \{ inspected: false/);
+  assert.match(src, /report\.imageContent = \{\s*inspected: false/);   // layout-independent
   assert.match(src, /const review = \['image content not inspected'/);   // content not inspected → never APPROVED
   assert.match(src, /decision: \(critical\.length \|\| visualCritical\.length\) \? 'REJECTED' : review\.length \? 'NEEDS_REVIEW' : 'APPROVED'/);
   assert.match(src, /script v\$\{version\} is \$\{report\.scriptStatus\}/);
