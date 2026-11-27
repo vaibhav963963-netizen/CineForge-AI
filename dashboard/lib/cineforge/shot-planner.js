@@ -1,7 +1,7 @@
 // CineForge stage 2a: visual events → timed shots.
 // Each narration segment's time window (from the real word timestamps) is split evenly across its events. Nothing is
 // clamped silently: a shot shorter than MIN_SHOT_S is reported by validateShots, so the planner can't hide bad timing.
-import { CAMERA_MOVES, MOTIONS } from './narrative-analyzer.js';
+import { CAMERA_MOVES, MOTIONS } from './vocab.js';
 
 export const MIN_SHOT_S = 1.0;
 export const TIME_TOLERANCE_S = 0.01;

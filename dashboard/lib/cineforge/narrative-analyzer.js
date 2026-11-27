@@ -5,10 +5,10 @@
 // If the provider fails or its output does not validate, the analyzer falls back to one event per segment and says so.
 // This module is additive: nothing in the current storyboard pipeline calls it unless CINEFORGE_ENABLED is on.
 import { chat } from '../groq.js';
+import { CAMERA_MOVES, MOTIONS } from './vocab.js';
 
+export { CAMERA_MOVES, MOTIONS };
 export const MAX_EVENTS_PER_SEGMENT = 6;
-export const CAMERA_MOVES = ['static', 'push', 'pull', 'orbit', 'track', 'crane', 'shake'];
-export const MOTIONS = ['stay', 'approach', 'recede', 'cross', 'rise', 'fall', 'impact'];
 
 export const EVENT_SCHEMA = {
   type: 'object',

@@ -1,7 +1,7 @@
 // CineForge stage 2b: renderer-agnostic keyframe evaluation. Given a shot and a time, returns the camera and the main
 // subject's transform. Three.js (next step) applies these numbers; this file has no browser or GPU dependency, so it is
 // testable in Node. Every move is a closed enum from narrative-analyzer.js, never free text.
-import { CAMERA_MOVES, MOTIONS } from './narrative-analyzer.js';
+import { CAMERA_MOVES, MOTIONS } from './vocab.js';
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const lerp = (a, b, t) => a + (b - a) * t;
