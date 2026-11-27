@@ -13,7 +13,11 @@ import { drawCaption } from './captions.js';
 
 const TRANSITION_S = 0.4;
 const CHANGE_LEVEL = 16;
-const PERSON_FRAMING = 0.22;   // person sets: the camera comes in close (a person is ~1.7 m tall; the asteroid framing is ~9 m)
+// person sets: camera distance (m) and the height of the look point (m) for each shot size. A person is ~1.7 m tall.
+const PERSON_FRAME = {
+  'extreme-wide': { d: 3.6, y: 0.95 }, wide: { d: 2.9, y: 1.0 }, medium: { d: 2.1, y: 1.12 },
+  'close-up': { d: 1.3, y: 1.42 }, 'extreme-close-up': { d: 0.85, y: 1.58 },
+};
 // lighting presets: scales on the set's base lights, plus an optional coloured glow near the subject
 const LOOK = {
   sunlit: {},
@@ -82,23 +86,41 @@ function applyLook(S, name, subjPos) {
 
 const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 /** a person's pose for the shot's motion at progress p (Deep Dive pose conventions, degrees) */
-function poseHuman(h, motion, p) {
+// blinking is a function of the film time, so it is the same on every render: a quick close every 3.2 s
+const BLINK_PERIOD = 3.2, BLINK_LEN = 0.16;
+function blinkAt(t) {
+  const ph = ((t % BLINK_PERIOD) + BLINK_PERIOD) % BLINK_PERIOD;
+  if (ph >= BLINK_LEN) return 0;
+  return 1 - Math.abs(ph / BLINK_LEN * 2 - 1);   // 0 → 1 → 0 across the blink
+}
+/**
+ * a person's pose for the shot's motion at progress p, at film time t (Deep Dive pose conventions, degrees).
+ * Gestures: hands together (approach), a wave (cross), a hand to the throat (impact), a hand on the chest (rise),
+ * limp arms (fall). Eyes look toward the camera, or up at the thing they are thinking about. Blinks are added on top.
+ */
+function poseHuman(h, motion, p, t = 0) {
   h.pose({});
   h.parts[0].scale.set(1, 1, 1);
-  const k = ease(p);
+  const k = ease(p), blink = blinkAt(t);
+  let q;
   switch (motion) {
-    case 'rise':     // breathes in: the chest lifts, the head tilts back a little
+    case 'rise':     // breathes in: the chest lifts, a hand rests on the chest
       h.parts[0].scale.set(1 + 0.03 * k, 1 + 0.012 * k, 1 + 0.08 * k);
-      h.pose({ head: [-4 * k, 0, 0], shL: [0, 0, 6 + 6 * k], shR: [0, 0, 6 + 6 * k] }); break;
-    case 'fall':     // faints: the spine folds, the head drops, the eyes close
-      h.pose({ spine: [10 * k, 0, 0], head: [14 * k, -6 * k, 0], lid: 1.05 * k }); break;
-    case 'impact':   // a jolt that dies away
-      h.pose({ spine: [-6 * Math.exp(-p * 6) * Math.sin(p * 30), 0, 0], head: [-4 * Math.exp(-p * 5) * Math.sin(p * 28), 0, 0] }); break;
-    case 'approach': h.pose({ head: [0, -10 * k, 0], spine: [-3 * k, 0, 0] }); break;
-    case 'recede':   h.pose({ head: [0, 10 * k, 0] }); break;
-    case 'cross':    h.pose({ head: [0, 14 * Math.sin(p * Math.PI), 0], spine: [0, 0, 6 * Math.sin(p * Math.PI)] }); break;
-    default:         h.pose({ head: [2 * Math.sin(p * 2), 0, 0] });   // stay: a slight idle sway
+      q = { head: [-4 * k, 0, 0], shR: [22 * k, 0, -18 * k], elR: 85 * k, shL: [0, 0, 8], look: [0, -4 * k] }; break;
+    case 'fall':     // faints: the spine folds, the head drops, the arms go limp, the eyes close
+      q = { spine: [10 * k, 0, 0], head: [14 * k, -6 * k, 0], shL: [-10 * k, 0, 20 * k], shR: [-10 * k, 0, 20 * k], elL: 10, elR: 10, lid: 1.05 * k }; break;
+    case 'impact':   // a jolt that dies away, a hand goes to the throat, the eyes go up
+      q = { spine: [-6 * Math.exp(-p * 6) * Math.sin(p * 30), 0, 0], head: [-4 * Math.exp(-p * 5) * Math.sin(p * 28), 0, 0],
+        shR: [55 * k, 0, -22 * k], elR: 105 * k, look: [0, -14 * k] }; break;
+    case 'approach': // leans in, hands come together in front
+      q = { head: [0, -10 * k, 0], spine: [-3 * k, 0, 0], shL: [34 * k, 0, 12 * k], elL: 70 * k, shR: [34 * k, 0, -12 * k], elR: 70 * k }; break;
+    case 'recede':   q = { head: [0, 10 * k, 0] }; break;
+    case 'cross':    // turns, waves with the right hand
+      q = { head: [0, 14 * Math.sin(p * Math.PI), 0], spine: [0, 0, 6 * Math.sin(p * Math.PI)], shR: [0, 0, 62 * k], elR: 28 + 26 * Math.sin(p * 14) }; break;
+    default:         q = { head: [2 * Math.sin(p * 2), 0, 0] };   // stay: a slight idle sway
   }
+  q.lid = Math.max(q.lid ?? 0, blink);   // blink on top of any closing of the eyes
+  h.pose(q);
 }
 
 /** render the frame at time t into the film canvas (WebGL), without the transition */
@@ -115,13 +137,22 @@ function renderShot(t) {
   const c = cameraAt(shot.camera, p, shot.shotSize || 'medium');
   // person sets: the look target stays on the person's centre and the camera moves around it (a track is a sideways move
   // around the person, not a pan away from them); the offset from the centre is scaled to the person's size
-  const look = person ? [0, 1, 0] : c.look;
-  const camPos = person ? c.pos.map((v, i) => look[i] + (v - c.look[i]) * PERSON_FRAMING) : c.pos;
+  // person framing: the shot size sets the distance and the height of the look point (a close-up holds the head and
+  // shoulders); the camera move (push, track, orbit, crane) changes the direction and the distance around that frame
+  let look = c.look, camPos = c.pos;
+  if (person) {
+    const F = PERSON_FRAME[shot.shotSize] || PERSON_FRAME.medium;
+    look = [0, F.y, 0];
+    const off = [c.pos[0] - c.look[0], c.pos[1] - c.look[1], c.pos[2] - c.look[2]];
+    const len = Math.hypot(...off) || 1;
+    const dist = F.d * (len / 9);   // cameraAt's distances are ~9 units; a push shortens the distance, a pull lengthens it
+    camPos = [dist * off[0] / len, F.y + dist * off[1] / len, dist * off[2] / len];
+  }
   cam.position.set(...camPos); cam.lookAt(...look); cam.fov = c.fov; cam.updateProjectionMatrix();
   let subjPos;
   if (person) {
     setPersonXray(subj.human, shot.set === 'xray');
-    poseHuman(subj.human, shot.motion, p);
+    poseHuman(subj.human, shot.motion, p, t);
     subjPos = [0, 1, 0];
     subj.root.position.set(0, 0, 0);
   } else {
