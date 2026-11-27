@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CineForge (Deep Dive 3D engine)</title>
+<style>
+@font-face { font-family: 'Inter'; font-weight: 900; src: url('../styles/deep-dive/example/fonts/Inter-Black.otf'); }
+html,body{margin:0;background:#000}#cv{display:block;height:100vh;width:auto}#gl{display:none}
+</style>
+<!-- Vendored three.js used by the Deep Dive style. Read-only: this page does not modify the Deep Dive folders. -->
+<script type="importmap">{"imports":{"three":"../styles/deep-dive/example/vendor/three.module.js","three/addons/":"../styles/deep-dive/example/vendor/addons/"}}</script>
+</head>
+<body>
+<canvas id="cv" width="1080" height="1920"></canvas>
+<canvas id="gl" width="1080" height="1920"></canvas>
+<pre id="out">pending</pre>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

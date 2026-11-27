@@ -1,7 +1,7 @@
 // CineForge stage 1: narration → shot events. No network: the provider is injected.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeNarration, validateEvents, fallbackEvents, EVENT_SCHEMA, MAX_EVENTS_PER_SEGMENT, CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS } from '../dashboard/lib/cineforge/narrative-analyzer.js';
+import { analyzeNarration, validateEvents, fallbackEvents, EVENT_SCHEMA, MAX_EVENTS_PER_SEGMENT, CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, SETS } from '../dashboard/lib/cineforge/narrative-analyzer.js';
 import { MIN_SHOTS_PER_SEGMENT } from '../dashboard/lib/cineforge/vocab.js';
 
 const SEGS = [
@@ -11,7 +11,7 @@ const SEGS = [
 
 // one complete event, with every required field
 const ev = (segmentId, over = {}) => ({
-  segmentId, subject: 'asteroid', action: 'approaches Earth', environment: 'space',
+  segmentId, subject: 'asteroid', action: 'approaches Earth', environment: 'space', set: 'space', caption: 'The *asteroid',
   startState: 'far away, small', endState: 'close, large', motion: 'approach', camera: 'static',
   shotSize: 'wide', lighting: 'sunlit', effect: 'none', transition: 'cut', ...over,
 });
@@ -40,6 +40,7 @@ test('closed vocabularies: camera, framing, lighting, effects and transitions ar
   assert.deepEqual(p.lighting.enum, LIGHTING);
   assert.deepEqual(p.effect.enum, EFFECTS);
   assert.deepEqual(p.transition.enum, TRANSITIONS);
+  assert.deepEqual(p.set.enum, SETS);
   assert.ok(CAMERA_MOVES.includes('aerial') && SHOT_SIZES.includes('extreme-close-up'));
 });
 

@@ -9,7 +9,7 @@ const SEGMENTS = [
   { id: 'S1', start: 0.0, end: 9.0 },
   { id: 'S2', start: 9.0, end: 12.0 },
 ];
-const base = (over) => ({ startState: 'start', endState: 'end', motion: 'approach', camera: 'static', shotSize: 'wide', lighting: 'sunlit', effect: 'none', transition: 'cut', ...over });
+const base = (over) => ({ set: 'space', caption: 'Caption *here', startState: 'start', endState: 'end', motion: 'approach', camera: 'static', shotSize: 'wide', lighting: 'sunlit', effect: 'none', transition: 'cut', ...over });
 const EVENTS = [
   { id: 'E001', segmentId: 'S1', subject: 'Asteroid', action: 'Earth from space', environment: 'space', ...base({ motion: 'recede', camera: 'aerial', shotSize: 'extreme-wide', subject: 'Earth' }) },
   { id: 'E002', segmentId: 'S1', subject: 'asteroid ', action: 'approaches', environment: 'space', ...base({ camera: 'track', shotSize: 'wide', lighting: 'backlit-rim', transition: 'dissolve' }) },
@@ -110,6 +110,13 @@ test('a shot missing its start or end state is an error', () => {
   const seg = [{ id: 'S2', start: 0, end: 1 }];
   const v = validateShots(planShots(noEnd, seg).shots, seg);
   assert.ok(v.errors.some((m) => /needs both a startState and an endState/.test(m)));
+});
+
+test('a shot without a caption is an error (the on-screen text is part of the shot)', () => {
+  const noCap = [{ id: 'E1', segmentId: 'S2', subject: 'a', action: 'x', environment: 'y', ...base({ caption: '' }) }];
+  const seg = [{ id: 'S2', start: 0, end: 1 }];
+  const v = validateShots(planShots(noCap, seg).shots, seg);
+  assert.ok(v.errors.some((m) => /needs a caption/.test(m)));
 });
 
 test('three shots in a row at the same framing is a warning, not an error', () => {

@@ -13,6 +13,10 @@ export const MOTIONS = ['stay', 'approach', 'recede', 'cross', 'rise', 'fall', '
 // lighting look for the shot
 export const LIGHTING = ['sunlit', 'backlit-rim', 'night-ambient', 'fire-glow', 'plasma-glow'];
 
+// the place the shot is set in: decides which set the renderer builds
+// space / atmosphere / ground: the planet and impact world. kitchen / xray: the Deep Dive home world, with a person.
+export const SETS = ['space', 'atmosphere', 'ground', 'kitchen', 'xray'];
+
 // physical effects rendered as particles or meshes
 export const EFFECTS = ['none', 'fire-plasma', 'debris', 'shockwave', 'dust-cloud'];
 

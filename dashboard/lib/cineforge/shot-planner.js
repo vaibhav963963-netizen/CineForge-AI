@@ -2,7 +2,7 @@
 // Each narration segment (one sentence) has its real time window from the word timestamps. Its events are shots, split
 // evenly across the window. Nothing is clamped silently: a shot shorter than MIN_SHOT_S, or a sentence with too few or
 // too many shots for its length, is reported by validateShots.
-import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
+import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, SETS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
 
 export const MIN_SHOT_S = 1.0;
 export const TIME_TOLERANCE_S = 0.01;
@@ -40,6 +40,8 @@ export function planShots(events, segments) {
         subjectId: subjectId(e.subject),
         action: e.action,
         environment: e.environment,
+        set: e.set,
+        caption: e.caption,
         startState: e.startState,
         endState: e.endState,
         motion: e.motion,
@@ -66,7 +68,7 @@ export function shotCountBounds(spanSeconds) {
  */
 export function validateShots(shots, segments) {
   const errors = [], warnings = [];
-  const enums = { motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
+  const enums = { set: SETS, motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
   for (const s of shots) {
     if (s.duration < MIN_SHOT_S - TIME_TOLERANCE_S) errors.push(`${s.id}: ${s.duration}s is shorter than ${MIN_SHOT_S}s`);
     for (const [k, allowed] of Object.entries(enums)) {
@@ -74,6 +76,7 @@ export function validateShots(shots, segments) {
     }
     if (!s.subjectId) errors.push(`${s.id}: has no subject`);
     if (!s.startState || !s.endState) errors.push(`${s.id}: needs both a startState and an endState`);
+    if (!s.caption || !String(s.caption).trim()) errors.push(`${s.id}: needs a caption`);
     if (s.motion === 'stay' && s.effect === 'none') errors.push(`${s.id}: static shot, needs a subject motion or an effect`);
   }
   for (let i = 1; i < shots.length; i++) {
