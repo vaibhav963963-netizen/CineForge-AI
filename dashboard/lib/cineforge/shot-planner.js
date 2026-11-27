@@ -1,7 +1,8 @@
 // CineForge stage 2a: visual events → timed shots.
-// Each narration segment's time window (from the real word timestamps) is split evenly across its events. Nothing is
-// clamped silently: a shot shorter than MIN_SHOT_S is reported by validateShots, so the planner can't hide bad timing.
-import { CAMERA_MOVES, MOTIONS } from './vocab.js';
+// Each narration segment (one sentence) has its real time window from the word timestamps. Its events are shots, split
+// evenly across the window. Nothing is clamped silently: a shot shorter than MIN_SHOT_S, or a sentence with too few or
+// too many shots for its length, is reported by validateShots.
+import { CAMERA_MOVES, MOTIONS, SHOT_SIZES, LIGHTING, EFFECTS, TRANSITIONS, MIN_SHOTS_PER_SEGMENT, MAX_SHOTS_PER_SEGMENT } from './vocab.js';
 
 export const MIN_SHOT_S = 1.0;
 export const TIME_TOLERANCE_S = 0.01;
@@ -39,22 +40,41 @@ export function planShots(events, segments) {
         subjectId: subjectId(e.subject),
         action: e.action,
         environment: e.environment,
+        startState: e.startState,
+        endState: e.endState,
         motion: e.motion,
         camera: e.camera,
+        shotSize: e.shotSize,
+        lighting: e.lighting,
+        effect: e.effect,
+        transition: e.transition,
       });
     });
   }
   return { shots, errors };
 }
 
-/** Checks the plan. Returns { ok, errors }. Timing problems are reported, never repaired silently. */
+/** how many shots a sentence of this length can carry: 3–6, but never shorter than MIN_SHOT_S per shot */
+export function shotCountBounds(spanSeconds) {
+  const fit = Math.floor((spanSeconds + TIME_TOLERANCE_S) / MIN_SHOT_S);
+  return { min: Math.min(MIN_SHOTS_PER_SEGMENT, fit), max: Math.min(MAX_SHOTS_PER_SEGMENT, fit) };
+}
+
+/**
+ * Checks the plan. Returns { ok, errors, warnings }. Problems are reported, never repaired silently.
+ * segments: [{ id, start, end }] — needed for the per-sentence shot counts and coverage checks.
+ */
 export function validateShots(shots, segments) {
-  const errors = [];
+  const errors = [], warnings = [];
+  const enums = { motion: MOTIONS, camera: CAMERA_MOVES, shotSize: SHOT_SIZES, lighting: LIGHTING, effect: EFFECTS, transition: TRANSITIONS };
   for (const s of shots) {
     if (s.duration < MIN_SHOT_S - TIME_TOLERANCE_S) errors.push(`${s.id}: ${s.duration}s is shorter than ${MIN_SHOT_S}s`);
-    if (!MOTIONS.includes(s.motion)) errors.push(`${s.id}: motion "${s.motion}" is not allowed`);
-    if (!CAMERA_MOVES.includes(s.camera)) errors.push(`${s.id}: camera "${s.camera}" is not allowed`);
+    for (const [k, allowed] of Object.entries(enums)) {
+      if (!allowed.includes(s[k])) errors.push(`${s.id}: ${k} "${s[k]}" is not allowed`);
+    }
     if (!s.subjectId) errors.push(`${s.id}: has no subject`);
+    if (!s.startState || !s.endState) errors.push(`${s.id}: needs both a startState and an endState`);
+    if (s.motion === 'stay' && s.effect === 'none') errors.push(`${s.id}: static shot, needs a subject motion or an effect`);
   }
   for (let i = 1; i < shots.length; i++) {
     if (shots[i].start < shots[i - 1].end - TIME_TOLERANCE_S) errors.push(`${shots[i].id} overlaps ${shots[i - 1].id}`);
@@ -65,6 +85,16 @@ export function validateShots(shots, segments) {
     if (Math.abs(mine[0].start - seg.start) > TIME_TOLERANCE_S || Math.abs(mine.at(-1).end - seg.end) > TIME_TOLERANCE_S) {
       errors.push(`segment ${seg.id} is not fully covered by its shots`);
     }
+    const { min, max } = shotCountBounds(seg.end - seg.start);
+    if (min < 1) errors.push(`segment ${seg.id} is too short (${(seg.end - seg.start).toFixed(2)} s) for even one ${MIN_SHOT_S}s shot`);
+    else if (mine.length < min || mine.length > max) {
+      errors.push(`segment ${seg.id} has ${mine.length} shots; this sentence needs ${min}–${max}`);
+    }
+    for (let i = 2; i < mine.length; i++) {
+      if (mine[i].shotSize === mine[i - 1].shotSize && mine[i - 1].shotSize === mine[i - 2].shotSize) {
+        warnings.push(`${mine[i].id}: three shots in a row at the same framing (${mine[i].shotSize}); vary the angles`);
+      }
+    }
   }
-  return { ok: errors.length === 0, errors };
+  return { ok: errors.length === 0, errors, warnings };
 }

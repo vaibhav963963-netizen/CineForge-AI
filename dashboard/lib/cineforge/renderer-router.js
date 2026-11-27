@@ -1,10 +1,20 @@
 // CineForge renderer router: chooses Three.js or Blender for each shot.
-// Rules from the spec: quality and fidelity come first, within hardware limits. A requested renderer that is not
-// available is an ERROR with a reason, never a silent switch. Blender is "unavailable" until its install is detected.
+// A shot goes to Blender only if it needs a capability the Three.js renderer does not have. The capabilities Three.js
+// implements are listed below; anything else in a shot (an effect or light it cannot draw) is a requirement for Blender.
+// A requested renderer that is not available is an ERROR with a reason, never a silent switch.
 export const RENDERERS = ['threejs', 'blender'];
 
-/** Simple, explainable preference. Blender is only chosen for shots that need physics, smoke/fire or close-up detail. */
-const NEEDS_BLENDER = new Set(['impact']);   // the shot motions that need simulation-grade effects today
+// What the Three.js stage implements today (see stage-renderer.js). Extend this list when the renderer gains a capability.
+export const THREEJS_EFFECTS = ['none', 'fire-plasma', 'debris', 'shockwave', 'dust-cloud'];
+export const THREEJS_LIGHTING = ['sunlit', 'backlit-rim', 'night-ambient', 'fire-glow', 'plasma-glow'];
+
+/** The capabilities a shot needs that the Three.js renderer lacks. Empty means Three.js can render it. */
+export function missingThreejsCapabilities(shot) {
+  const missing = [];
+  if (shot.effect && !THREEJS_EFFECTS.includes(shot.effect)) missing.push(`effect:${shot.effect}`);
+  if (shot.lighting && !THREEJS_LIGHTING.includes(shot.lighting)) missing.push(`lighting:${shot.lighting}`);
+  return missing;
+}
 
 export function chooseRenderer(shot, { override = null, available = { threejs: true, blender: false } } = {}) {
   if (override) {
@@ -12,12 +22,13 @@ export function chooseRenderer(shot, { override = null, available = { threejs: t
     if (!available[override]) return { renderer: null, error: `${override} was requested but is not available; not switching silently` };
     return { renderer: override, reason: 'manual override' };
   }
-  if (NEEDS_BLENDER.has(shot.motion) && shot.camera === 'shake') {
-    if (available.blender) return { renderer: 'blender', reason: 'impact with camera shake needs simulation-grade effects' };
-    return { renderer: null, error: `${shot.id} needs blender (impact + shake) but blender is not available` };
+  const missing = missingThreejsCapabilities(shot);
+  if (missing.length) {
+    if (available.blender) return { renderer: 'blender', reason: `needs ${missing.join(', ')}, which Three.js does not implement` };
+    return { renderer: null, error: `${shot.id} needs ${missing.join(', ')}; Three.js does not implement it and blender is not available` };
   }
   if (!available.threejs) return { renderer: null, error: 'no renderer available' };
-  return { renderer: 'threejs', reason: 'lightweight shot the Three.js renderer handles' };
+  return { renderer: 'threejs', reason: 'rendered by the Three.js stage' };
 }
 
 /** Route every shot. Returns { plan: [{ shotId, renderer, reason }], errors }. */

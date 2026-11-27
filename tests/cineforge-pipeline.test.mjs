@@ -27,15 +27,22 @@ test('renderer router: lightweight shots go to Three.js', () => {
   assert.equal(chooseRenderer(SHOTS[0]).renderer, 'threejs');
 });
 
-test('renderer router: impact + shake goes to Blender when Blender is available', () => {
-  assert.equal(chooseRenderer(SHOTS[2], { available: { threejs: true, blender: true } }).renderer, 'blender');
+test('renderer router: impact + shake stays on Three.js (both are implemented there)', () => {
+  assert.equal(chooseRenderer(SHOTS[2]).renderer, 'threejs');
+  assert.equal(chooseRenderer(SHOTS[2], { available: { threejs: true, blender: true } }).renderer, 'threejs');
+});
+
+test('renderer router: a shot needing an effect Three.js lacks goes to Blender when available', () => {
+  const smoke = { ...SHOTS[2], effect: 'volumetric-smoke' };
+  assert.equal(chooseRenderer(smoke, { available: { threejs: true, blender: true } }).renderer, 'blender');
 });
 
 test('renderer router: a needed Blender that is missing is an error, never a silent switch', () => {
-  const r = chooseRenderer(SHOTS[2]);   // Blender not available in this environment
+  const smoke = { ...SHOTS[2], id: 'SH009', effect: 'volumetric-smoke' };
+  const r = chooseRenderer(smoke);   // Blender not available in this environment
   assert.equal(r.renderer, null);
-  assert.match(r.error, /needs blender .* not available/);
-  const routed = routeShots(SHOTS);
+  assert.match(r.error, /SH009 needs effect:volumetric-smoke/);
+  const routed = routeShots([SHOTS[0], smoke, SHOTS[2]]);
   assert.equal(routed.plan.length, 2);
   assert.equal(routed.errors.length, 1);
 });
