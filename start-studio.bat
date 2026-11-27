@@ -1,8 +1,10 @@
 @echo off
-rem CineForgeAI launcher. Port 1000 only. Opens the studio in Chrome (or Edge) full screen.
+rem CineForgeAI launcher. The studio server runs on port 1000 only; the browser uses http://cineforgeai.in/
+rem (port 80 is forwarded to 1000 by a Windows port proxy). Opens the studio full screen.
 rem If the studio is already running, do NOT start a second one: just open it.
 rem Otherwise start the server in this terminal window.
-set "STUDIO_URL=http://cineforgeai.in:1000/"
+set "STUDIO_URL=http://cineforgeai.in/"
+set "STUDIO_LOCAL=http://127.0.0.1:1000/"
 
 if /i "%~1"=="open" goto openbrowser
 
@@ -10,7 +12,7 @@ title CineForgeAI - %STUDIO_URL%
 cd /d "%~dp0dashboard"
 set PORT=1000
 
-curl -s -o nul --max-time 2 %STUDIO_URL%
+curl -s -o nul --max-time 2 %STUDIO_LOCAL%
 if not errorlevel 1 (
   echo CineForgeAI is already running on %STUDIO_URL%
   echo Opening it full screen. Not starting a second copy.

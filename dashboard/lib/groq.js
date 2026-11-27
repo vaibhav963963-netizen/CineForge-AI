@@ -10,7 +10,8 @@ export const activity = new EventEmitter();
 const emit = (e) => { activity.emit('event', { at: new Date().toISOString(), ...e }); };
 
 const sleep = (ms, signal) => new Promise((res, rej) => { const t = setTimeout(res, ms); signal?.addEventListener('abort', () => { clearTimeout(t); rej(signal.reason || new Error('aborted')); }, { once: true }); });
-export class GroqError extends Error { constructor(msg, { status = null, retryable = false, code = null } = {}) { super(redact(msg)); this.status = status; this.retryable = retryable; this.code = code; } }
+// extra details (e.g. the daily-limit resetAt / limit / used / remaining) are kept: the Script Book queue pauses until resetAt
+export class GroqError extends Error { constructor(msg, { status = null, retryable = false, code = null, ...extra } = {}) { super(redact(msg)); this.status = status; this.retryable = retryable; this.code = code; Object.assign(this, extra); } }
 
 const cfg = (over = {}) => ({ key: CONFIG.GROQ_API_KEY, model: CONFIG.GROQ_MODEL, base: CONFIG.GROQ_BASE_URL, timeout: CONFIG.SCRIPT_GENERATION_TIMEOUT, retries: CONFIG.SCRIPT_GENERATION_MAX_RETRIES, enabled: CONFIG.SCRIPT_GENERATION_ENABLED, ...over });
 const reasoning = (model) => /gpt-oss|qwen3|deepseek-r1|reasoning/i.test(model);

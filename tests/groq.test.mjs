@@ -3,7 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chat, ensureReady, rateBudget, resetBudget } from '../dashboard/lib/groq.js';
-import { pauseScriptBookQueue, resumeScriptBookQueue, getScriptBookQueueStatus } from '../dashboard/server.js';
+// queue state lives in lib/sbqueue.js: importing dashboard/server.js would start a studio server (port 3000) and never exit
+import { pauseScriptBookQueue, resumeScriptBookQueue, getScriptBookQueueStatus } from '../dashboard/lib/sbqueue.js';
 
 const KEY = 'gsk_' + 'TESTKEY0123456789abcdefABCDEF';
 const over = { key: KEY, model: 'openai/gpt-oss-120b', base: 'https://groq.test/openai/v1', timeout: 5000, retries: 3, enabled: true };

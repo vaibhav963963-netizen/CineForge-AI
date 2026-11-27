@@ -16,6 +16,7 @@ import { checkLanguage, estimateSeconds, qualityGates, readiness, gateGroups, cl
 import { generateImage, seedFor, readImageIndex, writeImageIndex, freeVram } from './lib/imagegen.js';
 import { createSetupRoutes } from './lib/setup/routes.js';
 import { overview } from './lib/overview.js';
+import { setQueueResumeHandler, isQueuePaused, pauseScriptBookQueue, resumeScriptBookQueue, getScriptBookQueueStatus } from './lib/sbqueue.js';
 import { CONFIG, assertConfig } from './lib/config.js';
 import { getQualityInspector, getCorrectionEngine, getPublishingGuard, QUALITY_CONFIG } from '../quality-gate/index.js';
 
@@ -101,39 +102,13 @@ function submitScriptJob({ input, projectId, requestKey, facts, origin = null })
 
 // Script Book queue: starts the next queued "pending" entry when no Script Book script is being written (one at a time)
 let sbTicking = false;
-let sbQueuePausedUntil = 0;
-let sbQueuePauseTimer = null;
-
-export function pauseScriptBookQueue(resetAt) {
-  sbQueuePausedUntil = resetAt;
-  clearTimeout(sbQueuePauseTimer);
-  const waitMs = Math.max(0, resetAt - Date.now());
-  if (waitMs > 0 && waitMs < 24 * 3600 * 1000) {
-    sbQueuePauseTimer = setTimeout(() => {
-      sbQueuePausedUntil = 0;
-      scriptBookQueueTick();
-    }, waitMs);
-    sbQueuePauseTimer.unref?.();
-  }
-}
-
-export function resumeScriptBookQueue() {
-  sbQueuePausedUntil = 0;
-  clearTimeout(sbQueuePauseTimer);
-  scriptBookQueueTick();
-}
-
-export function getScriptBookQueueStatus() {
-  return {
-    paused: Date.now() < sbQueuePausedUntil,
-    pausedUntil: sbQueuePausedUntil > 0 ? new Date(sbQueuePausedUntil).toISOString() : null,
-    remainingMs: Math.max(0, sbQueuePausedUntil - Date.now()),
-  };
-}
+// pause/resume/status live in lib/sbqueue.js (no side effects, so tests can import it without starting a server)
+setQueueResumeHandler(() => { scriptBookQueueTick(); });
+export { pauseScriptBookQueue, resumeScriptBookQueue, getScriptBookQueueStatus };
 
 export async function scriptBookQueueTick() {
   if (sbTicking) return;
-  if (Date.now() < sbQueuePausedUntil) return;
+  if (isQueuePaused()) return;
   sbTicking = true;
   try {
     const sb = await import('./lib/scriptbook.js');
